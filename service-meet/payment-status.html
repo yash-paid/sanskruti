@@ -433,7 +433,7 @@
         const initialWaText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for Order #${txnid || 'N/A'} (₹${amount || '60'}). PayU Ref: ${mihpayid || 'N/A'}. Please confirm and activate my service.`);
 
         actionButtons.innerHTML = `
-          <a href="https://wa.me/916266091562?text=${initialWaText}" target="_blank" class="btn-whatsapp-action">
+          <a href="https://wa.me/919238861171?text=${initialWaText}" target="_blank" class="btn-whatsapp-action">
             💬 Activate Service on WhatsApp
           </a>
           <a href="/service/" class="btn-secondary-action">
@@ -464,7 +464,7 @@
 
                 const waBtn = actionButtons.querySelector('.btn-whatsapp-action');
                 if (waBtn) {
-                  waBtn.href = `https://wa.me/916266091562?text=${verifiedWaText}`;
+                  waBtn.href = `https://wa.me/919238861171?text=${verifiedWaText}`;
                 }
               }
             }
@@ -487,7 +487,7 @@
           <a href="/service/#services" class="btn-primary-action">
             ↻ Choose Package & Try Again
           </a>
-          <a href="https://wa.me/916266091562?text=${encodeURIComponent('Hello Sanskruti, I cancelled payment for order ' + txnid + '. I have a question before paying.')}" target="_blank" class="btn-whatsapp-action">
+          <a href="https://wa.me/919238861171?text=${encodeURIComponent('Hello Sanskruti, I cancelled payment for order ' + txnid + '. I have a question before paying.')}" target="_blank" class="btn-whatsapp-action">
             💬 Have Questions? Ask on WhatsApp
           </a>
           <a href="/service/" class="btn-secondary-action">
@@ -509,7 +509,7 @@
           <a href="/service/#services" class="btn-primary-action">
             ↻ Retry Booking / Choose Package
           </a>
-          <a href="https://wa.me/916266091562?text=${encodeURIComponent('Hello Sanskruti, my payment failed for Order ' + txnid + '. Error: ' + errorMsg)}" target="_blank" class="btn-whatsapp-action">
+          <a href="https://wa.me/919238861171?text=${encodeURIComponent('Hello Sanskruti, my payment failed for Order ' + txnid + '. Error: ' + errorMsg)}" target="_blank" class="btn-whatsapp-action">
             💬 Payment Help via WhatsApp
           </a>
           <a href="/service/" class="btn-secondary-action">
@@ -529,7 +529,7 @@
 
         actionButtons.innerHTML = `
           <button onclick="window.location.reload()" class="btn-primary-action">🔄 Refresh Status</button>
-          <a href="https://wa.me/916266091562?text=${encodeURIComponent('Hello Sanskruti, my payment is pending for Order ' + txnid)}" target="_blank" class="btn-whatsapp-action">
+          <a href="https://wa.me/919238861171?text=${encodeURIComponent('Hello Sanskruti, my payment is pending for Order ' + txnid)}" target="_blank" class="btn-whatsapp-action">
             💬 Inquire on WhatsApp
           </a>
           <a href="/service/" class="btn-secondary-action">
@@ -549,7 +549,7 @@
 
         actionButtons.innerHTML = `
           <a href="/service/" class="btn-secondary-action">← Return to Services</a>
-          <a href="https://wa.me/916266091562" target="_blank" class="btn-whatsapp-action">💬 WhatsApp Support</a>
+          <a href="https://wa.me/919238861171" target="_blank" class="btn-whatsapp-action">💬 WhatsApp Support</a>
         `;
       }
     });

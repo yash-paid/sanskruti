@@ -914,7 +914,7 @@ function showCheckoutModal() {
             <input type="text" id="custName" value="Sanskruti" placeholder="Your Full Name *" required autocomplete="name" oninput="this.classList.remove('input-error')" />
           </div>
           <div class="form-group">
-            <input type="tel" id="custWhatsapp" value="9856987498" placeholder="10-digit WhatsApp Number * (e.g. 9876543210)" required autocomplete="tel" oninput="this.classList.remove('input-error')" />
+            <input type="tel" id="custWhatsapp" value="9238861171" placeholder="10-digit WhatsApp Number * (e.g. 9876543210)" required autocomplete="tel" oninput="this.classList.remove('input-error')" />
           </div>
           <div class="form-group">
             <input type="email" id="custEmail" value="paid32041@gmail.com" placeholder="Email Address * (for PayU receipt & downloads)" required autocomplete="email" oninput="this.classList.remove('input-error')" />
@@ -951,7 +951,7 @@ async function initiatePayUCheckout(e) {
   const btn = document.getElementById('btnPayUCheckout');
 
   const name = (nameInput && nameInput.value.trim()) || 'Sanskruti';
-  let phone = (phoneInput && phoneInput.value.trim().replace(/[^0-9]/g, '')) || '9856987498';
+  let phone = (phoneInput && phoneInput.value.trim().replace(/[^0-9]/g, '')) || '9238861171';
   const email = (emailInput && emailInput.value.trim().toLowerCase()) || 'paid32041@gmail.com';
   const item = state.activeCheckoutItem;
 
