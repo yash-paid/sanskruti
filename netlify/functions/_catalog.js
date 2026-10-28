@@ -150,6 +150,7 @@ const SERVICES = {
   'service-vid-5':    { id: 'service-vid-5',    title: '5 Exclusive Videos Package',          price: 150,  category: 'service' },
   'service-chat-30':  { id: 'service-chat-30',  title: '30 Minutes Chat Session',             price: 150,  category: 'service' },
   'service-chat-60':  { id: 'service-chat-60',  title: '60 Minutes Chat Session',             price: 250,  category: 'service' },
+  'service-vc-10':    { id: 'service-vc-10',    title: '10 Minutes Video Call Session',       price: 199,  category: 'service' },
   'service-vc-30':    { id: 'service-vc-30',    title: '30 Minutes Video Call Session',       price: 300,  category: 'service' },
   'service-vc-60':    { id: 'service-vc-60',    title: '60 Minutes Video Call Session',       price: 400,  category: 'service' },
   'service-voice-30': { id: 'service-voice-30', title: '30 Minutes Voice Call Session',       price: 200,  category: 'service' },
