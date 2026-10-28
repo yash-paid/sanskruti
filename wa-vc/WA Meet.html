@@ -1356,15 +1356,15 @@
             </div>
 
             <!-- Access Buttons with Price -->
-            <button onclick="startVideoCallDirect()" class="action-btn btn-call">
+            <button onclick="initiateProfilePayment('wavc-room-79', 79, 'Video Call Room', event)" class="action-btn btn-call">
                 📹 Join Video Call Room - ₹79
             </button>
 
-            <button onclick="startChatDirect()" class="action-btn btn-chat">
+            <button onclick="initiateProfilePayment('wavc-chat-99', 99, 'Private Chat', event)" class="action-btn btn-chat">
                 💬 Join Private Chat - ₹99
             </button>
 
-            <button onclick="startVVIPRoom()" class="action-btn btn-vvip">
+            <button onclick="initiateProfilePayment('wavc-vvip-129', 129, 'VVIP Room', event)" class="action-btn btn-vvip">
                 🔥 Join VVIP Room - ₹129
             </button>
 
@@ -1725,6 +1725,73 @@ function openModal(chat) {
 
 function closeModal() {
     document.getElementById("modal").style.display = "none";
+}
+
+/* INITIATE PAYU PAYMENT FOR PROFILE MODAL PLANS (₹79, ₹99, ₹129) */
+async function initiateProfilePayment(planId, price, planName, event) {
+    const nameInput = document.getElementById('callCustName');
+    const phoneInput = document.getElementById('callCustPhone');
+    const emailInput = document.getElementById('callCustEmail');
+
+    const name = (nameInput && nameInput.value.trim()) || 'Sanskruti';
+    const phone = (phoneInput && phoneInput.value.trim()) || '9238861171';
+    let email = (emailInput && emailInput.value.trim()) || 'paid32041@gmail.com';
+
+    // Store intent so upon return from PayU, the exact room unlocks and opens!
+    sessionStorage.setItem('pending_wavc_room', planId);
+    if (selectedChat && selectedChat.name) {
+        sessionStorage.setItem('pending_wavc_caller', selectedChat.name);
+    }
+
+    const btn = event ? event.currentTarget : null;
+    const originalText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `🔒 Connecting to PayU ₹${price}...`;
+    }
+
+    try {
+        const res = await fetch('/api/payu-initiate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                itemType: 'wavc',
+                itemId: planId,
+                name: name,
+                phone: phone,
+                email: email
+            })
+        });
+
+        const data = await res.json();
+        if (!data.success || !data.actionUrl) {
+            throw new Error(data.error || 'Failed to initiate secure PayU checkout.');
+        }
+
+        // Auto-create and submit PayU Hosted Checkout form
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.actionUrl;
+        form.style.display = 'none';
+
+        for (const [k, v] of Object.entries(data.params || {})) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = k;
+            input.value = v;
+            form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    } catch (err) {
+        console.error('PayU Initiation Error:', err);
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+        }
+        alert(err.message || 'Payment initiation failed. Please try again.');
+    }
 }
 
 function quickCallRandom() {
@@ -2431,16 +2498,42 @@ window.addEventListener('DOMContentLoaded', async () => {
 
             if (data.success && data.verified && data.order && data.order.status === 'success' && data.order.category === 'wavc') {
                 isCallPaid = true;
+
+                // Recover selected model if stored
+                const savedCaller = sessionStorage.getItem('pending_wavc_caller');
+                if (savedCaller) {
+                    const found = chats.find(c => c.name === savedCaller);
+                    if (found) selectedChat = found;
+                }
+
+                const purchasedItemId = (data.order.items && data.order.items[0] && data.order.items[0].id) || sessionStorage.getItem('pending_wavc_room');
+
                 // Clean URL parameters to prevent URL reuse or tampering
                 window.history.replaceState({}, document.title, window.location.pathname);
+                sessionStorage.removeItem('pending_wavc_room');
+                sessionStorage.removeItem('pending_wavc_caller');
 
-                // Auto-connect call with verified status
+                // Auto-open and connect the specific room purchased
                 setTimeout(() => {
-                    startVideoCallDirect("Connected • Verified VIP 💎");
-                    const statusEl = document.getElementById("callStatusText");
-                    if (statusEl) {
-                        statusEl.innerText = "00:00 • VIP Verified";
-                        statusEl.style.color = "#25d366";
+                    if (purchasedItemId === 'wavc-chat-99') {
+                        // Open 1-on-1 interactive private chat room
+                        startChatDirect();
+                    } else if (purchasedItemId === 'wavc-vvip-129' || purchasedItemId === 'wavc-call-vip') {
+                        // Open VVIP Room
+                        startVideoCallDirect("Connected • VVIP Room Unlocked 🔥");
+                        const statusEl = document.getElementById("callStatusText");
+                        if (statusEl) {
+                            statusEl.innerText = "00:00 • VVIP Verified";
+                            statusEl.style.color = "#fbbf24";
+                        }
+                    } else {
+                        // Default: Video Call Room (₹79 or ₹99)
+                        startVideoCallDirect("Connected • Verified Video Room 💎");
+                        const statusEl = document.getElementById("callStatusText");
+                        if (statusEl) {
+                            statusEl.innerText = "00:00 • VIP Verified";
+                            statusEl.style.color = "#25d366";
+                        }
                     }
                 }, 400);
                 return;
