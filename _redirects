@@ -10,7 +10,23 @@
 /meeting                        https://grand-kheer-8d6b0e.netlify.app/meeting/        200!
 
 # =========================================================
-# 3. Sub-Project Clean Rewrites
+# 3. Direct WA Meet Aliases (Fix for sanskrutiservice.in/WA Meet.html)
+# =========================================================
+/WA%20Meet.html                 /wa-vc/WA%20Meet.html             200!
+/WA%20Meet                      /wa-vc/WA%20Meet.html             200!
+/WA Meet.html                   /wa-vc/WA%20Meet.html             200!
+/wa-meet.html                   /wa-vc/WA%20Meet.html             200!
+/wa-meet                        /wa-vc/WA%20Meet.html             200!
+/live.html                      /wa-vc/live.html                  200!
+/live                           /wa-vc/live.html                  200!
+/WA%20Meet_files/*              /wa-vc/WA%20Meet_files/:splat     200!
+/WA Meet_files/*                /wa-vc/WA%20Meet_files/:splat     200!
+/Dating%20Live%20UI_files/*     /wa-vc/Dating%20Live%20UI_files/:splat 200!
+/Dating Live UI_files/*         /wa-vc/Dating%20Live%20UI_files/:splat 200!
+/index.php_files/*              /wa-vc/index.php_files/:splat     200!
+
+# =========================================================
+# 4. Sub-Project Clean Rewrites
 # =========================================================
 /service/*                      /service-meet/:splat              200
 /service                        /service-meet/                    301
@@ -18,7 +34,7 @@
 /wa.vc                          /wa-vc/                           301
 
 # =========================================================
-# 4. Existing Main Website Clean URLs
+# 5. Existing Main Website Clean URLs
 # =========================================================
 /payment-status                 /payment-status.html              200
 /about                          /about.html                       200
@@ -30,6 +46,6 @@
 /refund-cancellation-policy     /refund-cancellation-policy.html  200
 
 # =========================================================
-# 5. Global Catch-All Fallback (MUST BE LAST)
+# 6. Global Catch-All Fallback (MUST BE LAST)
 # =========================================================
 /*                              /index.html                       200
