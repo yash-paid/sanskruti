@@ -7,12 +7,6 @@
 # Node dependencies
 node_modules/
 
-# Exclude videos only
-*.mp4
-*.webm
-*.mov
-wa-vc/videos/
-wa-vc/videos 2/
 
 # Digital downloads / PDFs
 *.pdf
