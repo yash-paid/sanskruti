@@ -24,14 +24,22 @@
 
 # Sub-Project Clean Rewrites
 [[redirects]]
+  from = "/service/style.css"
+  to = "/service-meet/style.css"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/service/*"
   to = "/service-meet/:splat"
   status = 200
+  force = true
 
 [[redirects]]
   from = "/service"
-  to = "/service-meet/"
-  status = 301
+  to = "/service-meet/index.html"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/wa.vc/*"

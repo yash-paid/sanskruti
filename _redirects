@@ -33,9 +33,13 @@
 # =========================================================
 # 4. Sub-Project Clean Rewrites
 # =========================================================
-/service/*                      /service-meet/:splat              200
-/service                        /service-meet/                    301
-/wa.vc/*                        /wa-vc/:splat                     200
+/service/style.css              /service-meet/style.css           200!
+/service/index.html             /service-meet/index.html          200!
+/service/*                      /service-meet/:splat              200!
+/service                        /service-meet/index.html          200!
+/service-meet/*                 /service-meet/:splat              200!
+/service-meet                   /service-meet/index.html          200!
+/wa.vc/*                        /wa-vc/:splat                     200!
 /wa.vc                          /wa-vc/                           301
 
 # =========================================================
