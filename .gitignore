@@ -7,15 +7,12 @@
 # Node dependencies
 node_modules/
 
-# Large media files (videos & heavy catalogs)
+# Exclude videos only
 *.mp4
 *.webm
 *.mov
 wa-vc/videos/
 wa-vc/videos 2/
-wa-vc/photos/
-wa-vc/photos 2/
-wa-vc/photo and video 2/
 
 # Digital downloads / PDFs
 *.pdf
