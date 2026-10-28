@@ -36,6 +36,8 @@
 /service/style.css              /service-meet/style.css           200!
 /service/payment-status.html    /service-meet/payment-status.html 200!
 /service/payment-status         /service-meet/payment-status.html 200!
+/service/payment_status.html    /service-meet/payment-status.html 200!
+/service/payment_status         /service-meet/payment-status.html 200!
 /service/index.html             /service-meet/index.html          200!
 /service/*                      /service-meet/:splat              200!
 /service                        /service-meet/index.html          200!

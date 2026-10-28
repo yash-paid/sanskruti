@@ -42,6 +42,18 @@
   force = true
 
 [[redirects]]
+  from = "/service/payment_status.html"
+  to = "/service-meet/payment-status.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/service/payment_status"
+  to = "/service-meet/payment-status.html"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/service/*"
   to = "/service-meet/:splat"
   status = 200

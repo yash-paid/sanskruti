@@ -90,45 +90,85 @@ function isDuplicatePayment(txnid, mihpayid) {
 }
 
 /**
- * Generates a tamper-proof cryptographic delivery token for verified eBook downloads.
+ * Generates a tamper-proof cryptographic delivery token for verified eBook downloads & service bookings.
  * Valid for 48 hours.
+ * Uses a stateless base64url payload with HMAC-SHA256 signature to guarantee
+ * seamless verification across independent serverless function containers.
  */
 function generateDeliveryToken(order, secret) {
   const expiresAt = Date.now() + 48 * 60 * 60 * 1000; // 48 hours
-  const payload = `${order.txnid}|${order.status}|${order.amount}|${order.customerEmail}|${order.customerPhone}|${expiresAt}`;
-  const signature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
-  return `${order.txnid}.${expiresAt}.${signature}`;
+  const payloadData = {
+    txnid: order.txnid,
+    status: order.status || 'success',
+    amount: order.amount,
+    customerName: order.customerName || '',
+    customerEmail: order.customerEmail || '',
+    customerPhone: order.customerPhone || '',
+    category: order.productCategory || order.category || 'ebook',
+    itemsPurchased: order.itemsPurchased || [],
+    mihpayid: order.mihpayid || '',
+    paidAt: order.paidAt || new Date().toISOString(),
+    expiresAt
+  };
+  const payloadStr = Buffer.from(JSON.stringify(payloadData)).toString('base64url');
+  const signature = crypto.createHmac('sha256', secret).update(payloadStr).digest('hex');
+  return `${payloadStr}.${signature}`;
 }
 
 /**
- * Verifies the validity of an eBook delivery token.
+ * Verifies the validity of an order delivery token.
+ * Supports both self-contained stateless tokens (payload.sig) and legacy (txnid.exp.sig).
  */
 function verifyDeliveryToken(token, secret) {
   if (!token || typeof token !== 'string') return { valid: false, reason: 'Missing token' };
 
   const parts = token.split('.');
-  if (parts.length !== 3) return { valid: false, reason: 'Malformed token' };
 
-  const [txnid, expiresAtStr, signature] = parts;
-  const expiresAt = parseInt(expiresAtStr, 10);
-
-  if (isNaN(expiresAt) || Date.now() > expiresAt) {
-    return { valid: false, reason: 'Token expired' };
+  // 1. New Stateless Self-Contained Token Format (payloadBase64.signature)
+  if (parts.length === 2) {
+    const [payloadStr, signature] = parts;
+    const expectedSig = crypto.createHmac('sha256', secret).update(payloadStr).digest('hex');
+    if (signature.length !== expectedSig.length || !crypto.timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expectedSig, 'hex'))) {
+      return { valid: false, reason: 'Invalid signature' };
+    }
+    try {
+      const order = JSON.parse(Buffer.from(payloadStr, 'base64url').toString('utf-8'));
+      if (order.expiresAt && Date.now() > order.expiresAt) {
+        return { valid: false, reason: 'Token expired' };
+      }
+      // Cache in local memory for process consistency
+      recordOrder(order.txnid, order);
+      return { valid: true, order };
+    } catch (e) {
+      return { valid: false, reason: 'Malformed token payload' };
+    }
   }
 
-  const order = getOrder(txnid);
-  if (!order) {
-    return { valid: false, reason: 'Order not found for transaction' };
+  // 2. Legacy 3-part Token Format (txnid.expiresAt.signature)
+  if (parts.length === 3) {
+    const [txnid, expiresAtStr, signature] = parts;
+    const expiresAt = parseInt(expiresAtStr, 10);
+
+    if (isNaN(expiresAt) || Date.now() > expiresAt) {
+      return { valid: false, reason: 'Token expired' };
+    }
+
+    const order = getOrder(txnid);
+    if (!order) {
+      return { valid: false, reason: 'Order not found for transaction' };
+    }
+
+    const expectedPayload = `${order.txnid}|${order.status}|${order.amount}|${order.customerEmail}|${order.customerPhone}|${expiresAt}`;
+    const expectedSignature = crypto.createHmac('sha256', secret).update(expectedPayload).digest('hex');
+
+    if (signature.length === expectedSignature.length && crypto.timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expectedSignature, 'hex'))) {
+      return { valid: true, order };
+    }
+
+    return { valid: false, reason: 'Invalid signature' };
   }
 
-  const expectedPayload = `${order.txnid}|${order.status}|${order.amount}|${order.customerEmail}|${order.customerPhone}|${expiresAt}`;
-  const expectedSignature = crypto.createHmac('sha256', secret).update(expectedPayload).digest('hex');
-
-  if (crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
-    return { valid: true, order };
-  }
-
-  return { valid: false, reason: 'Invalid signature' };
+  return { valid: false, reason: 'Malformed token' };
 }
 
 module.exports = {

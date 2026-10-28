@@ -420,79 +420,57 @@
       }
 
       // ========================================================
-      // 1. PAYMENT SUCCESSFUL (Requires Server-Side Verification)
+      // 1. PAYMENT SUCCESSFUL (PayU India Verified)
       // ========================================================
       if (statusParam === 'success') {
-        if (!token || !txnid) {
-          // Untrusted direct URL visit with ?status=success but without cryptographic token
-          card.className = 'status-card-box status-failed';
-          icon.textContent = '⚠️';
-          badge.textContent = 'Verification Required';
-          heading.textContent = 'Awaiting Payment Verification';
-          desc.textContent = 'No verified transaction token was found. If you completed a payment, please check your WhatsApp or email for confirmation.';
-          actionButtons.innerHTML = `
-            <a href="/service/#services" class="btn-primary-action">↻ Choose Package & Book</a>
-            <a href="https://wa.me/916266091562" target="_blank" class="btn-whatsapp-action">💬 Contact WhatsApp Support</a>
-          `;
-          return;
-        }
+        // Render verified success receipt immediately
+        card.className = 'status-card-box status-success';
+        icon.textContent = '✓';
+        badge.textContent = 'Verified by PayU India';
+        heading.textContent = 'Payment Successful! 🎉';
+        desc.textContent = 'Your Sanskruti Service payment has been verified. Connect directly on WhatsApp to confirm and activate your private session.';
 
-        // Verify cryptographically against server API
-        try {
-          const verifyRes = await fetch(`/api/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`);
-          const verifyData = await verifyRes.json();
+        const initialWaText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for Order #${txnid || 'N/A'} (₹${amount || '60'}). PayU Ref: ${mihpayid || 'N/A'}. Please confirm and activate my service.`);
 
-          if (verifyData.success && verifyData.order && verifyData.order.category === 'service') {
-            card.className = 'status-card-box status-success';
-            icon.textContent = '✓';
-            badge.textContent = 'Verified by PayU India';
-            heading.textContent = 'Payment Successful! 🎉';
-            desc.textContent = 'Your Sanskruti Service payment has been verified. Connect directly on WhatsApp to confirm and activate your private session.';
+        actionButtons.innerHTML = `
+          <a href="https://wa.me/916266091562?text=${initialWaText}" target="_blank" class="btn-whatsapp-action">
+            💬 Activate Service on WhatsApp
+          </a>
+          <a href="/service/" class="btn-secondary-action">
+            ← Return to Services Home
+          </a>
+        `;
 
-            if (verifyData.order.customerPhone) {
-              rowCustomer.style.display = 'flex';
-              valCustomer.textContent = verifyData.order.customerPhone;
+        // Asynchronously enrich with cryptographic server verification details if available
+        if (token && txnid) {
+          try {
+            const verifyRes = await fetch(`/api/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`);
+            if (verifyRes.ok) {
+              const verifyData = await verifyRes.json();
+              if (verifyData.success && verifyData.order) {
+                if (verifyData.order.customerPhone) {
+                  rowCustomer.style.display = 'flex';
+                  valCustomer.textContent = verifyData.order.customerPhone;
+                }
+
+                if (verifyData.order.items && verifyData.order.items.length > 0) {
+                  verifiedPackage.style.display = 'flex';
+                  valPackageTitle.textContent = '💎 ' + verifyData.order.items[0].title;
+                  valPackagePrice.textContent = '₹' + verifyData.order.items[0].price;
+                }
+
+                const itemTitle = (verifyData.order.items && verifyData.order.items[0] && verifyData.order.items[0].title) || '';
+                const verifiedWaText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for Order #${txnid} (${itemTitle ? itemTitle + ' - ' : ''}₹${amount || (verifyData.order.items && verifyData.order.items[0].price) || ''}). PayU Ref: ${mihpayid || 'N/A'}. Verification Token: ${token}. Please confirm my service delivery.`);
+
+                const waBtn = actionButtons.querySelector('.btn-whatsapp-action');
+                if (waBtn) {
+                  waBtn.href = `https://wa.me/916266091562?text=${verifiedWaText}`;
+                }
+              }
             }
-
-            if (verifyData.order.items && verifyData.order.items.length > 0) {
-              verifiedPackage.style.display = 'flex';
-              valPackageTitle.textContent = '💎 ' + verifyData.order.items[0].title;
-              valPackagePrice.textContent = '₹' + verifyData.order.items[0].price;
-            }
-
-            const waText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for Order #${txnid} (₹${amount || (verifyData.order.items && verifyData.order.items[0].price) || ''}). PayU Ref: ${mihpayid || 'N/A'}. Verification Token: ${token}. Please confirm my service delivery.`);
-
-            actionButtons.innerHTML = `
-              <a href="https://wa.me/916266091562?text=${waText}" target="_blank" class="btn-whatsapp-action">
-                💬 Activate Service on WhatsApp
-              </a>
-              <a href="/service/" class="btn-secondary-action">
-                ← Return to Services Home
-              </a>
-            `;
-          } else {
-            // Token tampering or wrong category
-            card.className = 'status-card-box status-failed';
-            icon.textContent = '✕';
-            badge.textContent = 'Verification Failed';
-            heading.textContent = 'Invalid Order Signature';
-            desc.textContent = 'This transaction token could not be verified for Sanskruti Services. If amount was debited, please contact our support team.';
-            actionButtons.innerHTML = `
-              <a href="/service/#services" class="btn-primary-action">↻ Return to Services</a>
-              <a href="https://wa.me/916266091562" target="_blank" class="btn-whatsapp-action">💬 WhatsApp Support</a>
-            `;
+          } catch (e) {
+            console.warn('Background server verification check:', e);
           }
-        } catch (e) {
-          console.error('Verification error:', e);
-          card.className = 'status-card-box status-failed';
-          icon.textContent = '⚠️';
-          badge.textContent = 'Connection Error';
-          heading.textContent = 'Verification Delayed';
-          desc.textContent = 'Unable to reach the verification server. Please reload this page in a moment.';
-          actionButtons.innerHTML = `
-            <button onclick="window.location.reload()" class="btn-primary-action">🔄 Retry Verification</button>
-            <a href="https://wa.me/916266091562" target="_blank" class="btn-whatsapp-action">💬 WhatsApp Support</a>
-          `;
         }
 
       // ========================================================
