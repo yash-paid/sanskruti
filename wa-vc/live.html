@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Dating Live Room</title>
+  <style>
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      background-color: #000;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .app-container {
+      height: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
+      width: 100%;
+      max-width: 410px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      background-color: #0a0a0a;
+    }
+
+    @media (min-width: 480px) and (min-height: 520px) {
+      .app-container {
+        height: 90vh;
+        height: 90dvh;
+        max-height: 680px;
+        border-radius: 28px;
+        border: 2px solid #222;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.85);
+      }
+    }
+
+    /* Video Player Layer */
+    .video-wrap {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #myVideo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Top & Bottom Soft Gradients */
+    .grad-top {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 140px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.25) 60%, transparent 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .grad-bottom {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 260px;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 14px 8px;
+    }
+
+    .icon-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.15s;
+    }
+    .icon-btn:active { transform: scale(0.92); }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #fff;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+    .badge-like {
+      background: rgba(230, 57, 128, 0.45);
+      border: 1px solid rgba(230, 57, 128, 0.6);
+    }
+    .badge-viewers {
+      background: rgba(0,0,0,0.45);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .ping-dot {
+      width: 7px; height: 7px;
+      background: #ef4444;
+      border-radius: 50%;
+      box-shadow: 0 0 6px #ef4444;
+      animation: ping 1.2s infinite;
+    }
+    @keyframes ping {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.5; }
+    }
+
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 14px 74px;
+      pointer-events: none;
+    }
+
+    /* System Lounge Pill Message */
+    .system-pill {
+      pointer-events: auto;
+      align-self: flex-start;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.12);
+      padding: 6px 14px;
+      border-radius: 14px;
+      color: #fff;
+      font-size: 12px;
+      line-height: 1.4;
+      margin-bottom: 14px;
+      max-width: 90%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .system-pill .sys-label {
+      font-weight: 800;
+      color: #fbbf24; /* Golden Amber */
+      margin-right: 4px;
+    }
+
+    /* Chat Messages Box (optional messages) */
+    .chat-box {
+      max-height: 90px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin-bottom: 10px;
+      scrollbar-width: none;
+    }
+    .chat-box::-webkit-scrollbar { display: none; }
+    .chat-msg {
+      align-self: flex-start;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      padding: 4px 10px;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 11.5px;
+      line-height: 1.35;
+      max-width: 82%;
+    }
+    .chat-user { font-weight: 700; color: #ffd166; margin-right: 4px; }
+
+    /* Action Buttons Row (Video Call, Audio Call, Tip) + Floating Heart */
+    .actions-row {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .services-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Individual Service Card matching screenshot */
+    .svc-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 18px;
+      padding: 8px 10px 7px;
+      min-width: 68px;
+      cursor: pointer;
+      transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.2s;
+    }
+    .svc-card:hover {
+      transform: translateY(-3px) scale(1.04);
+      background: rgba(255, 255, 255, 0.14);
+    }
+    .svc-card:active {
+      transform: scale(0.92);
+    }
+
+    /* Hot-pink round circle icon wrapper */
+    .svc-icon-circle {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #e63980;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 14px rgba(230, 57, 128, 0.45);
+      margin-bottom: 5px;
+      transition: transform 0.2s;
+    }
+    .svc-card:hover .svc-icon-circle {
+      transform: scale(1.05);
+    }
+
+    /* Price / Coins */
+    .svc-coins {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 1px;
+    }
+    .gem-icon {
+      font-size: 10.5px;
+      line-height: 1;
+    }
+
+    /* Subtitle Label */
+    .svc-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.85);
+      letter-spacing: -0.2px;
+    }
+
+    /* Floating Heart Action Button on right */
+    .fab-heart-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .fab-heart {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #e63980;
+      border: none;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 20px rgba(230, 57, 128, 0.55);
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+    .fab-heart:active {
+      transform: scale(0.88);
+    }
+
+    /* Flying Hearts Animation */
+    .flying-heart {
+      position: fixed;
+      pointer-events: none;
+      z-index: 999;
+      font-size: 24px;
+      animation: floatUp 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(0.6) rotate(0deg); opacity: 1; }
+      50% { transform: translateY(-160px) scale(1.2) rotate(-15deg); opacity: 0.9; }
+      100% { transform: translateY(-340px) scale(1.5) rotate(20deg); opacity: 0; }
+    }
+
+    /* Bottom Chat Bar matching screenshot */
+    .chat-bar {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      z-index: 40;
+      background: #111111;
+      padding: 10px 14px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      pointer-events: auto;
+    }
+    .chat-input {
+      flex: 1;
+      background: #1e1e1e;
+      border: 1px solid #2d2d2d;
+      color: #fff;
+      padding: 11px 16px;
+      border-radius: 30px;
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .chat-input::placeholder {
+      color: rgba(255,255,255,0.45);
+    }
+    .chat-input:focus {
+      border-color: #e63980;
+    }
+    .send-btn {
+      background: #e63980;
+      border: none;
+      color: #fff;
+      padding: 11px 26px;
+      border-radius: 30px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .send-btn:active {
+      transform: scale(0.95);
+      background: #c22567;
+    }
+
+    /* Action Modal for Calls / Tip */
+    .action-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .action-modal-overlay.show { display: flex; }
+    .action-modal {
+      background: #1c1c1e;
+      border: 1px solid #333;
+      border-radius: 22px;
+      padding: 24px;
+      max-width: 320px;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      animation: popIn 0.25s ease;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-icon-top {
+      width: 58px; height: 58px;
+      border-radius: 50%;
+      background: #e63980;
+      margin: 0 auto 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(230,57,128,0.5);
+    }
+    .modal-title { font-size: 18px; font-weight: 800; margin-bottom: 6px; }
+    .modal-desc { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 18px; line-height: 1.4; }
+    .modal-btn-confirm {
+      width: 100%;
+      background: #e63980;
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .modal-btn-cancel {
+      width: 100%;
+      background: transparent;
+      color: #888;
+      border: none;
+      padding: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- Video Background Layer -->
+    <div class="video-wrap">
+      <video id="myVideo" playsinline muted autoplay loop>
+        <source src="videos/1.mp4" type="video/mp4">
+      </video>
+    </div>
+
+    <!-- Soft Top & Bottom Gradients -->
+    <div class="grad-top"></div>
+    <div class="grad-bottom"></div>
+
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <!-- Back Arrow -->
+      <a href="index.php.html" class="icon-btn" title="Back to Rooms">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </a>
+
+      <!-- Right Action Badges -->
+      <div class="top-actions">
+        <!-- Heart Likes -->
+        <div class="badge-pill badge-like">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="white">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <span id="like-counter">0</span>
+        </div>
+
+        <!-- Mute/Sound Button -->
+        <button class="icon-btn" id="muteBtn" onclick="toggleMute()" title="Mute/Unmute">
+          <svg id="muteIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+        </button>
+
+        <!-- Live Viewers Counter -->
+        <div class="badge-pill badge-viewers">
+          <div class="ping-dot"></div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span id="viewer-count">16</span>
+        </div>
+
+        <!-- Share Button -->
+        <button class="icon-btn" onclick="shareStream()" title="Share">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Content Overlays -->
+    <div class="content-area">
+
+      <!-- Chat Feed -->
+      <div class="chat-box" id="chatBox"></div>
+
+      <!-- System Message Pill (Exact from screenshot) -->
+      <div class="system-pill">
+        <span class="sys-label">System:</span> Welcome to the dating lounge! Find your match.
+      </div>
+
+      <!-- Action Buttons Row (Video Call, Audio Call, Tip + Floating Heart) -->
+      <div class="actions-row">
+        <div class="services-group">
+
+          <!-- 1: Video Call (200 💎) -->
+          <div class="svc-card" onclick="openActionModal('Video Call', 200, 'video')">
+            <div class="svc-icon-circle">
+              <!-- Video Camera SVG -->
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                <path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"/>
+              </svg>
+            </div>
+            <div class="svc-coins">
+              <span>200</span> <span class="gem-icon">💎</span>
+            </div>
+            <div class="svc-title">Video Call</div>
+          </div>
+
+          <!-- 2: Audio Call (100 💎) -->
+          <div class="svc-card" onclick="openActionModal('Audio Call', 100, 'audio')">
+            <div class="svc-icon-circle">
+              <!-- Phone SVG -->
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+                <path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56a.977.977 0 0 0-1.01.24l-2.2 2.2a15.05 15.05 0 0 1-6.59-6.59l2.2-2.21a.96.96 0 0 0 .25-1.01A11.36 11.36 0 0 1 8.5 3.92c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.54c0-.55-.45-1-.99-1z"/>
+              </svg>
+            </div>
+            <div class="svc-coins">
+              <span>100</span> <span class="gem-icon">💎</span>
+            </div>
+            <div class="svc-title">Audio Call</div>
+          </div>
+
+          <!-- 3: Tip (50 💎) -->
+          <div class="svc-card" onclick="openActionModal('Tip', 50, 'tip')">
+            <div class="svc-icon-circle">
+              <!-- Tip / Gift Box SVG -->
+              <svg width="23" height="23" viewBox="0 0 24 24" fill="white">
+                <path d="M19 8h-2.18c.11-.31.18-.65.18-1a3 3 0 0 0-3-3c-1.28 0-2.38.8-2.81 1.94l-.19.49-.19-.49C10.38 4.8 9.28 4 8 4a3 3 0 0 0-3 3c0 .35.07.69.18 1H3a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h1v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7h1a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1zm-7-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM8 6c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm10 14H6v-7h12v7zm1-9H5V9h14v2z"/>
+              </svg>
+            </div>
+            <div class="svc-coins">
+              <span>50</span> <span class="gem-icon">💎</span>
+            </div>
+            <div class="svc-title">Tip</div>
+          </div>
+
+        </div>
+
+        <!-- Floating Pink Heart Button -->
+        <div class="fab-heart-wrap">
+          <button class="fab-heart" onclick="sendLike()" title="Send Like">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Input Field & Send Button (Exact from screenshot) -->
+    <div class="chat-bar">
+      <input type="text" id="chatInput" class="chat-input" placeholder="Say something sweet..." onkeydown="if(event.key==='Enter')sendMessage()">
+      <button class="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+
+  </div>
+
+  <!-- Action Modal (UPI / Coins connect prompt) -->
+  <div class="action-modal-overlay" id="actionModal">
+    <div class="action-modal">
+      <div class="modal-icon-top" id="modalActionIcon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </div>
+      <div class="modal-title" id="modalActionTitle">Private Video Call</div>
+      <div class="modal-desc" id="modalActionDesc">Unlock private 1-on-1 session with 200 Diamonds 💎</div>
+      <button class="modal-btn-confirm" onclick="confirmAction()">Connect Now</button>
+      <button class="modal-btn-cancel" onclick="closeActionModal()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    const TOTAL_VIDEOS = 37;
+
+    function pickRandomVideo() {
+      const randomNum = Math.floor(Math.random() * TOTAL_VIDEOS) + 1;
+      const videoEl = document.getElementById('myVideo');
+      videoEl.src = 'videos/' + randomNum + '.mp4';
+      videoEl.play().catch(function(err){
+        console.log("Waiting for user tap to play");
+      });
+    }
+
+    // Toggle mute
+    function toggleMute() {
+      const videoEl = document.getElementById('myVideo');
+      const icon = document.getElementById('muteIcon');
+      videoEl.muted = !videoEl.muted;
+      if (videoEl.muted) {
+        icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+      } else {
+        icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
+      }
+    }
+
+    // Likes counter & flying hearts
+    let likeCount = 0;
+    function sendLike() {
+      likeCount++;
+      document.getElementById('like-counter').textContent = likeCount;
+
+      const heart = document.createElement('div');
+      heart.className = 'flying-heart';
+      const emojis = ['❤️', '💖', '🔥', '💋', '✨', '🥰'];
+      heart.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+
+      const fab = document.querySelector('.fab-heart');
+      const rect = fab.getBoundingClientRect();
+      heart.style.left = (rect.left + 14 + (Math.random() * 20 - 10)) + 'px';
+      heart.style.top = (rect.top + 6) + 'px';
+
+      document.body.appendChild(heart);
+      setTimeout(function() { heart.remove(); }, 2000);
+    }
+
+    // Chat sending
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chatBox = document.getElementById('chatBox');
+      const msg = document.createElement('div');
+      msg.className = 'chat-msg';
+      msg.innerHTML = '<span class="chat-user">You:</span> ' + escapeHtml(text);
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      input.value = '';
+
+      sendLike();
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Modals for Video Call, Audio Call, Tip
+    function openActionModal(title, coins, type) {
+      document.getElementById('modalActionTitle').textContent = title;
+      document.getElementById('modalActionDesc').textContent = 'Connect for ' + coins + ' Diamonds 💎';
+      document.getElementById('actionModal').classList.add('show');
+    }
+
+    function closeActionModal() {
+      document.getElementById('actionModal').classList.remove('show');
+    }
+
+    function confirmAction() {
+      closeActionModal();
+      window.location.href = 'WA%20Meet.html?call=incoming';
+    }
+
+    // Share Stream
+    function shareStream() {
+      if (navigator.share) {
+        navigator.share({
+          title: 'Live Dating Lounge',
+          url: window.location.href
+        }).catch(function(){});
+      } else {
+        alert('Live link copied to clipboard!');
+      }
+    }
+
+    // Random viewer count between 7 and 30
+    function getRandomViewers() {
+      return Math.floor(Math.random() * (30 - 7 + 1)) + 7;
+    }
+
+    function initViewers() {
+      const viewerEl = document.getElementById('viewer-count');
+      if (viewerEl) {
+        viewerEl.textContent = getRandomViewers();
+      }
+    }
+
+    // Auto subtle viewers & random comments
+    const fakeNames = ['Rahul', 'Amit', 'Rohit', 'Vikram', 'Kabir', 'Aman', 'Karan'];
+    const fakeMsgs = ['Hello gorgeous ✨', 'Nice smile 💕', 'Looking hot! 💋', 'Hi sweetheart ❤️', 'Wow beautiful 🥰'];
+
+    setInterval(function() {
+      // Randomly update viewers between 7 and 30
+      const viewerEl = document.getElementById('viewer-count');
+      if (viewerEl && Math.random() > 0.4) {
+        let current = parseInt(viewerEl.textContent) || 15;
+        let delta = Math.floor(Math.random() * 5) - 2; // -2 to +2
+        let next = current + delta;
+        if (next < 7) next = 7 + Math.floor(Math.random() * 3);
+        if (next > 30) next = 30 - Math.floor(Math.random() * 3);
+        viewerEl.textContent = next;
+      }
+
+      if (Math.random() > 0.6) {
+        const chatBox = document.getElementById('chatBox');
+        const user = fakeNames[Math.floor(Math.random() * fakeNames.length)];
+        const text = fakeMsgs[Math.floor(Math.random() * fakeMsgs.length)];
+        const msg = document.createElement('div');
+        msg.className = 'chat-msg';
+        msg.innerHTML = '<span class="chat-user">' + user + ':</span> ' + text;
+        chatBox.appendChild(msg);
+        if (chatBox.children.length > 5) {
+          chatBox.removeChild(chatBox.children[0]);
+        }
+        chatBox.scrollTop = chatBox.scrollHeight;
+      }
+    }, 3500);
+
+    // Initial load
+    window.addEventListener('DOMContentLoaded', function() {
+      pickRandomVideo();
+      initViewers();
+    });
+  </script>
+</body>
+</html>

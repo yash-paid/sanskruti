@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment & Order Status | Sanskruti eBooks</title>
+  <meta name="description" content="View your PayU transaction confirmation, payment verification status, and access your verified eBook digital downloads." />
+  <meta name="robots" content="noindex, follow" />
+  <meta name="theme-color" content="#07090e" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20'></path><path d='M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'></path></svg>" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .status-page-wrapper {
+      min-height: 80vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+    }
+
+    .status-card {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glass);
+      border-radius: 20px;
+      max-width: 680px;
+      width: 100%;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .status-card::before {
+      content: '';
+      position: absolute;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .status-card.status-success::before {
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, transparent 70%);
+    }
+
+    .status-card.status-failed::before {
+      background: radial-gradient(circle, rgba(239, 68, 68, 0.25) 0%, transparent 70%);
+    }
+
+    .status-card.status-pending::before {
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, transparent 70%);
+    }
+
+    .status-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .status-icon-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 2.5rem;
+      transition: transform 0.3s ease;
+    }
+
+    .status-success .status-icon-circle {
+      background: rgba(16, 185, 129, 0.15);
+      border: 2px solid var(--accent-emerald);
+      color: var(--accent-emerald);
+    }
+
+    .status-failed .status-icon-circle {
+      background: rgba(239, 68, 68, 0.15);
+      border: 2px solid #ef4444;
+      color: #ef4444;
+    }
+
+    .status-pending .status-icon-circle {
+      background: rgba(245, 158, 11, 0.15);
+      border: 2px solid #f59e0b;
+      color: #f59e0b;
+    }
+
+    .status-badge {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 0.35rem 1rem;
+      border-radius: 9999px;
+      margin-bottom: 0.75rem;
+    }
+
+    .status-success .status-badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-failed .status-badge {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .status-pending .status-badge {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .order-details-grid {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin: 1.5rem 0;
+      text-align: left;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.92rem;
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      color: #94a3b8;
+    }
+
+    .detail-value {
+      color: #f8fafc;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .download-items-container {
+      margin-top: 1.5rem;
+      text-align: left;
+    }
+
+    .download-item-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      background: rgba(20, 27, 45, 0.7);
+      border: 1px solid var(--border-glass);
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+      margin-bottom: 0.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .download-item-card:hover {
+      border-color: rgba(99, 102, 241, 0.5);
+      background: rgba(20, 27, 45, 0.95);
+    }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      color: white;
+      font-weight: 700;
+      font-size: 0.88rem;
+      padding: 0.6rem 1.1rem;
+      border-radius: 8px;
+      text-decoration: none;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+    }
+
+    .action-btn-group {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Announcement Bar -->
+  <aside class="announcement-bar" aria-label="Announcement">
+    <span class="announcement-badge">PayU Verified</span>
+    <span>Official Digital Delivery Portal • 256-bit SSL Secure Checkout</span>
+  </aside>
+
+  <!-- Header -->
+  <header>
+    <div class="container nav-inner">
+      <a href="index.html" class="logo" aria-label="Sanskruti eBooks Homepage">
+        <div class="logo-icon">📚</div>
+        <div>
+          <span class="logo-text">Sanskruti</span><span style="color: #6366f1; font-weight: 300;">eBooks</span>
+          <span class="logo-tag">संस्कृति</span>
+        </div>
+      </a>
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a href="index.html#catalog">eBooks Catalog</a></li>
+          <li><a href="index.html#bundles">Value Bundles</a></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="contact.html">Contact & Support</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions">
+        <a href="https://wa.me/919238861171?text=Hello%20Sanskruti%20eBooks,%20I%20have%20an%20inquiry%20regarding%20my%20order." target="_blank" class="whatsapp-nav-btn" aria-label="WhatsApp Support">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          <span>WhatsApp Help</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="status-page-wrapper">
+    <div id="statusCard" class="status-card status-pending">
+      <div class="status-content">
+        <div id="statusIcon" class="status-icon-circle">⏳</div>
+        <div id="statusBadge" class="status-badge">Checking Status...</div>
+        <h1 id="statusHeading" style="font-size: 1.8rem; color: #fff; margin-bottom: 0.5rem;">Verifying Transaction...</h1>
+        <p id="statusMessage" style="color: #94a3b8; font-size: 0.95rem; max-width: 500px; margin: 0 auto;">
+          Please wait while we connect with the payment gateway to verify your order.
+        </p>
+
+        <div id="orderDetailsBox" class="order-details-grid" style="display: none;">
+          <div class="detail-row">
+            <span class="detail-label">Order Transaction ID:</span>
+            <span class="detail-value" id="detailTxnid">-</span>
+          </div>
+          <div class="detail-row" id="rowPayuRef" style="display: none;">
+            <span class="detail-label">PayU Payment Ref:</span>
+            <span class="detail-value" id="detailPayuRef">-</span>
+          </div>
+          <div class="detail-row" id="rowAmount" style="display: none;">
+            <span class="detail-label">Amount Paid:</span>
+            <span class="detail-value" style="color: var(--accent-gold);" id="detailAmount">-</span>
+          </div>
+          <div class="detail-row" id="rowCustomer" style="display: none;">
+            <span class="detail-label">Licensed To:</span>
+            <span class="detail-value" id="detailCustomer">-</span>
+          </div>
+        </div>
+
+        <div id="downloadsSection" class="download-items-container" style="display: none;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent-emerald); text-transform: uppercase; margin-bottom: 0.75rem;">
+            ✓ Verified eBook Downloads Unlocked:
+          </div>
+          <div id="downloadsList"></div>
+        </div>
+
+        <div class="action-btn-group" id="actionButtons">
+          <a href="index.html" class="btn-primary" style="text-decoration: none;">Explore More eBooks</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer style="border-top: 1px solid var(--border-glass); padding: 3rem 0; background: #030712; text-align: center; color: #64748b; font-size: 0.88rem;">
+    <div class="container">
+      <p style="margin-bottom: 0.5rem;">© 2026 Sanskruti eBooks. All Rights Reserved. Instant Digital Delivery across India.</p>
+      <p>
+        <a href="terms-and-conditions.html" style="color: #94a3b8; text-decoration: none; margin: 0 0.5rem;">Terms & Conditions</a> •
+        <a href="privacy-policy.html" style="color: #94a3b8; text-decoration: none; margin: 0 0.5rem;">Privacy Policy</a> •
+        <a href="shipping-return-policy.html" style="color: #94a3b8; text-decoration: none; margin: 0 0.5rem;">Shipping & Delivery</a> •
+        <a href="refund-cancellation-policy.html" style="color: #94a3b8; text-decoration: none; margin: 0 0.5rem;">Refund Policy</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const statusParam = (urlParams.get('status') || '').toLowerCase();
+      const txnid = urlParams.get('txnid') || '';
+      const token = urlParams.get('token') || '';
+      const amount = urlParams.get('amount') || '';
+      const mihpayid = urlParams.get('mihpayid') || '';
+      const errorMsg = urlParams.get('msg') || urlParams.get('error') || '';
+
+      const card = document.getElementById('statusCard');
+      const icon = document.getElementById('statusIcon');
+      const badge = document.getElementById('statusBadge');
+      const heading = document.getElementById('statusHeading');
+      const msg = document.getElementById('statusMessage');
+      const detailsBox = document.getElementById('orderDetailsBox');
+      const detailTxnid = document.getElementById('detailTxnid');
+      const detailPayuRef = document.getElementById('detailPayuRef');
+      const rowPayuRef = document.getElementById('rowPayuRef');
+      const detailAmount = document.getElementById('detailAmount');
+      const rowAmount = document.getElementById('rowAmount');
+      const detailCustomer = document.getElementById('detailCustomer');
+      const rowCustomer = document.getElementById('rowCustomer');
+      const downloadsSection = document.getElementById('downloadsSection');
+      const downloadsList = document.getElementById('downloadsList');
+      const actionButtons = document.getElementById('actionButtons');
+
+      if (txnid) {
+        detailsBox.style.display = 'block';
+        detailTxnid.textContent = txnid;
+      }
+      if (mihpayid) {
+        rowPayuRef.style.display = 'flex';
+        detailPayuRef.textContent = mihpayid;
+      }
+      if (amount) {
+        rowAmount.style.display = 'flex';
+        detailAmount.textContent = '₹' + amount;
+      }
+
+      const typeParam = (urlParams.get('type') || '').toLowerCase();
+
+      // Handle Success
+      if (statusParam === 'success') {
+        card.className = 'status-card status-success';
+        icon.textContent = '✓';
+        badge.textContent = 'Payment Verified & Confirmed';
+
+        if (typeParam === 'service') {
+          heading.textContent = 'Service Booking Confirmed! 🎉';
+          msg.textContent = 'Thank you for your payment. Your Sanskruti Service package has been verified via PayU India. Please click below to confirm your session on WhatsApp.';
+
+          const waServiceText = encodeURIComponent(`Hello Sanskruti, I have paid for Order #${txnid} (₹${amount}). PayU Ref: ${mihpayid || 'N/A'}. Verification Token: ${token}. Please confirm my service delivery.`);
+          actionButtons.innerHTML = `
+            <a href="https://wa.me/916266091562?text=${waServiceText}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none; border-radius: 8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+              💬 Confirm Service on WhatsApp
+            </a>
+            <a href="/service/" class="btn-primary" style="text-decoration: none;">← Back to Services</a>
+          `;
+        } else if (typeParam === 'meeting') {
+          heading.textContent = 'Meeting Advance Confirmed! 🎉';
+          msg.textContent = 'Thank you! Your NearMe Meeting advance booking fee of ₹350 was verified through PayU India. Your priority reservation is active.';
+
+          const waMeetText = encodeURIComponent(`Hello Sanskruti NearMe Team! I have paid the ₹350 advance fee for Meeting Order #${txnid}. PayU Ref: ${mihpayid || 'N/A'}. Please confirm my meeting appointment.`);
+          actionButtons.innerHTML = `
+            <a href="https://wa.me/919238861171?text=${waMeetText}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none; border-radius: 8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+              💬 Confirm on WhatsApp
+            </a>
+            <a href="/meet/" class="btn-primary" style="text-decoration: none;">Open NearMe Meeting</a>
+          `;
+        } else {
+          // Default: eBook order
+          heading.textContent = 'Order Successful! Congratulations 🎉';
+          msg.textContent = 'Thank you for your purchase. Your payment was verified through PayU India and your digital eBooks are ready for instant download below.';
+
+          const waText = encodeURIComponent(`Namaste Sanskruti Team! I have completed payment for Order #${txnid}. PayU Ref: ${mihpayid || 'N/A'}. Please confirm my receipt.`);
+          actionButtons.innerHTML = `
+            <a href="https://wa.me/919238861171?text=${waText}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none; border-radius: 8px;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+              💬 Confirm Delivery on WhatsApp
+            </a>
+            <a href="index.html" class="btn-primary" style="text-decoration: none;">← Browse More Books</a>
+          `;
+        }
+
+        // Fetch Verified Order Details and Downloads
+        if (token) {
+          try {
+            let res = await fetch(`/.netlify/functions/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`);
+            if (!res.ok) {
+              res = await fetch(`/api/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`);
+            }
+            const data = await res.json();
+            if (data.success && data.order) {
+              if (data.order.customerName) {
+                rowCustomer.style.display = 'flex';
+                detailCustomer.textContent = `${data.order.customerName} (${data.order.customerPhone || ''})`;
+              }
+
+              const cat = data.order.category || typeParam;
+              if (data.order.items && data.order.items.length > 0) {
+                downloadsSection.style.display = 'block';
+                if (cat === 'service' || cat === 'meeting') {
+                  const sectionTitle = downloadsSection.querySelector('div');
+                  if (sectionTitle) sectionTitle.textContent = '✓ Verified Package / Service Details:';
+                  downloadsList.innerHTML = data.order.items.map(item => `
+                    <div class="download-item-card">
+                      <div style="text-align: left;">
+                        <div style="color: #fff; font-weight: 700; font-size: 0.95rem;">💎 ${item.title}</div>
+                        <div style="color: #34d399; font-size: 0.8rem; margin-top: 0.2rem;">Official Status: Confirmed & Cryptographically Verified via PayU</div>
+                      </div>
+                      <div style="color: var(--accent-gold); font-weight: 700; font-size: 1rem;">
+                        ₹${item.price}
+                      </div>
+                    </div>
+                  `).join('');
+                } else {
+                  // eBooks
+                  downloadsList.innerHTML = data.order.items.map(item => `
+                    <div class="download-item-card">
+                      <div style="text-align: left;">
+                        <div style="color: #fff; font-weight: 700; font-size: 0.95rem;">📖 ${item.title}</div>
+                        <div style="color: #94a3b8; font-size: 0.8rem; margin-top: 0.2rem;">Format: PDF + EPUB Edition • Licensed Copy</div>
+                      </div>
+                      <a href="${item.downloadUrl}" class="download-btn" download>
+                        📥 Download eBook
+                      </a>
+                    </div>
+                  `).join('');
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('Error loading verified order info:', e);
+          }
+        }
+
+      // Handle Pending
+      } else if (statusParam === 'pending') {
+        card.className = 'status-card status-pending';
+        icon.textContent = '⏳';
+        badge.textContent = 'Transaction In Progress';
+        heading.textContent = 'Payment Awaiting Confirmation';
+        msg.textContent = 'Your payment is currently being confirmed by your bank or UPI network. Once confirmed, your eBook download will be unlocked.';
+        actionButtons.innerHTML = `
+          <button onclick="window.location.reload()" class="btn-primary">🔄 Re-check Status</button>
+          <a href="https://wa.me/919238861171?text=${encodeURIComponent('Hello! My payment for Order ' + txnid + ' is pending.')}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none;">
+            💬 Help via WhatsApp
+          </a>
+        `;
+
+      // Handle Failed / Cancelled
+      } else if (statusParam === 'failed' || statusParam === 'failure') {
+        card.className = 'status-card status-failed';
+        icon.textContent = '✕';
+        badge.textContent = 'Payment Unsuccessful';
+        heading.textContent = 'Payment Failed or Cancelled';
+        msg.textContent = errorMsg || 'The transaction could not be completed. Your bank account was not charged. You can retry checkout anytime.';
+        actionButtons.innerHTML = `
+          <a href="index.html#catalog" class="btn-primary" style="text-decoration: none;">↻ Try Again / Choose Book</a>
+          <a href="https://wa.me/919238861171?text=${encodeURIComponent('Hello! My payment for Order ' + txnid + ' failed: ' + errorMsg)}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none;">
+            💬 Need Payment Help?
+          </a>
+        `;
+
+      // Handle Tampered / Error
+      } else {
+        card.className = 'status-card status-failed';
+        icon.textContent = '⚠️';
+        badge.textContent = 'Verification Alert';
+        heading.textContent = 'Transaction Notice';
+        msg.textContent = errorMsg || 'Could not verify transaction integrity. If money was debited from your account, please contact our support team immediately.';
+        actionButtons.innerHTML = `
+          <a href="index.html" class="btn-primary" style="text-decoration: none;">Return to Home</a>
+          <a href="https://wa.me/919238861171?text=${encodeURIComponent('Payment inquiry for txnid: ' + txnid)}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none;">
+            💬 WhatsApp Support
+          </a>
+        `;
+      }
+    });
+  </script>
+</body>
+
+</html>

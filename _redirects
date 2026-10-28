@@ -1,0 +1,35 @@
+# =========================================================
+# 1. PayU Serverless Backend APIs (CRITICAL - PRESERVED)
+# =========================================================
+/api/*                          /.netlify/functions/:splat        200!
+
+# =========================================================
+# 2. External Meeting Reverse Proxy (/meeting/ only)
+# =========================================================
+/meeting/*                      https://grand-kheer-8d6b0e.netlify.app/meeting/:splat  200!
+/meeting                        https://grand-kheer-8d6b0e.netlify.app/meeting/        200!
+
+# =========================================================
+# 3. Sub-Project Clean Rewrites
+# =========================================================
+/service/*                      /service-meet/:splat              200
+/service                        /service-meet/                    301
+/wa.vc/*                        /wa-vc/:splat                     200
+/wa.vc                          /wa-vc/                           301
+
+# =========================================================
+# 4. Existing Main Website Clean URLs
+# =========================================================
+/payment-status                 /payment-status.html              200
+/about                          /about.html                       200
+/contact                        /contact.html                     200
+/privacy-policy                 /privacy-policy.html              200
+/terms                          /terms-and-conditions.html        200
+/terms-and-conditions           /terms-and-conditions.html        200
+/shipping-return-policy         /shipping-return-policy.html      200
+/refund-cancellation-policy     /refund-cancellation-policy.html  200
+
+# =========================================================
+# 5. Global Catch-All Fallback (MUST BE LAST)
+# =========================================================
+/*                              /index.html                       200

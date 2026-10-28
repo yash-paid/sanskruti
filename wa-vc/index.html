@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WA Meet — Live Chat & Photos</title>
+  <meta name="description" content="WA Meet — Premium live video call, voice call, chat and exclusive photos & videos service.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    :root {
+      --pink:#FF1B73; --purple:#7B2CFF; --dark:#4016B8;
+      --font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+    }
+
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    body {
+      background: #0b141a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #111b21;
+      font-family: var(--font);
+    }
+    .scene-bg { display:none; }
+
+    .mobile {
+      width: 100%;
+      max-width: 410px;
+      height: 100%;
+      height: 100dvh;
+      max-height: 100dvh;
+      background: #0d0118;
+      overflow: hidden;
+      position: relative;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    @media (min-width: 480px) and (min-height: 520px) {
+      .mobile {
+        height: 90vh;
+        height: 90dvh;
+        max-height: 680px;
+        border-radius: 32px;
+        border: 8px solid #1f2c34;
+        box-shadow: 0 25px 70px rgba(0, 0, 0, 0.65);
+      }
+    }
+
+    .phone-content {
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex: 1;
+      padding: 18px 16px 28px;
+      scrollbar-width: none;
+    }
+    .phone-content::-webkit-scrollbar { display: none; }
+
+    .header {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 0 16px;
+    }
+    .header-text { text-align:center; flex:1; }
+    .app-name { font-size:22px; font-weight:900; letter-spacing:-0.3px; color:#fff; }
+    .app-name span { color:#FF1B73; }
+    .app-subtitle { font-size:12.5px; color:rgba(255,255,255,0.5); font-weight:500; margin-top:2px; }
+    .crown-wrap { width:36px; }
+    .crown { font-size:22px; animation:crownFloat 3s ease-in-out infinite; display:inline-block; }
+    @keyframes crownFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+
+    .card-live {
+      background:linear-gradient(145deg, #2a0040 0%, #7B2CFF 50%, #FF1B73 100%);
+      border-radius:26px;
+      padding:20px 18px 18px;
+      position:relative; overflow:hidden;
+      cursor:pointer; margin-bottom:14px;
+      min-height:230px;
+      transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+      box-shadow:0 8px 30px rgba(255,27,115,0.3), 0 4px 12px rgba(123,44,255,0.2);
+    }
+    .card-live:active { transform:scale(0.97); }
+    .card-live::before {
+      content:''; position:absolute; top:0; left:-100%; width:60%; height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);
+      animation:shimmer 3s infinite; pointer-events:none;
+    }
+    @keyframes shimmer { 0%{left:-100%} 100%{left:200%} }
+
+    .card-glow { position:absolute; border-radius:50%; pointer-events:none; }
+    .card-glow-1 { width:180px; height:180px; background:rgba(255,255,255,0.07); top:-50px; right:-30px; }
+    .card-glow-2 { width:100px; height:100px; background:rgba(255,27,115,0.15); bottom:-20px; left:10px; }
+
+    .live-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      background:rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.2);
+      color:#fff; font-size:11px; font-weight:700;
+      padding:3px 9px; border-radius:20px; margin-bottom:10px;
+      backdrop-filter:blur(8px);
+    }
+    .live-dot {
+      width:6px; height:6px; background:#00FF88; border-radius:50%;
+      box-shadow:0 0 6px #00FF88; animation:livePulse 1.2s infinite;
+    }
+    @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.6)} }
+
+    .card-live-text { flex:1; min-width:0; z-index:2; position:relative; }
+    .card-girl-img {
+      position:absolute;
+      right:0; top:0; bottom:0;
+      width:52%;
+      height:100%;
+      object-fit:cover;
+      object-position:top center;
+      pointer-events:none;
+      z-index:1;
+      -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 35%, rgba(0,0,0,1) 100%);
+      mask-image: linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 35%, rgba(0,0,0,1) 100%);
+    }
+
+    .card-title { font-size:26px; font-weight:900; color:#fff; letter-spacing:-0.5px; margin-bottom:4px; line-height:1.1; }
+    .card-desc { font-size:12px; color:rgba(255,255,255,0.75); line-height:1.5; margin-bottom:16px; max-width:165px; }
+
+    .service-icons { display:flex; gap:8px; margin-bottom:18px; }
+    .svc-item { display:flex; flex-direction:column; align-items:center; gap:5px; }
+    .svc-icon-btn {
+      width:44px; height:44px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      border:none; cursor:pointer; transition:transform 0.2s;
+    }
+    .svc-icon-btn:active { transform:scale(0.9); }
+    .svc-icon-btn.red   { background:linear-gradient(135deg,#FF1B73,#CC0055); }
+    .svc-icon-btn.green { background:linear-gradient(135deg,#25D366,#128C7E); }
+    .svc-icon-btn.blue  { background:linear-gradient(135deg,#2196F3,#1565C0); }
+    .svc-label { font-size:9.5px; color:rgba(255,255,255,0.7); font-weight:600; text-align:center; }
+
+    .cta-btn {
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      width:100%; padding:13px;
+      background:linear-gradient(135deg,#FF1B73,#FF5C9E);
+      color:#fff; font-size:15px; font-weight:800;
+      border:none; border-radius:50px; cursor:pointer;
+      text-decoration:none; letter-spacing:0.3px;
+      box-shadow:0 4px 20px rgba(255,27,115,0.45);
+      transition:transform 0.2s, box-shadow 0.2s;
+    }
+    .cta-btn:hover { transform:translateY(-1px); box-shadow:0 8px 28px rgba(255,27,115,0.55); }
+    .cta-btn:active { transform:scale(0.97); }
+    .cta-arrow { display:inline-block; transition:transform 0.2s; font-style:normal; }
+    .cta-btn:hover .cta-arrow { transform:translateX(4px); }
+
+    .card-photos {
+      background:linear-gradient(145deg,#1a0533 0%,#2D0B6B 45%,#4016B8 100%);
+      border-radius:26px; padding:20px 18px 18px;
+      position:relative; overflow:hidden;
+      cursor:pointer; margin-bottom:0;
+      transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+      box-shadow:0 8px 30px rgba(64,22,184,0.35);
+    }
+    .card-photos:active { transform:scale(0.97); }
+    .card-photos::before {
+      content:''; position:absolute; top:0; left:-100%; width:60%; height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.07),transparent);
+      animation:shimmer 4s 1.5s infinite; pointer-events:none;
+    }
+    .cp-glow1 { position:absolute; width:220px; height:220px; border-radius:50%; background:rgba(123,44,255,0.18); top:-70px; right:-50px; pointer-events:none; }
+    .cp-glow2 { position:absolute; width:130px; height:130px; border-radius:50%; background:rgba(255,27,115,0.1); bottom:-30px; left:5px; pointer-events:none; }
+
+    .photos-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+    .photos-text { flex:1; }
+    .photos-icon { margin-bottom:8px; }
+    .card-photos .card-title { font-size:22px; margin-bottom:4px; }
+    .card-photos .card-desc { margin-bottom:14px; max-width:none; }
+
+    .thumb-stack { position:relative; width:130px; height:150px; flex-shrink:0; }
+    .thumb {
+      position:absolute; border-radius:16px;
+      border:2px solid rgba(255,255,255,0.2);
+      overflow:hidden; display:flex; align-items:center; justify-content:center;
+    }
+    .thumb-3 { width:66px; height:86px; right:32px; top:22px; background:linear-gradient(145deg,#1a0533,#4016B8); transform:rotate(-12deg); z-index:1; }
+    .thumb-2 { width:72px; height:92px; right:16px; top:12px; background:linear-gradient(145deg,#4016B8,#7B2CFF); transform:rotate(-5deg); z-index:2; }
+    .thumb-1 { width:78px; height:110px; right:0; top:0; transform:rotate(3deg); box-shadow:0 6px 20px rgba(0,0,0,0.5); z-index:3; overflow:hidden; }
+    .thumb-1 img { width:100%; height:100%; object-fit:cover; border-radius:14px; }
+    .thumb-inner { font-size:22px; }
+    .play-circle {
+      position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      width:32px; height:32px; background:rgba(255,255,255,0.9); margin:auto;
+      border-radius:50%; font-size:12px; color:#4016B8; font-weight:900; z-index:4;
+    }
+
+    .cta-btn-purple {
+      background:linear-gradient(135deg,#7B2CFF,#4016B8);
+      box-shadow:0 4px 20px rgba(123,44,255,0.4);
+    }
+    .cta-btn-purple:hover { box-shadow:0 8px 28px rgba(123,44,255,0.55); }
+
+    .fade-up { opacity:0; transform:translateY(20px); animation:fadeUp 0.5s ease forwards; }
+    .d1{animation-delay:0.05s} .d2{animation-delay:0.12s} .d3{animation-delay:0.2s} .d4{animation-delay:0.3s}
+    @keyframes fadeUp { to{opacity:1;transform:translateY(0)} }
+
+    /* Photos Placeholder & 3 Service Boxes */
+    #photos-placeholder {
+      display:none; position:absolute; inset:0;
+      background:linear-gradient(180deg, #130324 0%, #1a0833 45%, #0b0116 100%);
+      z-index:99; flex-direction:column;
+      overflow-y:auto; overflow-x:hidden;
+      color:#fff; padding:16px 14px 28px;
+      scrollbar-width:none;
+      animation:phSlideIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #photos-placeholder::-webkit-scrollbar { display:none; }
+    #photos-placeholder.show { display:flex; }
+    @keyframes phSlideIn {
+      from { opacity:0; transform:translateY(16px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+
+    .ph-topbar {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:14px; padding-bottom:10px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+    }
+    .ph-back-btn {
+      display:inline-flex; align-items:center; gap:6px;
+      background:rgba(255,255,255,0.1); border:1.5px solid rgba(255,255,255,0.22);
+      color:#fff; font-size:13px; font-weight:700;
+      padding:7px 14px; border-radius:30px;
+      cursor:pointer; font-family:var(--font);
+      transition:background 0.2s, transform 0.15s;
+    }
+    .ph-back-btn:hover { background:rgba(255,255,255,0.2); }
+    .ph-back-btn:active { transform:scale(0.95); }
+    .ph-top-title { font-size:15px; font-weight:800; color:#fff; letter-spacing:0.2px; }
+
+    .ph-hero {
+      text-align:center; margin-bottom:16px; padding:4px 6px;
+    }
+    .ph-badge {
+      display:inline-block; font-size:11px; font-weight:800; text-transform:uppercase;
+      letter-spacing:0.8px; color:#FF5C9E; background:rgba(255,27,115,0.15);
+      border:1px solid rgba(255,27,115,0.3); padding:4px 12px; border-radius:20px;
+      margin-bottom:8px;
+    }
+    .ph-main-heading {
+      font-size:22px; font-weight:900; color:#fff; letter-spacing:-0.4px;
+      margin-bottom:4px;
+    }
+    .ph-main-sub {
+      font-size:12px; color:rgba(255,255,255,0.65); line-height:1.45;
+    }
+
+    .ph-boxes-list {
+      display:flex; flex-direction:column; gap:13px;
+    }
+
+    .ph-service-box {
+      position:relative; overflow:hidden;
+      border-radius:20px; padding:16px 16px 14px;
+      cursor:pointer;
+      transition:transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s, border-color 0.2s;
+      border:1.5px solid rgba(255,255,255,0.12);
+    }
+    .ph-service-box:active { transform:scale(0.98); }
+
+    /* Box 1: Photos & Videos (Purple / Pink Gradient) */
+    .ph-box-all {
+      background:linear-gradient(135deg, rgba(123,44,255,0.32) 0%, rgba(255,27,115,0.2) 100%), #1b0a33;
+      box-shadow:0 8px 24px rgba(123,44,255,0.25);
+    }
+    .ph-box-all:hover {
+      border-color:rgba(255,27,115,0.6);
+      box-shadow:0 12px 30px rgba(123,44,255,0.4);
+    }
+
+    /* Box 2: Only Videos (Crimson / Violet Gradient) */
+    .ph-box-videos {
+      background:linear-gradient(135deg, rgba(255,27,115,0.35) 0%, rgba(184,18,88,0.2) 100%), #26051c;
+      box-shadow:0 8px 24px rgba(255,27,115,0.25);
+    }
+    .ph-box-videos:hover {
+      border-color:rgba(255,92,158,0.6);
+      box-shadow:0 12px 30px rgba(255,27,115,0.4);
+    }
+
+    /* Box 3: Only Photos (Indigo / Cyan Gradient) */
+    .ph-box-photos {
+      background:linear-gradient(135deg, rgba(64,22,184,0.35) 0%, rgba(0,180,216,0.2) 100%), #0c1133;
+      box-shadow:0 8px 24px rgba(64,22,184,0.25);
+    }
+    .ph-box-photos:hover {
+      border-color:rgba(0,180,216,0.6);
+      box-shadow:0 12px 30px rgba(64,22,184,0.4);
+    }
+
+    .ph-box-glow {
+      position:absolute; width:120px; height:120px; border-radius:50%;
+      top:-30px; right:-30px; pointer-events:none;
+      background:radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+    }
+
+    .ph-box-header {
+      display:flex; justify-content:space-between; align-items:center;
+      margin-bottom:10px;
+    }
+    .ph-icon-wrap {
+      width:44px; height:44px; border-radius:14px;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 12px rgba(0,0,0,0.3);
+    }
+    .ph-icon-all   { background:linear-gradient(135deg, #7B2CFF, #FF1B73); }
+    .ph-icon-video { background:linear-gradient(135deg, #FF1B73, #FF5C9E); }
+    .ph-icon-photo { background:linear-gradient(135deg, #4016B8, #00B4D8); }
+
+    .ph-chip {
+      font-size:11px; font-weight:800; padding:4px 10px;
+      border-radius:20px; letter-spacing:0.3px;
+    }
+    .ph-chip-hot   { background:rgba(255,27,115,0.2); color:#FF5C9E; border:1px solid rgba(255,27,115,0.4); }
+    .ph-chip-video { background:rgba(255,92,158,0.2); color:#FFB0D0; border:1px solid rgba(255,92,158,0.4); }
+    .ph-chip-photo { background:rgba(0,180,216,0.2); color:#64DFDF; border:1px solid rgba(0,180,216,0.4); }
+
+    .ph-box-body { margin-bottom:12px; }
+    .ph-box-title {
+      font-size:18px; font-weight:900; color:#fff;
+      letter-spacing:-0.3px; margin-bottom:4px;
+    }
+    .ph-box-desc {
+      font-size:12px; color:rgba(255,255,255,0.72); line-height:1.45;
+    }
+
+    .ph-box-footer {
+      display:flex; justify-content:flex-end; align-items:center;
+      padding-top:10px; border-top:1px solid rgba(255,255,255,0.08);
+    }
+    .ph-box-stat {
+      font-size:11.5px; font-weight:600; color:rgba(255,255,255,0.55);
+    }
+    .ph-box-btn {
+      font-size:12.5px; font-weight:800; color:#fff;
+      display:inline-flex; align-items:center; gap:4px;
+      background:rgba(255,255,255,0.12); padding:5px 12px;
+      border-radius:20px; transition:background 0.2s, transform 0.15s;
+    }
+    .ph-service-box:hover .ph-box-btn {
+      background:rgba(255,255,255,0.25);
+      transform:translateX(2px);
+    }
+
+    /* IN-PAGE MEDIA GALLERY (NO REDIRECT TO INDEX.PHP) */
+    .ph-select-view { display:flex; flex-direction:column; }
+    .ph-select-view.hidden { display:none !important; }
+    .ph-gallery-view { display:none; flex-direction:column; flex:1; animation:phSlideIn 0.25s ease-out; }
+    .ph-gallery-view.active { display:flex; }
+
+    .ph-tabs {
+      display:flex; gap:6px; margin-bottom:12px; overflow-x:auto; scrollbar-width:none;
+    }
+    .ph-tabs::-webkit-scrollbar { display:none; }
+    .ph-tab-btn {
+      background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.14);
+      color:rgba(255,255,255,0.7); font-size:11.5px; font-weight:700;
+      padding:6px 12px; border-radius:20px; cursor:pointer; white-space:nowrap;
+      transition:all 0.2s; font-family:var(--font);
+    }
+    .ph-tab-btn.active {
+      background:linear-gradient(135deg, #7B2CFF, #FF1B73);
+      color:#fff; border-color:transparent;
+      box-shadow:0 2px 10px rgba(255,27,115,0.4);
+    }
+
+    .ph-media-grid {
+      display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; padding-bottom:24px;
+    }
+    .ph-media-card {
+      position:relative; border-radius:14px; overflow:hidden;
+      aspect-ratio:4/5; background:#1a0833; cursor:pointer;
+      box-shadow:0 4px 12px rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08);
+      transition:transform 0.2s, box-shadow 0.2s;
+    }
+    .ph-media-card:hover { transform:translateY(-2px); box-shadow:0 6px 16px rgba(123,44,255,0.3); }
+    .ph-media-card:active { transform:scale(0.97); }
+    .ph-media-card img, .ph-media-card video {
+      width:100%; height:100%; object-fit:cover; display:block;
+    }
+    .ph-media-tag {
+      position:absolute; top:6px; left:6px; z-index:2;
+      background:rgba(0,0,0,0.65); backdrop-filter:blur(4px);
+      color:#fff; font-size:9.5px; font-weight:800;
+      padding:2px 7px; border-radius:10px; display:flex; align-items:center; gap:3px;
+    }
+    .ph-play-icon {
+      position:absolute; inset:0; margin:auto; width:34px; height:34px;
+      border-radius:50%; background:rgba(255,27,115,0.9);
+      display:flex; align-items:center; justify-content:center;
+      color:#fff; font-size:13px; z-index:2; box-shadow:0 4px 12px rgba(0,0,0,0.4);
+    }
+    .ph-media-bottom { display: none !important; }
+
+    /* CATALOGS & ALBUMS STYLING */
+    .ph-catalog-detail-view { display:none; flex-direction:column; flex:1; animation:phSlideIn 0.25s ease-out; }
+    .ph-catalog-detail-view.active { display:flex; }
+
+    .ph-catalogs-grid {
+      display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; padding-bottom:24px;
+    }
+    .ph-catalog-card {
+      position:relative; border-radius:18px; overflow:hidden;
+      aspect-ratio:3/4; background:#1b0833; cursor:pointer;
+      box-shadow:0 6px 18px rgba(0,0,0,0.35); border:1.5px solid rgba(255,255,255,0.12);
+      transition:transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s, border-color 0.2s;
+    }
+    .ph-catalog-card:hover {
+      transform:translateY(-3px) scale(1.02);
+      border-color:rgba(255,27,115,0.55);
+      box-shadow:0 10px 24px rgba(123,44,255,0.4);
+    }
+    .ph-catalog-card:active { transform:scale(0.97); }
+    .ph-catalog-card img {
+      width:100%; height:100%; object-fit:cover; display:block;
+      transition:transform 0.3s;
+    }
+    .ph-catalog-card:hover img { transform:scale(1.05); }
+    .ph-catalog-overlay {
+      position:absolute; inset:0;
+      background:linear-gradient(180deg, rgba(0,0,0,0.25) 0%, transparent 40%, rgba(0,0,0,0.92) 100%);
+      display:flex; flex-direction:column; justify-content:space-between; padding:10px;
+    }
+    .ph-cat-badge {
+      align-self:flex-start;
+      background:rgba(0,0,0,0.65); backdrop-filter:blur(6px);
+      color:#fff; font-size:10px; font-weight:800;
+      padding:3px 8px; border-radius:12px; border:1px solid rgba(255,255,255,0.15);
+    }
+    .ph-cat-badge.hot {
+      background:linear-gradient(135deg, rgba(255,27,115,0.85), rgba(123,44,255,0.85));
+      border:none;
+    }
+    .ph-catalog-info { color:#fff; }
+    .ph-catalog-title {
+      font-size:15px; font-weight:900; letter-spacing:-0.2px; margin-bottom:2px;
+      text-shadow:0 2px 6px rgba(0,0,0,0.8);
+    }
+    .ph-catalog-meta {
+      font-size:10.5px; color:rgba(255,255,255,0.8); font-weight:600;
+      display:flex; gap:6px; align-items:center;
+    }
+    .ph-catalog-empty-cover {
+      width:100%; height:100%; min-height:180px;
+      background:linear-gradient(145deg, rgba(123,44,255,0.18), rgba(255,27,115,0.12));
+      border:1.5px dashed rgba(255,255,255,0.22); border-radius:18px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:8px; padding:16px; text-align:center;
+    }
+    .ph-empty-icon { font-size:36px; opacity:0.8; }
+    .ph-empty-text { font-size:11px; color:rgba(255,255,255,0.65); font-weight:700; }
+
+    /* Modal Player / Lightbox */
+    #mediaModal {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,0.94); z-index:99999;
+      flex-direction:column; align-items:center; justify-content:center;
+      padding:16px;
+    }
+    #mediaModal.show { display:flex; }
+    .modal-close-btn {
+      position:absolute; top:16px; right:16px;
+      background:rgba(255,255,255,0.18); border:none;
+      color:#fff; width:38px; height:38px; border-radius:50%;
+      font-size:22px; cursor:pointer; display:flex;
+      align-items:center; justify-content:center; z-index:10;
+    }
+    .modal-close-btn:hover { background:rgba(255,255,255,0.3); }
+    #modalMediaBox {
+      width:100%; max-width:400px; max-height:80vh;
+      display:flex; align-items:center; justify-content:center;
+    }
+    #modalMediaBox img {
+      max-width:100%; max-height:75vh; border-radius:16px; object-fit:contain;
+    }
+    #modalMediaBox video {
+      width:100%; max-height:75vh; border-radius:16px; background:#000;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fullscreen Media Player / Image Preview Modal -->
+  <div id="mediaModal" role="dialog" aria-modal="true" aria-label="Media Preview">
+    <button class="modal-close-btn" onclick="closeMediaModal()" aria-label="Close">&times;</button>
+    <div id="modalMediaBox"></div>
+  </div>
+
+  <div class="mobile">
+
+    <!-- PHOTOS & VIDEOS SERVICE OVERLAY -->
+    <div id="photos-placeholder" role="dialog" aria-modal="true" aria-label="Photos & Videos Services">
+      
+      <!-- SCREEN 1: 3 SERVICE BOXES -->
+      <div id="phSelectView" class="ph-select-view">
+        <div class="ph-topbar">
+          <button class="ph-back-btn" onclick="closePlaceholder()" aria-label="Go Back">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>Back</span>
+          </button>
+          <div class="ph-top-title">Select Service</div>
+          <div style="width:68px"></div>
+        </div>
+
+        <div class="ph-hero">
+          <div class="ph-badge">✨ Exclusive Media</div>
+          <h2 class="ph-main-heading">Explore Gallery</h2>
+          <p class="ph-main-sub">Select your preferred category to browse photos &amp; exclusive videos</p>
+        </div>
+
+        <div class="ph-boxes-list">
+
+          <!-- 1st BOX: Photos & Videos -->
+          <div class="ph-service-box ph-box-all" onclick="openGalleryCategory('all')" role="button" tabindex="0">
+            <div class="ph-box-glow"></div>
+            <div class="ph-box-header">
+              <div class="ph-icon-wrap ph-icon-all">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="4" />
+                  <path d="M10 9l5 3-5 3V9z" fill="white" />
+                  <circle cx="8" cy="8" r="1.5" fill="white" />
+                </svg>
+              </div>
+              <div class="ph-chip ph-chip-hot">🔥 Popular</div>
+            </div>
+            <div class="ph-box-body">
+              <h3 class="ph-box-title">Photos &amp; Videos</h3>
+              <p class="ph-box-desc">Complete all-in-one collection of photosets, video reels and stories.</p>
+            </div>
+            <div class="ph-box-footer">
+              <span class="ph-box-btn">Explore All &rarr;</span>
+            </div>
+          </div>
+
+          <!-- 2nd BOX: Only Videos -->
+          <div class="ph-service-box ph-box-videos" onclick="openGalleryCategory('videos')" role="button" tabindex="0">
+            <div class="ph-box-glow"></div>
+            <div class="ph-box-header">
+              <div class="ph-icon-wrap ph-icon-video">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="4" width="14" height="16" rx="3" fill="none"/>
+                  <path d="M16 9.5l6-3.5v12l-6-3.5v-5z" fill="white"/>
+                  <circle cx="9" cy="12" r="2.5" fill="white"/>
+                </svg>
+              </div>
+              <div class="ph-chip ph-chip-video">🎬 HD Clips</div>
+            </div>
+            <div class="ph-box-body">
+              <h3 class="ph-box-title">Only Videos</h3>
+              <p class="ph-box-desc">Stream exclusive short videos, private recorded reels &amp; video moments.</p>
+            </div>
+            <div class="ph-box-footer">
+              <span class="ph-box-btn">Watch Videos &rarr;</span>
+            </div>
+          </div>
+
+          <!-- 3rd BOX: Only Photos -->
+          <div class="ph-service-box ph-box-photos" onclick="openGalleryCategory('photos')" role="button" tabindex="0">
+            <div class="ph-box-glow"></div>
+            <div class="ph-box-header">
+              <div class="ph-icon-wrap ph-icon-photo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="4" />
+                  <circle cx="8.5" cy="8.5" r="1.8" fill="white" />
+                  <path d="M21 16l-5-5-6 6-3-3-4 4" stroke-width="2" />
+                </svg>
+              </div>
+              <div class="ph-chip ph-chip-photo">📸 Ultra HD</div>
+            </div>
+            <div class="ph-box-body">
+              <h3 class="ph-box-title">Only Photos</h3>
+              <p class="ph-box-desc">High-definition private photo sets, portraits and profile photo albums.</p>
+            </div>
+            <div class="ph-box-footer">
+              <span class="ph-box-btn">View Photos &rarr;</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- SCREEN 2: CATALOGS LIST (OVERVIEW) -->
+      <div id="phGalleryView" class="ph-gallery-view">
+        <div class="ph-topbar">
+          <button class="ph-back-btn" onclick="backToServiceSelect()" aria-label="Back to Services">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>Back</span>
+          </button>
+          <div class="ph-top-title" id="galleryViewTitle">Catalogs</div>
+          <div style="width:68px"></div>
+        </div>
+
+        <div class="ph-tabs">
+          <button class="ph-tab-btn active" data-tab="all" onclick="filterGalleryTab('all')">Photos &amp; Videos</button>
+          <button class="ph-tab-btn" data-tab="videos" onclick="filterGalleryTab('videos')">Only Videos</button>
+          <button class="ph-tab-btn" data-tab="photos" onclick="filterGalleryTab('photos')">Only Photos</button>
+        </div>
+
+        <div class="ph-catalogs-grid" id="phCatalogsGrid">
+          <!-- Populated dynamically by renderCatalogsList() -->
+        </div>
+      </div>
+
+      <!-- SCREEN 3: INSIDE SELECTED CATALOG (1-1 TO 1-40 MEDIA) -->
+      <div id="phCatalogDetailView" class="ph-catalog-detail-view">
+        <div class="ph-topbar">
+          <button class="ph-back-btn" onclick="backToCatalogsList()" aria-label="Back to Catalogs">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            <span>Catalogs</span>
+          </button>
+          <div class="ph-top-title" id="catalogDetailTitle">Catalog 1</div>
+          <div style="width:68px"></div>
+        </div>
+
+        <div class="ph-tabs">
+          <button class="ph-tab-btn active" data-subtab="all" onclick="filterCatalogItemsTab('all')">All Media</button>
+          <button class="ph-tab-btn" data-subtab="videos" onclick="filterCatalogItemsTab('videos')">Videos Only</button>
+          <button class="ph-tab-btn" data-subtab="photos" onclick="filterCatalogItemsTab('photos')">Photos Only</button>
+        </div>
+
+        <div class="ph-media-grid" id="phCatalogMediaGrid">
+          <!-- Populated dynamically with items (1-1 to 1-40) -->
+        </div>
+      </div>
+
+    </div>
+
+    <div class="phone-content">
+
+      <div class="header fade-up d2">
+        <div class="crown-wrap"></div>
+        <div class="header-text">
+          <div class="app-name">WA <span>Meet</span></div>
+          <div class="app-subtitle">Choose what you want to explore</div>
+        </div>
+        <div class="crown-wrap" style="text-align:right">
+          <span class="crown">&#x1F451;</span>
+        </div>
+      </div>
+
+      <!-- CARD 1: LIVE CHAT -->
+      <div class="card-live fade-up d3" id="liveChatCard" onclick="goToChat()" role="button" tabindex="0" aria-label="Open Live Chat">
+        <div class="card-glow card-glow-1"></div>
+        <div class="card-glow card-glow-2"></div>
+
+        <img src="video call girl.png" alt="" class="card-girl-img">
+
+        <div class="card-live-text">
+          <div class="live-badge"><div class="live-dot"></div> Live Now</div>
+          <div class="card-title">Live Chat</div>
+          <div class="card-desc">Live video call, voice call and chat with real people</div>
+
+          <div class="service-icons">
+            <div class="svc-item">
+              <button class="svc-icon-btn red" onclick="event.stopPropagation();goToChat()" aria-label="Video Call">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <rect x="2" y="6" width="13" height="12" rx="2.5" fill="white"/>
+                  <path d="M15 10.5L21 7.5V16.5L15 13.5V10.5Z" fill="white"/>
+                </svg>
+              </button>
+              <span class="svc-label">Video Call</span>
+            </div>
+            <div class="svc-item">
+              <button class="svc-icon-btn green" onclick="event.stopPropagation();goToChat()" aria-label="Voice Call">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M6.62 10.79a15.15 15.15 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.47 11.47 0 003.59.57 1 1 0 011 1V21a1 1 0 01-1 1A17 17 0 013 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.59a1 1 0 01-.25 1.01L6.62 10.79z" fill="white"/>
+                </svg>
+              </button>
+              <span class="svc-label">Voice Call</span>
+            </div>
+            <div class="svc-item">
+              <button class="svc-icon-btn blue" onclick="event.stopPropagation();goToChat()" aria-label="Live Chat">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path d="M20 2H4a2 2 0 00-2 2v18l4-4h14a2 2 0 002-2V4a2 2 0 00-2-2z" fill="white"/>
+                  <line x1="7" y1="9" x2="17" y2="9" stroke="rgba(33,150,243,0.9)" stroke-width="1.8" stroke-linecap="round"/>
+                  <line x1="7" y1="13" x2="13" y2="13" stroke="rgba(33,150,243,0.9)" stroke-width="1.8" stroke-linecap="round"/>
+                </svg>
+              </button>
+              <span class="svc-label">Live Chat</span>
+            </div>
+          </div>
+
+          <a class="cta-btn" href="WA%20Meet.html" id="startNowBtn" onclick="event.stopPropagation()">
+            Start Now <i class="cta-arrow">&#8594;</i>
+          </a>
+        </div>
+      </div>
+
+      <!-- CARD 2: PHOTOS & VIDEOS -->
+      <div class="card-photos fade-up d4" id="photosCard" onclick="openPhotos()" role="button" tabindex="0" aria-label="Open Photos and Videos Service">
+        <div class="cp-glow1"></div>
+        <div class="cp-glow2"></div>
+
+        <div class="photos-top">
+          <div class="photos-text">
+            <div class="photos-icon">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="5" width="18" height="14" rx="2.5" stroke="white" stroke-width="1.8" fill="none"/>
+                <rect x="5" y="3" width="14" height="14" rx="2" stroke="rgba(255,255,255,0.35)" stroke-width="1.4" fill="none"/>
+                <circle cx="8.5" cy="10.5" r="1.8" fill="white"/>
+                <path d="M3 15l4-3.5 3.5 3 3-2.5 4 4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </svg>
+            </div>
+            <div class="card-title">Photos &amp; Videos<br>Service</div>
+            <div class="card-desc">Explore exclusive photos and videos from real people</div>
+          </div>
+          <div class="thumb-stack">
+            <div class="thumb thumb-3"><div class="thumb-inner">&#x1F5BC;</div></div>
+            <div class="thumb thumb-2"><div class="thumb-inner">&#x1F3AC;</div></div>
+            <div class="thumb thumb-1">
+              <img src="text.png" alt="Photos preview">
+              <div class="play-circle">&#x25B6;</div>
+            </div>
+          </div>
+        </div>
+
+        <a class="cta-btn cta-btn-purple" href="javascript:void(0)" onclick="event.stopPropagation();openPhotos()">
+          Explore Now <i class="cta-arrow">&#8594;</i>
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      var catalogsData = [];
+      var activeFilter = 'all';
+      var selectedCatalog = null;
+
+      window.goToChat = function(){ window.location.href = 'WA%20Meet.html'; };
+      
+      window.openPhotos = function(){
+        document.getElementById('phSelectView').classList.remove('hidden');
+        document.getElementById('phGalleryView').classList.remove('active');
+        document.getElementById('phCatalogDetailView').classList.remove('active');
+        document.getElementById('photos-placeholder').classList.add('show');
+      };
+
+      window.closePlaceholder = function(){
+        document.getElementById('photos-placeholder').classList.remove('show');
+      };
+
+      var currentFolderName = 'photo and video 2';
+
+      function fetchCatalogs(category, callback){
+        var catParam = category || activeFilter || 'all';
+        fetch('catalogs-' + encodeURIComponent(catParam) + '.json')
+          .then(function(res){ return res.json(); })
+          .then(function(data){
+            if (data && data.catalogs) {
+              catalogsData = data.catalogs;
+              currentFolderName = data.folder;
+            } else if (Array.isArray(data)) {
+              catalogsData = data;
+            } else {
+              catalogsData = [];
+            }
+            if(callback) callback(catalogsData);
+          })
+          .catch(function(err){
+            console.warn('API error', err);
+            if(callback) callback(catalogsData);
+          });
+      }
+
+      window.openGalleryCategory = function(cat){
+        activeFilter = cat || 'all';
+        document.getElementById('phSelectView').classList.add('hidden');
+        document.getElementById('phCatalogDetailView').classList.remove('active');
+        document.getElementById('phGalleryView').classList.add('active');
+
+        document.querySelectorAll('#phGalleryView .ph-tab-btn').forEach(function(b){
+          b.classList.toggle('active', b.getAttribute('data-tab') === activeFilter);
+        });
+
+        var title = (activeFilter === 'videos') ? 'Only Videos' : ((activeFilter === 'photos') ? 'Only Photos' : 'Photos & Videos');
+        document.getElementById('galleryViewTitle').textContent = title;
+
+        fetchCatalogs(activeFilter, function(){
+          renderCatalogsList();
+        });
+      };
+
+      window.backToServiceSelect = function(){
+        document.getElementById('phGalleryView').classList.remove('active');
+        document.getElementById('phCatalogDetailView').classList.remove('active');
+        document.getElementById('phSelectView').classList.remove('hidden');
+      };
+
+      window.filterGalleryTab = function(tab){
+        activeFilter = tab;
+        document.querySelectorAll('#phGalleryView .ph-tab-btn').forEach(function(b){
+          b.classList.toggle('active', b.getAttribute('data-tab') === tab);
+        });
+        var title = (tab === 'videos') ? 'Only Videos' : ((tab === 'photos') ? 'Only Photos' : 'Photos & Videos');
+        document.getElementById('galleryViewTitle').textContent = title;
+
+        fetchCatalogs(activeFilter, function(){
+          renderCatalogsList();
+        });
+      };
+
+      function renderCatalogsList(){
+        var container = document.getElementById('phCatalogsGrid');
+        container.innerHTML = '';
+
+        if (!catalogsData || catalogsData.length === 0) {
+          container.innerHTML = '<div style="grid-column:span 2;text-align:center;padding:30px 10px;color:rgba(255,255,255,0.6);font-size:13px;">Folder <b>"' + currentFolderName + '"</b> is currently empty.<br>Add your photos or videos here to see them!</div>';
+          return;
+        }
+
+        catalogsData.forEach(function(cat){
+          var card = document.createElement('div');
+          card.className = 'ph-catalog-card';
+          card.onclick = function(){ openCatalogDetail(cat.id); };
+
+          var hasMedia = (cat.totalPhotos > 0 || cat.totalVideos > 0);
+          var totalBadge = '';
+          if (hasMedia) {
+            totalBadge = (activeFilter === 'videos') ? (cat.totalVideos + ' Videos') : ((activeFilter === 'photos') ? (cat.totalPhotos + ' Photos') : (cat.totalPhotos + ' 📸 • ' + cat.totalVideos + ' 🎬'));
+          } else {
+            totalBadge = 'Empty Slot';
+          }
+
+          var coverHtml = (cat.cover && cat.cover !== '')
+            ? '<img src="' + cat.cover + '" alt="' + cat.title + '" onerror="this.style.display=\'none\'">'
+            : '<div class="ph-catalog-empty-cover"><div class="ph-empty-icon">📁</div><div class="ph-empty-text">Empty Folder</div></div>';
+
+          var ctaText = hasMedia ? 'Open Catalog &rarr;' : 'Add Media &rarr;';
+
+          card.innerHTML = 
+            coverHtml +
+            '<div class="ph-catalog-overlay">' +
+              '<div class="ph-cat-badge ' + (hasMedia ? 'hot' : '') + '">📁 ' + cat.title + '</div>' +
+              '<div class="ph-catalog-info">' +
+                '<div class="ph-catalog-title">' + cat.title + '</div>' +
+                '<div class="ph-catalog-meta">' + totalBadge + '</div>' +
+                '<div class="ph-catalog-cta" style="margin-top:6px;display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:800;color:' + (hasMedia ? '#FF5C9E' : 'rgba(255,255,255,0.6)') + '">' + ctaText + '</div>' +
+              '</div>' +
+            '</div>';
+
+          container.appendChild(card);
+        });
+      }
+
+      window.openCatalogDetail = function(catalogId){
+        var cat = catalogsData.find(function(c){ return String(c.id) === String(catalogId); });
+        if(!cat) return;
+        selectedCatalog = cat;
+
+        document.getElementById('phGalleryView').classList.remove('active');
+        document.getElementById('phCatalogDetailView').classList.add('active');
+        document.getElementById('catalogDetailTitle').textContent = cat.title;
+
+        var initialSubtab = (activeFilter === 'videos' || activeFilter === 'photos') ? activeFilter : 'all';
+        filterCatalogItemsTab(initialSubtab);
+      };
+
+      window.backToCatalogsList = function(){
+        document.getElementById('phCatalogDetailView').classList.remove('active');
+        document.getElementById('phGalleryView').classList.add('active');
+      };
+
+      window.filterCatalogItemsTab = function(subtab){
+        if(!selectedCatalog) return;
+        document.querySelectorAll('#phCatalogDetailView .ph-tab-btn').forEach(function(b){
+          b.classList.toggle('active', b.getAttribute('data-subtab') === subtab);
+        });
+
+        var grid = document.getElementById('phCatalogMediaGrid');
+        grid.innerHTML = '';
+
+        var items = [];
+        if (subtab === 'all') {
+          items = selectedCatalog.photos.concat(selectedCatalog.videos);
+        } else if (subtab === 'videos') {
+          items = selectedCatalog.videos;
+        } else if (subtab === 'photos') {
+          items = selectedCatalog.photos;
+        }
+
+        if (items.length === 0) {
+          grid.innerHTML = '<div style="grid-column:span 2;text-align:center;padding:30px 10px;color:rgba(255,255,255,0.6);font-size:13px;">No media items in this section.</div>';
+          return;
+        }
+
+        items.forEach(function(item){
+          var card = document.createElement('div');
+          card.className = 'ph-media-card';
+          card.setAttribute('data-type', item.type);
+
+          if (item.type === 'video') {
+            card.onclick = function(){ playVideo(item.url, item.name); };
+            card.innerHTML = 
+              '<div class="ph-media-tag">🎬 Video</div>' +
+              '<div class="ph-play-icon">&#x25B6;</div>' +
+              '<video src="' + item.url + '#t=0.5" preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video>';
+          } else {
+            card.onclick = function(){ viewPhoto(item.url, item.name); };
+            card.innerHTML = 
+              '<div class="ph-media-tag">📸 Photo</div>' +
+              '<img src="' + item.url + '" alt="Photo" loading="lazy">';
+          }
+
+          grid.appendChild(card);
+        });
+      };
+
+      window.playVideo = function(src, title){
+        var box = document.getElementById('modalMediaBox');
+        box.innerHTML = '<video src="' + src + '" controls autoplay playsinline style="max-height:75vh;border-radius:14px;background:#000;width:100%"></video>';
+        document.getElementById('mediaModal').classList.add('show');
+      };
+
+      window.viewPhoto = function(src, title){
+        var box = document.getElementById('modalMediaBox');
+        box.innerHTML = '<img src="' + src + '" alt="' + (title||'') + '" style="max-height:75vh;border-radius:14px;object-fit:contain;max-width:100%">';
+        document.getElementById('mediaModal').classList.add('show');
+      };
+
+      window.closeMediaModal = function(){
+        var modal = document.getElementById('mediaModal');
+        modal.classList.remove('show');
+        var box = document.getElementById('modalMediaBox');
+        box.innerHTML = '';
+      };
+
+      document.getElementById('liveChatCard').addEventListener('keydown', function(e){
+        if(e.key==='Enter'||e.key===' '){ e.preventDefault(); goToChat(); }
+      });
+      document.getElementById('photosCard').addEventListener('keydown', function(e){
+        if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openPhotos(); }
+      });
+
+      document.querySelectorAll('.ph-service-box').forEach(function(box){
+        box.addEventListener('keydown', function(e){
+          if(e.key==='Enter'||e.key===' '){
+            e.preventDefault();
+            this.click();
+          }
+        });
+      });
+
+      // Preload catalogs on page load
+      fetchCatalogs();
+    })();
+  </script>
+</body>
+</html>

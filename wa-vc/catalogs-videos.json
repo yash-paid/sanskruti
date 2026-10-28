@@ -1,0 +1,109 @@
+{
+  "category": "videos",
+  "folder": "videos 2",
+  "catalogs": [
+    {
+      "id": "1",
+      "title": "catalog 1",
+      "cover": "videos%202/catalog%201/catelog%201-1.jpg",
+      "photos": [],
+      "videos": [
+        {
+          "name": "1-1",
+          "num": 1,
+          "url": "videos%202/catalog%201/1-1.mp4",
+          "type": "video"
+        },
+        {
+          "name": "1-2",
+          "num": 1,
+          "url": "videos%202/catalog%201/1-2.mp4",
+          "type": "video"
+        }
+      ],
+      "totalPhotos": 0,
+      "totalVideos": 2
+    },
+    {
+      "id": "2",
+      "title": "catalog 2",
+      "cover": "",
+      "photos": [],
+      "videos": [],
+      "totalPhotos": 0,
+      "totalVideos": 0
+    },
+    {
+      "id": "3",
+      "title": "catalog 3",
+      "cover": "",
+      "photos": [],
+      "videos": [],
+      "totalPhotos": 0,
+      "totalVideos": 0
+    },
+    {
+      "id": "4",
+      "title": "catalog 4",
+      "cover": "",
+      "photos": [],
+      "videos": [],
+      "totalPhotos": 0,
+      "totalVideos": 0
+    },
+    {
+      "id": "5",
+      "title": "catalog 5",
+      "cover": "",
+      "photos": [],
+      "videos": [],
+      "totalPhotos": 0,
+      "totalVideos": 0
+    },
+    {
+      "id": "6",
+      "title": "catalog 6",
+      "cover": "",
+      "photos": [],
+      "videos": [],
+      "totalPhotos": 0,
+      "totalVideos": 0
+    },
+    {
+      "id": "7",
+      "title": "catalog 7",
+      "cover": "",
+      "photos": [],
+      "videos": [],
+      "totalPhotos": 0,
+      "totalVideos": 0
+    },
+    {
+      "id": "8",
+      "title": "catalog 8",
+      "cover": "",
+      "photos": [],
+      "videos": [],
+      "totalPhotos": 0,
+      "totalVideos": 0
+    },
+    {
+      "id": "9",
+      "title": "catalog 9",
+      "cover": "",
+      "photos": [],
+      "videos": [],
+      "totalPhotos": 0,
+      "totalVideos": 0
+    },
+    {
+      "id": "10",
+      "title": "catalog 10",
+      "cover": "",
+      "photos": [],
+      "videos": [],
+      "totalPhotos": 0,
+      "totalVideos": 0
+    }
+  ]
+}

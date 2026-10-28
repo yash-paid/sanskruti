@@ -1,0 +1,16 @@
+{
+  "name": "sanskruti-ebooks",
+  "version": "1.0.0",
+  "description": "Sanskruti eBooks - PayU India Hosted Checkout Integration",
+  "main": "js.js",
+  "scripts": {
+    "test": "node test-payu-local.js"
+  },
+  "keywords": [
+    "payu",
+    "ebooks",
+    "netlify-functions"
+  ],
+  "author": "Sanskruti eBooks",
+  "license": "ISC"
+}

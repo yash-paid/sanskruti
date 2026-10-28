@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>About Us | Sanskruti eBooks – India's Digital Wellness Library</title>
+  <meta name="description"
+    content="Learn about Sanskruti eBooks – our mission, the team behind India's trusted digital library for health, motivation, and Ayurvedic wisdom eBooks." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#07090e" />
+  <link rel="canonical" href="https://sanskrutiservice.in/about.html" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Sanskruti eBooks" />
+  <meta property="og:title" content="About Us | Sanskruti eBooks" />
+  <meta property="og:description"
+    content="Discover the story behind Sanskruti eBooks – India's digital library for wellness, motivation, and Ayurvedic wisdom." />
+  <meta property="og:url" content="https://sanskrutiservice.in/about.html" />
+  <meta property="og:locale" content="en_IN" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20'></path><path d='M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'></path></svg>" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .page-hero {
+      padding: 6rem 0 4rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .page-hero-tag {
+      display: inline-block;
+      background: rgba(99,102,241,0.15);
+      color: #a5b4fc;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.35rem 1rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1.2rem;
+      border: 1px solid rgba(99,102,241,0.3);
+    }
+    .page-hero-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 1.2rem;
+      letter-spacing: -0.5px;
+    }
+    .page-hero-subtitle {
+      font-size: 1.05rem;
+      color: #94a3b8;
+      max-width: 620px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .about-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 1.5rem 5rem;
+    }
+    .about-section {
+      margin-bottom: 3.5rem;
+    }
+    .about-section-label {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #6366f1;
+      margin-bottom: 0.6rem;
+    }
+    .about-section h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1.2rem;
+      line-height: 1.3;
+    }
+    .about-section p {
+      color: #94a3b8;
+      font-size: 1rem;
+      line-height: 1.8;
+      margin-bottom: 1rem;
+    }
+    .about-section p strong {
+      color: #e2e8f0;
+    }
+    .about-divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      margin: 3rem 0;
+    }
+    .values-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .value-card {
+      background: rgba(20,27,45,0.7);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 1.8rem 1.5rem;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .value-card:hover {
+      border-color: rgba(99,102,241,0.4);
+      transform: translateY(-4px);
+    }
+    .value-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    .value-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+    .value-card p {
+      font-size: 0.9rem;
+      color: #94a3b8;
+      line-height: 1.65;
+      margin: 0;
+    }
+    .business-info-box {
+      background: rgba(20,27,45,0.8);
+      border: 1px solid rgba(99,102,241,0.25);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-top: 2rem;
+    }
+    .business-info-box h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .biz-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem 2rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.92rem;
+    }
+    .biz-row:last-child { border-bottom: none; }
+    .biz-label {
+      color: #64748b;
+      font-weight: 600;
+      min-width: 180px;
+    }
+    .biz-value {
+      color: #e2e8f0;
+    }
+    .biz-placeholder {
+      color: #f59e0b;
+      font-style: italic;
+    }
+    .contact-cta-strip {
+      background: linear-gradient(135deg, rgba(99,102,241,0.15) 0%, rgba(16,185,129,0.1) 100%);
+      border: 1px solid rgba(99,102,241,0.25);
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .contact-cta-strip h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.6rem;
+    }
+    .contact-cta-strip p {
+      color: #94a3b8;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+    }
+    .cta-btn-group {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    @media (max-width: 600px) {
+      .values-grid { grid-template-columns: 1fr; }
+      .biz-row { flex-direction: column; gap: 0.2rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside class="announcement-bar" aria-label="Announcement">
+    <span class="announcement-badge">Mega Sale</span>
+    <span>Special Offer: Flat 75% OFF + Use code <strong style="text-decoration: underline;">SANSKRUTI50</strong> for extra 50% OFF in cart!</span>
+  </aside>
+
+  <header>
+    <div class="container nav-inner">
+      <a href="index.html" class="logo" aria-label="Sanskruti eBooks Homepage">
+        <div class="logo-icon">📚</div>
+        <div>
+          <span class="logo-text">Sanskruti</span><span style="color: #6366f1; font-weight: 300;">eBooks</span>
+          <span class="logo-tag">संस्कृति</span>
+        </div>
+      </a>
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a href="index.html#catalog">eBooks Catalog</a></li>
+          <li><a href="index.html#bundles">Value Bundles</a></li>
+          <li><a href="index.html#why-us">Why Sanskruti</a></li>
+          <li><a href="index.html#reviews">Reader Reviews</a></li>
+          <li><a href="index.html#faq">FAQ</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions">
+        <a href="https://wa.me/919238861171?text=Hello%20Sanskruti%20eBooks,%20I%20have%20an%20inquiry." target="_blank" class="whatsapp-nav-btn" aria-label="WhatsApp Support">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          <span>WhatsApp Help</span>
+        </a>
+        <button class="mobile-menu-btn" onclick="document.getElementById('mobileMenuOverlay').classList.toggle('active')" aria-label="Toggle Navigation Menu">☰</button>
+      </div>
+    </div>
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+      <a href="index.html#catalog" onclick="document.getElementById('mobileMenuOverlay').classList.remove('active')">📚 All eBooks Catalog</a>
+      <a href="index.html#bundles" onclick="document.getElementById('mobileMenuOverlay').classList.remove('active')">🚀 Transformation Bundles</a>
+      <a href="index.html#why-us" onclick="document.getElementById('mobileMenuOverlay').classList.remove('active')">✨ Why Choose Sanskruti</a>
+      <a href="about.html">🏢 About Us</a>
+      <a href="contact.html">📞 Contact Us</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <span class="page-hero-tag">Our Story</span>
+        <h1 class="page-hero-title">About Sanskruti eBooks</h1>
+        <p class="page-hero-subtitle">
+          India's dedicated digital library for self-discipline, mental resilience, holistic health, and Ayurvedic wisdom — delivered instantly to your device.
+        </p>
+      </div>
+    </section>
+
+    <div class="about-content">
+
+      <div class="about-section">
+        <span class="about-section-label">Who We Are</span>
+        <h2>A Digital Library Born from a Passion for Knowledge</h2>
+        <p>
+          <strong>Sanskruti eBooks</strong> is an Indian digital publishing and e-commerce venture dedicated to creating and distributing high-quality eBooks in the fields of self-improvement, mental health, holistic wellness, Ayurveda, fitness, and personal growth.
+        </p>
+        <p>
+          We believe that life-transforming knowledge should be affordable, accessible, and instantly available to every Indian — whether you live in a metro city or a smaller town. That is why all our titles are offered as instant digital downloads at prices far below conventional print books, with full support in both Hindi and English.
+        </p>
+        <p>
+          Our eBooks are carefully crafted to include actionable protocols, real science-backed insights, and practical wisdom drawn from modern neuroscience and traditional Indian systems like Ayurveda and Yoga. We exist to serve the millions of Indians who are hungry for genuine, transformative knowledge at an accessible price.
+        </p>
+      </div>
+
+      <hr class="about-divider" />
+
+      <div class="about-section">
+        <span class="about-section-label">What We Do</span>
+        <h2>Our Business &amp; Services</h2>
+        <p>Sanskruti eBooks is an <strong>online digital goods retailer</strong> operating in the following categories:</p>
+        <div class="values-grid">
+          <div class="value-card">
+            <div class="value-icon">🔥</div>
+            <h3>Motivational &amp; Mindset eBooks</h3>
+            <p>Self-discipline guides, anti-procrastination systems, morning routines, habit stacking, and mental toughness frameworks.</p>
+          </div>
+          <div class="value-card">
+            <div class="value-icon">🌿</div>
+            <h3>Health, Gut &amp; Ayurveda eBooks</h3>
+            <p>Gut restoration protocols, hormonal balance guides, traditional Ayurvedic dietary wisdom, and natural healing resources.</p>
+          </div>
+          <div class="value-card">
+            <div class="value-icon">🧘</div>
+            <h3>Fitness, Breath &amp; Longevity eBooks</h3>
+            <p>Pranayama mastery, yoga for modern life, fasting science, and evidence-based longevity practices rooted in Indian tradition.</p>
+          </div>
+          <div class="value-card">
+            <div class="value-icon">📦</div>
+            <h3>Curated Value Bundles</h3>
+            <p>Multi-book transformation packs bundling complementary titles at up to 93% off the individual retail price.</p>
+          </div>
+        </div>
+        <p style="margin-top: 1.5rem;">
+          All purchases are delivered as <strong>PDF and ePub digital files</strong> — directly on-screen after payment, and additionally sent to your WhatsApp number within 1–2 minutes. We do not sell or ship any physical products.
+        </p>
+      </div>
+
+      <hr class="about-divider" />
+
+      <div class="about-section">
+        <span class="about-section-label">Our Core Values</span>
+        <h2>What We Stand For</h2>
+        <div class="values-grid">
+          <div class="value-card">
+            <div class="value-icon">✅</div>
+            <h3>Authenticity</h3>
+            <p>We never publish content designed to mislead. Every claim in our books is grounded in established science or traditional practice.</p>
+          </div>
+          <div class="value-card">
+            <div class="value-icon">🔒</div>
+            <h3>Privacy First</h3>
+            <p>We collect only what is necessary to serve you. Your personal data is never sold or shared without your consent.</p>
+          </div>
+          <div class="value-card">
+            <div class="value-icon">💰</div>
+            <h3>Affordability</h3>
+            <p>Premium knowledge should not be gated behind high price tags. We price our books to be accessible to every Indian reader.</p>
+          </div>
+          <div class="value-card">
+            <div class="value-icon">💬</div>
+            <h3>Responsive Support</h3>
+            <p>Our WhatsApp support is available 7 days a week to help with downloads, questions, and any purchase concerns.</p>
+          </div>
+        </div>
+      </div>
+
+      <hr class="about-divider" />
+
+      <div class="about-section">
+        <span class="about-section-label">Legal &amp; Business Information</span>
+        <h2>Business Details</h2>
+        <p>The following information is provided for transparency and payment gateway compliance.</p>
+        <div class="business-info-box">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+            Registered Business Information
+          </h3>
+          <div class="biz-row">
+            <span class="biz-label">Legal Business Name</span>
+            <span class="biz-value">SANSKRUTI SERVICE</span>
+          </div>
+          <div class="biz-row">
+            <span class="biz-label">Business Brand Name</span>
+            <span class="biz-value">Sanskruti eBooks</span>
+          </div>
+          <div class="biz-row">
+            <span class="biz-label">Business Type</span>
+            <span class="biz-value">Online Digital Goods Retailer — eBooks &amp; Digital Publications</span>
+          </div>
+          <div class="biz-row">
+            <span class="biz-label">Business Category</span>
+            <span class="biz-value">Digital Content / E-Publishing / Online Education &amp; Self-Improvement</span>
+          </div>
+          <div class="biz-row">
+            <span class="biz-label">Registered Address</span>
+            <span class="biz-value">A-24, Patel Nagar, Bhopal, Madhya Pradesh - 462022, India</span>
+          </div>
+          <div class="biz-row">
+            <span class="biz-label">WhatsApp Support</span>
+            <span class="biz-value">+91 92388 61171</span>
+          </div>
+          <div class="biz-row">
+            <span class="biz-label">Support Email</span>
+            <span class="biz-value"><a href="mailto:paid32041@gmail.com" style="color: #a5b4fc; text-decoration: none;">paid32041@gmail.com</a></span>
+          </div>
+          <div class="biz-row">
+            <span class="biz-label">Website</span>
+            <span class="biz-value">https://sanskrutiservice.in</span>
+          </div>
+          <div class="biz-row">
+            <span class="biz-label">Country of Operation</span>
+            <span class="biz-value">India</span>
+          </div>
+          <div class="biz-row">
+            <span class="biz-label">Currency Accepted</span>
+            <span class="biz-value">Indian Rupee (INR ₹)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-cta-strip">
+        <h3>Have a Question or Need Help?</h3>
+        <p>Our support team is available 7 days a week. Reach out anytime on WhatsApp or via our Contact page.</p>
+        <div class="cta-btn-group">
+          <a href="https://wa.me/919238861171?text=Hello%20Sanskruti%20eBooks,%20I%20have%20a%20query." target="_blank" class="btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem;">
+            💬 Chat on WhatsApp
+          </a>
+          <a href="contact.html" class="btn-secondary" style="text-decoration:none; display:inline-flex; align-items:center; gap:0.5rem;">
+            📞 Contact Us Page
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <div class="logo-icon">📚</div>
+            <div>
+              <span class="logo-text">Sanskruti</span><span style="color: #6366f1; font-weight: 300;">eBooks</span>
+            </div>
+          </div>
+          <p>Sanskruti eBooks is dedicated to awakening self-discipline, mental calmness, vibrant physical health, and longevity through accessible, high-impact digital literature.</p>
+          <div style="margin-top: 1.2rem; display: flex; gap: 0.8rem; font-size: 0.85rem; color: var(--text-sub);">
+            <span>✓ Genuine Indian Heritage</span><span>•</span><span>✓ Modern Science</span>
+          </div>
+        </div>
+        <div>
+          <h4 class="footer-heading">Categories</h4>
+          <ul class="footer-links">
+            <li><a href="index.html#catalog">All eBooks</a></li>
+            <li><a href="index.html#catalog">Motivational &amp; Mindset</a></li>
+            <li><a href="index.html#catalog">Gut Health &amp; Nutrition</a></li>
+            <li><a href="index.html#catalog">Ayurvedic &amp; Fitness</a></li>
+            <li><a href="index.html#bundles">Transformation Bundles</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-heading">Legal &amp; Policies</h4>
+          <ul class="footer-links">
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+            <li><a href="terms-and-conditions.html">Terms &amp; Conditions</a></li>
+            <li><a href="shipping-return-policy.html">Shipping &amp; Return Policy</a></li>
+            <li><a href="refund-cancellation-policy.html">Refund &amp; Cancellation Policy</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-heading">Support &amp; WhatsApp Help</h4>
+          <div class="footer-help-box">
+            <p>Need guidance on which book to choose or have a download query?</p>
+            <a href="https://wa.me/919238861171?text=Hello%20Sanskruti%20Support,%20I%20need%20help%20with%20an%20eBook." target="_blank" class="footer-whatsapp-link">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+              <span>Chat with Support</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>© 2026 Sanskruti eBooks. All Rights Reserved.</div>
+        <div style="display: flex; gap: 1.2rem; flex-wrap: wrap;">
+          <a href="about.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">About Us</a>
+          <a href="privacy-policy.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Privacy Policy</a>
+          <a href="terms-and-conditions.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Terms &amp; Conditions</a>
+          <a href="shipping-return-policy.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Shipping Policy</a>
+          <a href="refund-cancellation-policy.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Refund Policy</a>
+          <a href="contact.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/919238861171?text=Hello%20Sanskruti%20eBooks,%20I%20want%20to%20order%20an%20eBook!" target="_blank" class="floating-whatsapp" aria-label="Chat on WhatsApp">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+    <span>Chat on WhatsApp</span>
+  </a>
+
+</body>
+</html>

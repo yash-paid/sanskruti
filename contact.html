@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact Us | Sanskruti eBooks – Customer Support</title>
+  <meta name="description" content="Contact Sanskruti eBooks for support, download help, refunds, or any queries. Reach us on WhatsApp +91 92388 61171. Available 7 days a week." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#07090e" />
+  <link rel="canonical" href="https://sanskrutiservice.in/contact.html" />
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20'></path><path d='M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'></path></svg>" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .page-hero {
+      padding: 6rem 0 4rem;
+      text-align: center;
+      position: relative;
+    }
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(56,189,248,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .page-hero-tag {
+      display: inline-block;
+      background: rgba(56,189,248,0.12);
+      color: #7dd3fc;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.35rem 1rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1.2rem;
+      border: 1px solid rgba(56,189,248,0.3);
+    }
+    .page-hero-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .page-hero-subtitle {
+      font-size: 1.05rem;
+      color: #94a3b8;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    .contact-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem 5rem;
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 3rem;
+      align-items: start;
+    }
+    .contact-info-col {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .contact-card {
+      background: rgba(20,27,45,0.7);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px;
+      padding: 1.8rem;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .contact-card:hover {
+      border-color: rgba(99,102,241,0.35);
+      transform: translateY(-3px);
+    }
+    .contact-card.whatsapp-card {
+      background: linear-gradient(135deg, rgba(37,211,102,0.1) 0%, rgba(20,27,45,0.7) 100%);
+      border-color: rgba(37,211,102,0.3);
+    }
+    .contact-card.whatsapp-card:hover {
+      border-color: rgba(37,211,102,0.5);
+    }
+    .contact-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+    }
+    .contact-card-icon.green { background: rgba(37,211,102,0.15); }
+    .contact-card-icon.indigo { background: rgba(99,102,241,0.15); }
+    .contact-card-icon.gold { background: rgba(245,158,11,0.15); }
+    .contact-card-icon.cyan { background: rgba(56,189,248,0.15); }
+    .contact-card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.4rem;
+    }
+    .contact-card .contact-value {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 0.5rem;
+    }
+    .contact-card .contact-desc {
+      font-size: 0.88rem;
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    .contact-card .contact-badge {
+      display: inline-block;
+      background: rgba(16,185,129,0.12);
+      color: #6ee7b7;
+      border: 1px solid rgba(16,185,129,0.3);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.2rem 0.7rem;
+      border-radius: 9999px;
+      margin-bottom: 1rem;
+    }
+    .contact-form-col {
+      background: rgba(20,27,45,0.7);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 20px;
+      padding: 2.5rem;
+    }
+    .contact-form-col h2 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+    .contact-form-col p {
+      color: #94a3b8;
+      font-size: 0.92rem;
+      margin-bottom: 2rem;
+    }
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+    }
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+    .form-field label {
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: #94a3b8;
+    }
+    .form-field input,
+    .form-field select,
+    .form-field textarea {
+      background: rgba(8,11,18,0.9);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 0.85rem 1.1rem;
+      color: #fff;
+      font-size: 0.95rem;
+      font-family: var(--font-main);
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+      width: 100%;
+    }
+    .form-field input:focus,
+    .form-field select:focus,
+    .form-field textarea:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    }
+    .form-field select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 2.5rem;
+    }
+    .form-field textarea {
+      min-height: 130px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+    .form-submit-btn {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: #fff;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-family: var(--font-main);
+    }
+    .form-submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(99,102,241,0.45);
+    }
+    .form-note {
+      font-size: 0.82rem;
+      color: #64748b;
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+    .success-msg {
+      display: none;
+      background: rgba(16,185,129,0.1);
+      border: 1px solid rgba(16,185,129,0.3);
+      border-radius: 10px;
+      padding: 1.2rem;
+      color: #6ee7b7;
+      font-size: 0.95rem;
+      text-align: center;
+      margin-top: 1rem;
+    }
+    .hours-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+      margin-top: 0.8rem;
+    }
+    .hours-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.88rem;
+    }
+    .hours-day { color: #64748b; }
+    .hours-time { color: #e2e8f0; font-weight: 600; }
+    .faq-quick {
+      margin-top: 3rem;
+    }
+    .faq-quick h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+    .faq-quick p {
+      color: #94a3b8;
+      margin-bottom: 1.5rem;
+    }
+    .mini-faq-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.2rem;
+    }
+    .mini-faq-card {
+      background: rgba(20,27,45,0.7);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 1.4rem;
+    }
+    .mini-faq-card h4 {
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .mini-faq-card p {
+      color: #94a3b8;
+      font-size: 0.88rem;
+      line-height: 1.65;
+      margin: 0;
+    }
+    @media (max-width: 768px) {
+      .contact-grid { grid-template-columns: 1fr; }
+      .contact-form-col { padding: 1.8rem; }
+    }
+    @media (max-width: 480px) {
+      .hours-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside class="announcement-bar" aria-label="Announcement">
+    <span class="announcement-badge">Mega Sale</span>
+    <span>Special Offer: Flat 75% OFF + Use code <strong style="text-decoration: underline;">SANSKRUTI50</strong> for extra 50% OFF in cart!</span>
+  </aside>
+
+  <header>
+    <div class="container nav-inner">
+      <a href="index.html" class="logo" aria-label="Sanskruti eBooks Homepage">
+        <div class="logo-icon">📚</div>
+        <div>
+          <span class="logo-text">Sanskruti</span><span style="color: #6366f1; font-weight: 300;">eBooks</span>
+          <span class="logo-tag">संस्कृति</span>
+        </div>
+      </a>
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a href="index.html#catalog">eBooks Catalog</a></li>
+          <li><a href="index.html#bundles">Value Bundles</a></li>
+          <li><a href="index.html#why-us">Why Sanskruti</a></li>
+          <li><a href="index.html#reviews">Reader Reviews</a></li>
+          <li><a href="index.html#faq">FAQ</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions">
+        <a href="https://wa.me/919238861171?text=Hello%20Sanskruti%20eBooks,%20I%20have%20an%20inquiry." target="_blank" class="whatsapp-nav-btn" aria-label="WhatsApp Support">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          <span>WhatsApp Help</span>
+        </a>
+        <button class="mobile-menu-btn" onclick="document.getElementById('mobileMenuOverlay').classList.toggle('active')" aria-label="Toggle Navigation Menu">☰</button>
+      </div>
+    </div>
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+      <a href="index.html#catalog" onclick="document.getElementById('mobileMenuOverlay').classList.remove('active')">📚 All eBooks Catalog</a>
+      <a href="index.html#bundles" onclick="document.getElementById('mobileMenuOverlay').classList.remove('active')">🚀 Transformation Bundles</a>
+      <a href="about.html">🏢 About Us</a>
+      <a href="contact.html">📞 Contact Us</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <span class="page-hero-tag">We're Here to Help</span>
+        <h1 class="page-hero-title">Contact Us</h1>
+        <p class="page-hero-subtitle">
+          Have a question, need help with your download, or want to report a payment issue? We're available 7 days a week to help you.
+        </p>
+      </div>
+    </section>
+
+    <div class="contact-content">
+
+      <div class="contact-grid">
+
+        <!-- Contact Information Column -->
+        <div class="contact-info-col">
+
+          <!-- WhatsApp -->
+          <div class="contact-card whatsapp-card">
+            <div class="contact-card-icon green">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#25d366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+            </div>
+            <h3>WhatsApp Support</h3>
+            <div class="contact-value">+91 92388 61171</div>
+            <span class="contact-badge">⚡ Fastest Response</span>
+            <p class="contact-desc">Our primary support channel. Message us for order queries, download issues, payment problems, or any other help. We reply within minutes during support hours.</p>
+            <a href="https://wa.me/919238861171?text=Hello%20Sanskruti%20eBooks,%20I%20need%20support%20with%20my%20order." target="_blank" class="footer-whatsapp-link" style="width: 100%; justify-content: center;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+              Start WhatsApp Chat
+            </a>
+          </div>
+
+          <!-- Email -->
+          <div class="contact-card">
+            <div class="contact-card-icon indigo">📧</div>
+            <h3>Email Support</h3>
+            <div class="contact-value"><a href="mailto:paid32041@gmail.com" style="color: #a5b4fc; text-decoration: none;">paid32041@gmail.com</a></div>
+            <p class="contact-desc">For formal queries, refund requests, or legal matters. Email responses may take 24–48 business hours.</p>
+          </div>
+
+          <!-- Business Address -->
+          <div class="contact-card">
+            <div class="contact-card-icon gold">🏢</div>
+            <h3>Business Address</h3>
+            <div class="contact-value" style="color: #e2e8f0; font-size: 0.95rem; line-height: 1.6;">A-24, Patel Nagar, Bhopal, Madhya Pradesh - 462022, India</div>
+            <p class="contact-desc">Our registered business address (SANSKRUTI SERVICE). For correspondence and legal notices only — we do not provide walk-in customer service.</p>
+          </div>
+
+          <!-- Support Hours -->
+          <div class="contact-card">
+            <div class="contact-card-icon cyan">🕐</div>
+            <h3>Support Hours</h3>
+            <p class="contact-desc" style="margin-bottom: 0.8rem;">WhatsApp support is available during these hours (IST):</p>
+            <div class="hours-row"><span class="hours-day">Monday – Friday</span><span class="hours-time">9 AM – 10 PM</span></div>
+            <div class="hours-row"><span class="hours-day">Saturday</span><span class="hours-time">9 AM – 10 PM</span></div>
+            <div class="hours-row"><span class="hours-day">Sunday</span><span class="hours-time">10 AM – 8 PM</span></div>
+            <div class="hours-row" style="border: none; padding-top: 0.6rem;"><span class="hours-day">Automated Delivery</span><span class="hours-time">24/7</span></div>
+          </div>
+
+        </div>
+
+        <!-- Contact Form Column -->
+        <div class="contact-form-col">
+          <h2>Send Us a Message</h2>
+          <p>Fill in the form below and we'll get back to you as soon as possible. For faster support, WhatsApp is recommended.</p>
+
+          <form id="contactForm" class="contact-form" onsubmit="handleContactSubmit(event)">
+            <div class="form-field">
+              <label for="contactName">Your Name *</label>
+              <input type="text" id="contactName" name="name" placeholder="Enter your full name" required autocomplete="name" />
+            </div>
+
+            <div class="form-field">
+              <label for="contactPhone">WhatsApp Number *</label>
+              <input type="tel" id="contactPhone" name="phone" placeholder="10-digit WhatsApp number" required pattern="[0-9]{10}" maxlength="10" autocomplete="tel" />
+            </div>
+
+            <div class="form-field">
+              <label for="contactEmail">Email Address (Optional)</label>
+              <input type="email" id="contactEmail" name="email" placeholder="your@email.com" autocomplete="email" />
+            </div>
+
+            <div class="form-field">
+              <label for="contactSubject">Subject / Reason *</label>
+              <select id="contactSubject" name="subject" required>
+                <option value="" disabled selected>Select a reason for contacting us</option>
+                <option value="download-issue">eBook Download Issue</option>
+                <option value="payment-issue">Payment / UPI Issue</option>
+                <option value="refund-request">Refund Request</option>
+                <option value="duplicate-payment">Duplicate Payment</option>
+                <option value="wrong-book">Received Wrong eBook</option>
+                <option value="purchase-query">Pre-Purchase Query</option>
+                <option value="technical-issue">Technical Issue</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label for="contactMessage">Your Message *</label>
+              <textarea id="contactMessage" name="message" placeholder="Please describe your issue or question in detail. If it's a payment issue, include your UPI transaction ID." required></textarea>
+            </div>
+
+            <button type="submit" class="form-submit-btn" id="contactSubmitBtn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              Send Message via WhatsApp
+            </button>
+
+            <p class="form-note">
+              Clicking "Send" will open WhatsApp with your message pre-filled.
+            </p>
+
+            <div class="success-msg" id="contactSuccess">
+              ✅ Opening WhatsApp with your message...
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Quick FAQ -->
+      <div class="faq-quick">
+        <h2>Quick Help</h2>
+        <p>Looking for a quick answer? Check these common questions.</p>
+        <div class="mini-faq-grid">
+          <div class="mini-faq-card">
+            <h4>📥 I didn't receive my eBook</h4>
+            <p>Message us on WhatsApp at +91 92388 61171 with your payment screenshot. We'll resend it within 2 hours.</p>
+          </div>
+          <div class="mini-faq-card">
+            <h4>💳 My payment failed but amount was deducted</h4>
+            <p>UPI auto-reversals take 3–5 business days. If not resolved, share the UTR number with us and we'll help verify.</p>
+          </div>
+          <div class="mini-faq-card">
+            <h4>📱 How do I open the eBook on my phone?</h4>
+            <p>PDF files open in Google Drive, Adobe Acrobat, or any PDF reader. ePub opens in Moon+ Reader (Android) or Apple Books (iPhone).</p>
+          </div>
+          <div class="mini-faq-card">
+            <h4>🔁 Can I get a refund?</h4>
+            <p>Yes, for non-delivery, duplicate payments, or faulty files. See our <a href="refund-cancellation-policy.html" style="color: #a5b4fc;">Refund Policy</a> for complete details.</p>
+          </div>
+          <div class="mini-faq-card">
+            <h4>🎁 How do I apply a promo code?</h4>
+            <p>Add books to your cart and enter the promo code (e.g. SANSKRUTI50) in the coupon field before proceeding to checkout.</p>
+          </div>
+          <div class="mini-faq-card">
+            <h4>🌐 Are books available in Hindi?</h4>
+            <p>Yes! Several titles including Ayurvedic Blueprint, Pranayama Mastery, and The Unstoppable Mind include both Hindi and English editions.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <div class="logo-icon">📚</div>
+            <div>
+              <span class="logo-text">Sanskruti</span><span style="color: #6366f1; font-weight: 300;">eBooks</span>
+            </div>
+          </div>
+          <p>Sanskruti eBooks is dedicated to awakening self-discipline, mental calmness, vibrant physical health, and longevity through accessible, high-impact digital literature.</p>
+          <div style="margin-top: 1.2rem; display: flex; gap: 0.8rem; font-size: 0.85rem; color: var(--text-sub);">
+            <span>✓ Genuine Indian Heritage</span><span>•</span><span>✓ Modern Science</span>
+          </div>
+        </div>
+        <div>
+          <h4 class="footer-heading">Categories</h4>
+          <ul class="footer-links">
+            <li><a href="index.html#catalog">All eBooks</a></li>
+            <li><a href="index.html#catalog">Motivational &amp; Mindset</a></li>
+            <li><a href="index.html#catalog">Gut Health &amp; Nutrition</a></li>
+            <li><a href="index.html#catalog">Ayurvedic &amp; Fitness</a></li>
+            <li><a href="index.html#bundles">Transformation Bundles</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-heading">Legal &amp; Policies</h4>
+          <ul class="footer-links">
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+            <li><a href="terms-and-conditions.html">Terms &amp; Conditions</a></li>
+            <li><a href="shipping-return-policy.html">Shipping &amp; Return Policy</a></li>
+            <li><a href="refund-cancellation-policy.html">Refund &amp; Cancellation Policy</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-heading">Support &amp; WhatsApp Help</h4>
+          <div class="footer-help-box">
+            <p>Need guidance or have a download query?</p>
+            <a href="https://wa.me/919238861171?text=Hello%20Sanskruti%20Support,%20I%20need%20help%20with%20an%20eBook." target="_blank" class="footer-whatsapp-link">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+              <span>Chat with Support</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>© 2026 Sanskruti eBooks. All Rights Reserved.</div>
+        <div style="display: flex; gap: 1.2rem; flex-wrap: wrap;">
+          <a href="about.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">About Us</a>
+          <a href="privacy-policy.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Privacy Policy</a>
+          <a href="terms-and-conditions.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Terms &amp; Conditions</a>
+          <a href="shipping-return-policy.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Shipping Policy</a>
+          <a href="refund-cancellation-policy.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Refund Policy</a>
+          <a href="contact.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/919238861171?text=Hello%20Sanskruti%20eBooks,%20I%20want%20to%20order%20an%20eBook!" target="_blank" class="floating-whatsapp" aria-label="Chat on WhatsApp">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+    <span>Chat on WhatsApp</span>
+  </a>
+
+  <script>
+    function handleContactSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('contactName').value.trim();
+      const phone = document.getElementById('contactPhone').value.trim();
+      const subject = document.getElementById('contactSubject').value;
+      const message = document.getElementById('contactMessage').value.trim();
+      const email = document.getElementById('contactEmail').value.trim();
+
+      const subjectLabels = {
+        'download-issue': 'eBook Download Issue',
+        'payment-issue': 'Payment / UPI Issue',
+        'refund-request': 'Refund Request',
+        'duplicate-payment': 'Duplicate Payment',
+        'wrong-book': 'Received Wrong eBook',
+        'purchase-query': 'Pre-Purchase Query',
+        'technical-issue': 'Technical Issue',
+        'other': 'General Query'
+      };
+
+      const subjectLabel = subjectLabels[subject] || subject;
+
+      let waMessage = `Hello Sanskruti eBooks Support! 👋\n\n`;
+      waMessage += `📋 *Contact Form Submission*\n`;
+      waMessage += `━━━━━━━━━━━━━━\n`;
+      waMessage += `*Name:* ${name}\n`;
+      waMessage += `*WhatsApp:* ${phone}\n`;
+      if (email) waMessage += `*Email:* ${email}\n`;
+      waMessage += `*Subject:* ${subjectLabel}\n\n`;
+      waMessage += `*Message:*\n${message}`;
+
+      const encodedMsg = encodeURIComponent(waMessage);
+      const waUrl = `https://wa.me/919238861171?text=${encodedMsg}`;
+
+      document.getElementById('contactSuccess').style.display = 'block';
+      
+      setTimeout(() => {
+        window.open(waUrl, '_blank');
+      }, 300);
+    }
+
+    // Mobile menu close on link click
+    document.querySelectorAll('.mobile-menu-overlay a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.getElementById('mobileMenuOverlay').classList.remove('active');
+      });
+    });
+  </script>
+
+</body>
+</html>

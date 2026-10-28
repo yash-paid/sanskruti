@@ -1,0 +1,38 @@
+# Environment variables & credentials
+.env
+.env.local
+.env.production
+.env.development
+
+# Node dependencies
+node_modules/
+
+# Large media files (videos & heavy catalogs)
+*.mp4
+*.webm
+*.mov
+wa-vc/videos/
+wa-vc/videos 2/
+wa-vc/photos/
+wa-vc/photos 2/
+wa-vc/photo and video 2/
+
+# Media & Image assets (code-only upload)
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.gif
+*.ico
+*.pdf
+
+# Logs & temp files
+*.log
+npm-debug.log*
+yarn-debug.log*
+sanskruti_orders.json
+
+# Operating System files
+.DS_Store
+Thumbs.db
+Desktop.ini

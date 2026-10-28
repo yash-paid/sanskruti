@@ -1,0 +1,12 @@
+{
+  "name": "wa-meet",
+  "version": "1.0.0",
+  "description": "WA Meet Localhost Application without Payment API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Refund &amp; Cancellation Policy | Sanskruti eBooks</title>
+  <meta name="description" content="Sanskruti eBooks Refund and Cancellation Policy – understand when refunds apply for digital eBook purchases, failed payments, duplicate charges, and how to request a refund." />
+  <meta name="robots" content="index, follow" />
+  <meta name="theme-color" content="#07090e" />
+  <link rel="canonical" href="https://sanskrutiservice.in/refund-cancellation-policy.html" />
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M4 19.5A2.5 2.5 0 0 1 6.5 17H20'></path><path d='M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'></path></svg>" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .page-hero {
+      padding: 6rem 0 4rem;
+      text-align: center;
+      position: relative;
+    }
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(245,158,11,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .page-hero-tag {
+      display: inline-block;
+      background: rgba(245,158,11,0.12);
+      color: #fcd34d;
+      font-size: 0.8rem;
+      font-weight: 700;
+      padding: 0.35rem 1rem;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1.2rem;
+      border: 1px solid rgba(245,158,11,0.3);
+    }
+    .page-hero-title {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .page-meta { font-size: 0.88rem; color: #64748b; }
+    .policy-content {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 1.5rem 5rem;
+    }
+    .policy-section {
+      margin-bottom: 2.8rem;
+      scroll-margin-top: 100px;
+    }
+    .policy-section h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 1rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid rgba(245,158,11,0.2);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .policy-section h2 .num {
+      background: rgba(245,158,11,0.12);
+      color: #f59e0b;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.82rem;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+    .policy-section p, .policy-section li {
+      color: #94a3b8;
+      font-size: 0.97rem;
+      line-height: 1.8;
+      margin-bottom: 0.8rem;
+    }
+    .policy-section ul, .policy-section ol {
+      margin-left: 1.3rem;
+      margin-bottom: 1rem;
+    }
+    .policy-section strong { color: #e2e8f0; }
+    .eligibility-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+      margin: 1.5rem 0;
+    }
+    .eligibility-card {
+      border-radius: 12px;
+      padding: 1.4rem;
+    }
+    .eligibility-card.yes {
+      background: rgba(16,185,129,0.08);
+      border: 1px solid rgba(16,185,129,0.3);
+    }
+    .eligibility-card.no {
+      background: rgba(244,63,94,0.08);
+      border: 1px solid rgba(244,63,94,0.3);
+    }
+    .eligibility-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+    .eligibility-card.yes h3 { color: #6ee7b7; }
+    .eligibility-card.no h3 { color: #fda4af; }
+    .eligibility-card ul {
+      margin-left: 1rem;
+      list-style: none;
+      padding: 0;
+    }
+    .eligibility-card li {
+      font-size: 0.9rem;
+      padding-left: 1.2rem;
+      position: relative;
+      margin-bottom: 0.5rem;
+    }
+    .eligibility-card.yes li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: #10b981;
+      font-weight: 700;
+    }
+    .eligibility-card.no li::before {
+      content: '✗';
+      position: absolute;
+      left: 0;
+      color: #f43f5e;
+      font-weight: 700;
+    }
+    .process-steps {
+      counter-reset: step-counter;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin: 1.5rem 0;
+    }
+    .process-step {
+      display: flex;
+      gap: 1rem;
+      background: rgba(20,27,45,0.7);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 1.2rem;
+      align-items: flex-start;
+    }
+    .step-number {
+      background: rgba(245,158,11,0.15);
+      border: 1px solid rgba(245,158,11,0.4);
+      color: #f59e0b;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .step-text h4 {
+      color: #fff;
+      font-size: 0.97rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+    .step-text p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin: 0;
+      line-height: 1.6;
+    }
+    .timeline-box {
+      background: rgba(20,27,45,0.8);
+      border: 1px solid rgba(245,158,11,0.2);
+      border-radius: 14px;
+      padding: 1.5rem 2rem;
+      margin: 1.2rem 0;
+    }
+    .timeline-box h4 {
+      color: #fcd34d;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 0.8rem;
+    }
+    .timeline-row {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.9rem;
+    }
+    .timeline-row:last-child { border-bottom: none; }
+    .timeline-row .t-label { color: #64748b; min-width: 140px; font-weight: 600; }
+    .timeline-row .t-value { color: #e2e8f0; }
+    .highlight-box {
+      background: rgba(16,185,129,0.08);
+      border-left: 3px solid #10b981;
+      border-radius: 0 10px 10px 0;
+      padding: 1.2rem 1.5rem;
+      margin: 1.2rem 0;
+    }
+    .highlight-box p { color: #86efac; margin: 0; font-size: 0.93rem; }
+    .warning-box {
+      background: rgba(244,63,94,0.08);
+      border-left: 3px solid #f43f5e;
+      border-radius: 0 10px 10px 0;
+      padding: 1.2rem 1.5rem;
+      margin: 1.2rem 0;
+    }
+    .warning-box p { color: #fda4af; margin: 0; font-size: 0.93rem; }
+    .contact-box {
+      background: rgba(20,27,45,0.8);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: 14px;
+      padding: 2rem;
+      margin-top: 1rem;
+    }
+    .contact-box h3 { color: #fff; font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+    .contact-box p { color: #94a3b8; font-size: 0.95rem; line-height: 1.7; margin-bottom: 0.6rem; }
+    .contact-box strong { color: #e2e8f0; }
+    @media (max-width: 600px) {
+      .eligibility-grid { grid-template-columns: 1fr; }
+      .timeline-row { flex-direction: column; gap: 0.2rem; }
+      .timeline-row .t-label { min-width: unset; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <aside class="announcement-bar" aria-label="Announcement">
+    <span class="announcement-badge">Mega Sale</span>
+    <span>Special Offer: Flat 75% OFF + Use code <strong style="text-decoration: underline;">SANSKRUTI50</strong> for extra 50% OFF in cart!</span>
+  </aside>
+
+  <header>
+    <div class="container nav-inner">
+      <a href="index.html" class="logo" aria-label="Sanskruti eBooks Homepage">
+        <div class="logo-icon">📚</div>
+        <div>
+          <span class="logo-text">Sanskruti</span><span style="color: #6366f1; font-weight: 300;">eBooks</span>
+          <span class="logo-tag">संस्कृति</span>
+        </div>
+      </a>
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a href="index.html#catalog">eBooks Catalog</a></li>
+          <li><a href="index.html#bundles">Value Bundles</a></li>
+          <li><a href="index.html#why-us">Why Sanskruti</a></li>
+          <li><a href="index.html#reviews">Reader Reviews</a></li>
+          <li><a href="index.html#faq">FAQ</a></li>
+        </ul>
+      </nav>
+      <div class="nav-actions">
+        <a href="https://wa.me/919238861171?text=Hello%20Sanskruti%20eBooks,%20I%20have%20an%20inquiry." target="_blank" class="whatsapp-nav-btn" aria-label="WhatsApp Support">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+          <span>WhatsApp Help</span>
+        </a>
+        <button class="mobile-menu-btn" onclick="document.getElementById('mobileMenuOverlay').classList.toggle('active')" aria-label="Toggle Navigation Menu">☰</button>
+      </div>
+    </div>
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+      <a href="index.html#catalog" onclick="document.getElementById('mobileMenuOverlay').classList.remove('active')">📚 All eBooks Catalog</a>
+      <a href="index.html#bundles" onclick="document.getElementById('mobileMenuOverlay').classList.remove('active')">🚀 Transformation Bundles</a>
+      <a href="about.html">🏢 About Us</a>
+      <a href="contact.html">📞 Contact Us</a>
+      <a href="refund-cancellation-policy.html">💰 Refund Policy</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <span class="page-hero-tag">Financial Transparency</span>
+        <h1 class="page-hero-title">Refund &amp; Cancellation Policy</h1>
+        <p class="page-meta">Last Updated: October 2026 &nbsp;|&nbsp; Applies to all digital purchases on sanskrutiservice.in</p>
+      </div>
+    </section>
+
+    <div class="policy-content">
+
+      <div class="highlight-box">
+        <p>
+          <strong>Plain Summary:</strong> We offer full refunds for failed deliveries, duplicate payments, or technically faulty files. Since all products are digital goods delivered instantly, we do not offer refunds for change of mind after delivery. For any payment concern, message us on WhatsApp at +91 92388 61171.
+        </p>
+      </div>
+
+      <div class="policy-section">
+        <h2><span class="num">1</span> About Our Products</h2>
+        <p>
+          Sanskruti eBooks exclusively sells <strong>digital products</strong> — eBooks in PDF and ePub format. Because these are intangible digital goods that are made available for immediate download upon payment, special considerations apply to refunds compared to physical goods, as outlined in this policy.
+        </p>
+        <p>
+          This policy is designed to be fair to both you as a customer and to us as a small business. We want every customer to be confident in purchasing from us.
+        </p>
+      </div>
+
+      <div class="policy-section">
+        <h2><span class="num">2</span> Refund Eligibility</h2>
+        <p>Please review the following to understand when a refund is applicable:</p>
+        <div class="eligibility-grid">
+          <div class="eligibility-card yes">
+            <h3>✓ Eligible for Full Refund</h3>
+            <ul>
+              <li>Payment was deducted but eBook was never delivered (on-screen or WhatsApp) — and support team also failed to resolve it</li>
+              <li>Duplicate payment charged for the same order</li>
+              <li>Payment failed mid-transaction but amount was deducted from your bank</li>
+              <li>You received a corrupted file that cannot be opened, and we were unable to send a working replacement</li>
+              <li>You received the wrong eBook title and we could not replace it</li>
+              <li>Technical error caused you to be charged but the order was not created</li>
+            </ul>
+          </div>
+          <div class="eligibility-card no">
+            <h3>✗ Not Eligible for Refund</h3>
+            <ul>
+              <li>Change of mind after the eBook has been downloaded</li>
+              <li>Purchased wrong eBook but already downloaded it</li>
+              <li>Content does not match personal expectations after reading</li>
+              <li>Finding the same or similar content elsewhere</li>
+              <li>Forgot to apply a discount code before purchase</li>
+              <li>Sharing or distributing purchased files with others</li>
+              <li>Device incompatibility not disclosed to us before purchase</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="policy-section">
+        <h2><span class="num">3</span> Failed &amp; Pending Payments</h2>
+        <p>
+          UPI payments can occasionally show as "Pending" or "Failed" in your banking app while the amount is still debited. This is a known issue with some UPI transactions and is handled as follows:
+        </p>
+        <ul>
+          <li>
+            <strong>If the amount is debited but marked "Pending":</strong> Your bank typically auto-reverses such transactions within <strong>3–5 business days</strong> (as per NPCI guidelines). If not, contact your bank with the UPI transaction reference number.
+          </li>
+          <li>
+            <strong>If we received the payment but you did not receive the eBook:</strong> Contact us with the UPI reference / transaction ID and we will deliver your eBook immediately.
+          </li>
+          <li>
+            <strong>If the transaction genuinely failed:</strong> No amount should have been deducted. If your bank statement shows a deduction for a failed transaction, contact your bank and share the UTR/UPI reference for reversal. We can also confirm on our end whether payment was received.
+          </li>
+        </ul>
+        <div class="warning-box">
+          <p>
+            <strong>Important:</strong> Sanskruti eBooks does not have access to your bank account. We can only confirm whether a payment was received on our end. For bank-side issues (pending deductions), your UPI service provider (Google Pay, PhonePe, Paytm) and your bank are the correct points of contact.
+          </p>
+        </div>
+      </div>
+
+      <div class="policy-section">
+        <h2><span class="num">4</span> Duplicate Payments</h2>
+        <p>
+          If you were charged more than once for the same order (duplicate deduction), we will issue a <strong>full refund</strong> for the extra charge(s) after verification.
+        </p>
+        <p>To report a duplicate payment:</p>
+        <ol>
+          <li>Message us on WhatsApp at <strong>+91 92388 61171</strong>.</li>
+          <li>Share screenshots of both UPI transaction confirmations showing the same amount and recipient.</li>
+          <li>We will verify on our end and process the refund within <strong>5–7 business days</strong>.</li>
+        </ol>
+      </div>
+
+      <div class="policy-section">
+        <h2><span class="num">5</span> Order Cancellation</h2>
+        <p>
+          Because our digital products are delivered instantly upon payment (on-screen and via WhatsApp), <strong>orders cannot be cancelled</strong> once the payment has been confirmed and the file has been delivered.
+        </p>
+        <p>
+          If you placed an order and payment is showing as "Pending" (not yet confirmed), and you wish to cancel it, contact us immediately on WhatsApp. We will attempt to confirm whether the payment was received. If the transaction is genuinely pending (no deduction occurred), there is no order to cancel.
+        </p>
+        <p>
+          <strong>Pre-delivery window:</strong> If, in rare cases, you contact us within 5 minutes of payment and before the file has been accessed or downloaded, we may consider a cancellation at our discretion. This is subject to verification.
+        </p>
+      </div>
+
+      <div class="policy-section">
+        <h2><span class="num">6</span> How to Request a Refund</h2>
+        <p>Follow these steps to request a refund:</p>
+        <div class="process-steps">
+          <div class="process-step">
+            <div class="step-number">1</div>
+            <div class="step-text">
+              <h4>Contact Us on WhatsApp</h4>
+              <p>Message us at <strong>+91 92388 61171</strong> from the same number you used to receive your eBook, within <strong>7 days</strong> of your purchase.</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-number">2</div>
+            <div class="step-text">
+              <h4>Share Payment Proof</h4>
+              <p>Send a clear screenshot of your UPI payment confirmation showing the amount, date, time, and UPI transaction ID (UTR number).</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-number">3</div>
+            <div class="step-text">
+              <h4>Describe the Issue</h4>
+              <p>Briefly explain the reason for your refund request (e.g., "eBook not received", "duplicate charge", "corrupted file").</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-number">4</div>
+            <div class="step-text">
+              <h4>We Verify &amp; Respond</h4>
+              <p>Our team will review your claim within <strong>24–48 hours</strong> (during support hours). If eligible, we will confirm refund approval.</p>
+            </div>
+          </div>
+          <div class="process-step">
+            <div class="step-number">5</div>
+            <div class="step-text">
+              <h4>Refund Processed</h4>
+              <p>Approved refunds are transferred back to your original UPI account within <strong>5–7 business days</strong>. You will receive a confirmation from us.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="policy-section">
+        <h2><span class="num">7</span> Refund Timelines</h2>
+        <div class="timeline-box">
+          <h4>⏱️ Expected Timelines</h4>
+          <div class="timeline-row">
+            <span class="t-label">Refund Request Review</span>
+            <span class="t-value">24–48 hours (business days)</span>
+          </div>
+          <div class="timeline-row">
+            <span class="t-label">Refund Processing</span>
+            <span class="t-value">5–7 business days after approval</span>
+          </div>
+          <div class="timeline-row">
+            <span class="t-label">Bank Credit Timelines</span>
+            <span class="t-value">3–7 additional days depending on your bank</span>
+          </div>
+          <div class="timeline-row">
+            <span class="t-label">Duplicate Payment Refund</span>
+            <span class="t-value">5–7 business days after verification</span>
+          </div>
+          <div class="timeline-row">
+            <span class="t-label">Failed UPI Auto-Reversal</span>
+            <span class="t-value">3–5 business days (by your bank / NPCI)</span>
+          </div>
+          <div class="timeline-row">
+            <span class="t-label">Refund Request Deadline</span>
+            <span class="t-value">Within 7 days of purchase date</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="policy-section">
+        <h2><span class="num">8</span> Refund Method</h2>
+        <p>
+          All refunds are processed back to the <strong>original UPI account</strong> from which the payment was made. We do not issue refunds via cash, bank transfer (NEFT/IMPS), or any other method.
+        </p>
+        <p>
+          To receive a refund, please ensure your UPI ID is active and linked to the same bank account. If your UPI ID has changed, please inform us when submitting your refund request.
+        </p>
+      </div>
+
+      <div class="policy-section">
+        <h2><span class="num">9</span> Dispute Resolution</h2>
+        <p>
+          If you are unsatisfied with the outcome of a refund request, you may escalate your concern by:
+        </p>
+        <ul>
+          <li>Emailing us at <strong><a href="mailto:paid32041@gmail.com" style="color: #a5b4fc;">paid32041@gmail.com</a></strong> with subject "Refund Dispute – [Order Details]".</li>
+          <li>Filing a complaint with your UPI service provider (Google Pay, PhonePe, Paytm) if a payment deduction was not reversed as expected.</li>
+          <li>Approaching the National Consumer Disputes Redressal Commission (NCDRC) or your state's Consumer Forum under the Consumer Protection Act, 2019.</li>
+          <li>Filing a complaint via the National Cyber Crime portal (cybercrime.gov.in) for any suspected fraudulent transactions.</li>
+        </ul>
+        <p>
+          We are committed to resolving all legitimate disputes in good faith and in a timely manner.
+        </p>
+      </div>
+
+      <div class="policy-section">
+        <h2><span class="num">10</span> Contact for Refunds &amp; Cancellations</h2>
+        <div class="contact-box">
+          <h3>💬 Refund Support</h3>
+          <p><strong>WhatsApp (Primary):</strong> <a href="https://wa.me/919238861171" target="_blank" style="color:#fcd34d;">+91 92388 61171</a></p>
+          <p><strong>Support Hours:</strong> 9:00 AM – 10:00 PM IST, 7 days a week</p>
+          <p><strong>Email:</strong> <a href="mailto:paid32041@gmail.com" style="color: #a5b4fc;">paid32041@gmail.com</a></p>
+          <p><strong>Response Time:</strong> Within 24–48 hours of your message during support hours.</p>
+          <p style="margin-top: 1.2rem;">
+            <a href="https://wa.me/919238861171?text=Hello%20Sanskruti%20Support,%20I%20want%20to%20request%20a%20refund%20for%20my%20order." target="_blank" class="footer-whatsapp-link">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+              Request Refund on WhatsApp
+            </a>
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <div class="logo-icon">📚</div>
+            <div>
+              <span class="logo-text">Sanskruti</span><span style="color: #6366f1; font-weight: 300;">eBooks</span>
+            </div>
+          </div>
+          <p>Sanskruti eBooks is dedicated to awakening self-discipline, mental calmness, vibrant physical health, and longevity through accessible, high-impact digital literature.</p>
+          <div style="margin-top: 1.2rem; display: flex; gap: 0.8rem; font-size: 0.85rem; color: var(--text-sub);">
+            <span>✓ Genuine Indian Heritage</span><span>•</span><span>✓ Modern Science</span>
+          </div>
+        </div>
+        <div>
+          <h4 class="footer-heading">Categories</h4>
+          <ul class="footer-links">
+            <li><a href="index.html#catalog">All eBooks</a></li>
+            <li><a href="index.html#catalog">Motivational &amp; Mindset</a></li>
+            <li><a href="index.html#catalog">Gut Health &amp; Nutrition</a></li>
+            <li><a href="index.html#catalog">Ayurvedic &amp; Fitness</a></li>
+            <li><a href="index.html#bundles">Transformation Bundles</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-heading">Legal &amp; Policies</h4>
+          <ul class="footer-links">
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+            <li><a href="privacy-policy.html">Privacy Policy</a></li>
+            <li><a href="terms-and-conditions.html">Terms &amp; Conditions</a></li>
+            <li><a href="shipping-return-policy.html">Shipping &amp; Return Policy</a></li>
+            <li><a href="refund-cancellation-policy.html">Refund &amp; Cancellation Policy</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-heading">Support &amp; WhatsApp Help</h4>
+          <div class="footer-help-box">
+            <p>Need guidance or have a download query?</p>
+            <a href="https://wa.me/919238861171?text=Hello%20Sanskruti%20Support,%20I%20need%20help%20with%20an%20eBook." target="_blank" class="footer-whatsapp-link">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+              <span>Chat with Support</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div>© 2026 Sanskruti eBooks. All Rights Reserved.</div>
+        <div style="display: flex; gap: 1.2rem; flex-wrap: wrap;">
+          <a href="about.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">About Us</a>
+          <a href="privacy-policy.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Privacy Policy</a>
+          <a href="terms-and-conditions.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Terms &amp; Conditions</a>
+          <a href="shipping-return-policy.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Shipping Policy</a>
+          <a href="refund-cancellation-policy.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Refund Policy</a>
+          <a href="contact.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.85rem;">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/919238861171?text=Hello%20Sanskruti%20eBooks,%20I%20want%20to%20order%20an%20eBook!" target="_blank" class="floating-whatsapp" aria-label="Chat on WhatsApp">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg>
+    <span>Chat on WhatsApp</span>
+  </a>
+
+</body>
+</html>
