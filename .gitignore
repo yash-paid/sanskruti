@@ -17,13 +17,7 @@ wa-vc/photos/
 wa-vc/photos 2/
 wa-vc/photo and video 2/
 
-# Media & Image assets (code-only upload)
-*.png
-*.jpg
-*.jpeg
-*.webp
-*.gif
-*.ico
+# Digital downloads / PDFs
 *.pdf
 
 # Logs & temp files
