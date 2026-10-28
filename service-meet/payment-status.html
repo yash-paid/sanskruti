@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-FT1LGN73Q2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-FT1LGN73Q2');
+  </script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Payment & Service Status | Sanskruti Services</title>
+  <meta name="description" content="View your PayU transaction confirmation, payment verification status, and service booking activation for Sanskruti Services." />
+  <meta name="robots" content="noindex, follow" />
+  <meta name="theme-color" content="#090a0f" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff2a74' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z'/></svg>" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/service-meet/style.css" />
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .status-page-wrapper {
+      min-height: calc(100vh - 160px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.25rem;
+      position: relative;
+    }
+
+    .status-card-box {
+      background: rgba(18, 20, 32, 0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      max-width: 640px;
+      width: 100%;
+      padding: 2.75rem 2.25rem;
+      box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.85);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      animation: fadeInStatus 0.4s ease-out;
+    }
+
+    @keyframes fadeInStatus {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Ambient glow elements */
+    .status-card-box::before {
+      content: '';
+      position: absolute;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .status-success::before {
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.28) 0%, transparent 70%);
+    }
+
+    .status-failed::before {
+      background: radial-gradient(circle, rgba(255, 42, 116, 0.28) 0%, transparent 70%);
+    }
+
+    .status-cancelled::before {
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.28) 0%, transparent 70%);
+    }
+
+    .status-pending::before {
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.28) 0%, transparent 70%);
+    }
+
+    .status-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .status-icon-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .status-success .status-icon-circle {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.4));
+      border: 2px solid #10b981;
+      color: #34d399;
+    }
+
+    .status-failed .status-icon-circle {
+      background: linear-gradient(135deg, rgba(255, 42, 116, 0.2), rgba(225, 29, 72, 0.4));
+      border: 2px solid var(--accent-pink);
+      color: #ff6b9d;
+    }
+
+    .status-cancelled .status-icon-circle {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.4));
+      border: 2px solid var(--accent-gold);
+      color: #fbbf24;
+    }
+
+    .status-pending .status-icon-circle {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.4));
+      border: 2px solid #3b82f6;
+      color: #60a5fa;
+    }
+
+    .status-badge-pill {
+      display: inline-block;
+      padding: 0.35rem 1rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .status-success .status-badge-pill {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    .status-failed .status-badge-pill {
+      background: rgba(255, 42, 116, 0.15);
+      border: 1px solid rgba(255, 42, 116, 0.4);
+      color: #ff6b9d;
+    }
+
+    .status-cancelled .status-badge-pill {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+
+    .status-pending .status-badge-pill {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+    }
+
+    .status-heading {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.6rem;
+      line-height: 1.25;
+    }
+
+    .status-desc {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      max-width: 520px;
+      margin: 0 auto 1.75rem;
+      line-height: 1.6;
+    }
+
+    .order-info-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1.25rem 1.4rem;
+      margin-bottom: 1.75rem;
+      text-align: left;
+    }
+
+    .info-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.92rem;
+    }
+
+    .info-line:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .info-key {
+      color: var(--text-muted);
+    }
+
+    .info-val {
+      color: #fff;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .package-verified-card {
+      background: linear-gradient(135deg, rgba(255, 42, 116, 0.08) 0%, rgba(18, 20, 32, 0.8) 100%);
+      border: 1px solid rgba(255, 42, 116, 0.35);
+      border-radius: 14px;
+      padding: 1.15rem 1.3rem;
+      margin-bottom: 1.75rem;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn-action-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      margin-top: 1.25rem;
+    }
+
+    .btn-primary-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, var(--accent-pink) 0%, #e11d48 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.85rem 1.6rem;
+      border-radius: 12px;
+      text-decoration: none;
+      box-shadow: 0 8px 24px var(--accent-pink-glow);
+      transition: all 0.25s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px var(--accent-pink-glow);
+    }
+
+    .btn-whatsapp-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.85rem 1.6rem;
+      border-radius: 12px;
+      text-decoration: none;
+      box-shadow: 0 8px 24px rgba(37, 211, 102, 0.35);
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .btn-whatsapp-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(37, 211, 102, 0.5);
+    }
+
+    .btn-secondary-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.75rem 1.4rem;
+      border-radius: 12px;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary-action:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <a href="/service/" style="display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: inherit;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round"
+          style="color: var(--accent-pink); filter: drop-shadow(0 0 5px var(--accent-pink));">
+          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+        </svg>
+        <span class="logo-text">Sanskruti <span class="logo-tag">SERVICES</span></span>
+      </a>
+    </div>
+
+    <div class="header-right">
+      <a href="/service/" class="header-action-btn primary-btn">
+        <span>← All Services</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Status Card -->
+  <main class="status-page-wrapper">
+    <div id="serviceStatusCard" class="status-card-box status-pending">
+      <div class="status-inner">
+        <div id="serviceStatusIcon" class="status-icon-circle">⏳</div>
+        <div id="serviceStatusBadge" class="status-badge-pill">Verifying Transaction...</div>
+        <h1 id="serviceStatusHeading" class="status-heading">Processing Payment</h1>
+        <p id="serviceStatusDesc" class="status-desc">
+          Connecting with the payment gateway to verify your service booking.
+        </p>
+
+        <!-- Order Information Box -->
+        <div id="serviceOrderBox" class="order-info-box" style="display: none;">
+          <div class="info-line">
+            <span class="info-key">Order ID:</span>
+            <span class="info-val" id="valTxnid">-</span>
+          </div>
+          <div class="info-line" id="rowMihpayid" style="display: none;">
+            <span class="info-key">PayU Reference:</span>
+            <span class="info-val" id="valMihpayid">-</span>
+          </div>
+          <div class="info-line" id="rowAmount" style="display: none;">
+            <span class="info-key">Amount:</span>
+            <span class="info-val" id="valAmount" style="color: var(--accent-gold); font-size: 1.05rem;">-</span>
+          </div>
+          <div class="info-line" id="rowCustomer" style="display: none;">
+            <span class="info-key">Customer Phone:</span>
+            <span class="info-val" id="valCustomer">-</span>
+          </div>
+        </div>
+
+        <!-- Verified Package Detail -->
+        <div id="serviceVerifiedPackage" class="package-verified-card" style="display: none;">
+          <div>
+            <div style="color: #fff; font-weight: 700; font-size: 1.05rem;" id="valPackageTitle">💎 Service Package</div>
+            <div style="color: #34d399; font-size: 0.82rem; margin-top: 0.25rem;">
+              ✓ Cryptographically Verified by PayU India
+            </div>
+          </div>
+          <div style="color: var(--accent-gold); font-weight: 800; font-size: 1.15rem;" id="valPackagePrice">
+            -
+          </div>
+        </div>
+
+        <!-- Dynamic Action Buttons -->
+        <div class="btn-action-container" id="serviceActionButtons">
+          <a href="/service/" class="btn-secondary-action">← Return to Services</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer style="padding: 2.5rem 1rem; text-align: center; color: #64748b; font-size: 0.88rem; border-top: 1px solid rgba(255,255,255,0.06);">
+    <p>© 2026 Sanskruti Services. 100% Genuine & Verified Virtual Experience.</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const statusParam = (urlParams.get('status') || '').toLowerCase();
+      const txnid = urlParams.get('txnid') || '';
+      const token = urlParams.get('token') || '';
+      const amount = urlParams.get('amount') || '';
+      const mihpayid = urlParams.get('mihpayid') || '';
+      const errorMsg = urlParams.get('msg') || urlParams.get('error') || '';
+
+      const card = document.getElementById('serviceStatusCard');
+      const icon = document.getElementById('serviceStatusIcon');
+      const badge = document.getElementById('serviceStatusBadge');
+      const heading = document.getElementById('serviceStatusHeading');
+      const desc = document.getElementById('serviceStatusDesc');
+      const orderBox = document.getElementById('serviceOrderBox');
+      const valTxnid = document.getElementById('valTxnid');
+      const valMihpayid = document.getElementById('valMihpayid');
+      const rowMihpayid = document.getElementById('rowMihpayid');
+      const valAmount = document.getElementById('valAmount');
+      const rowAmount = document.getElementById('rowAmount');
+      const valCustomer = document.getElementById('valCustomer');
+      const rowCustomer = document.getElementById('rowCustomer');
+      const verifiedPackage = document.getElementById('serviceVerifiedPackage');
+      const valPackageTitle = document.getElementById('valPackageTitle');
+      const valPackagePrice = document.getElementById('valPackagePrice');
+      const actionButtons = document.getElementById('serviceActionButtons');
+
+      if (txnid) {
+        orderBox.style.display = 'block';
+        valTxnid.textContent = txnid;
+      }
+      if (mihpayid) {
+        rowMihpayid.style.display = 'flex';
+        valMihpayid.textContent = mihpayid;
+      }
+      if (amount) {
+        rowAmount.style.display = 'flex';
+        valAmount.textContent = '₹' + amount;
+      }
+
+      // ========================================================
+      // 1. PAYMENT SUCCESSFUL (Requires Server-Side Verification)
+      // ========================================================
+      if (statusParam === 'success') {
+        if (!token || !txnid) {
+          // Untrusted direct URL visit with ?status=success but without cryptographic token
+          card.className = 'status-card-box status-failed';
+          icon.textContent = '⚠️';
+          badge.textContent = 'Verification Required';
+          heading.textContent = 'Awaiting Payment Verification';
+          desc.textContent = 'No verified transaction token was found. If you completed a payment, please check your WhatsApp or email for confirmation.';
+          actionButtons.innerHTML = `
+            <a href="/service/#services" class="btn-primary-action">↻ Choose Package & Book</a>
+            <a href="https://wa.me/916266091562" target="_blank" class="btn-whatsapp-action">💬 Contact WhatsApp Support</a>
+          `;
+          return;
+        }
+
+        // Verify cryptographically against server API
+        try {
+          const verifyRes = await fetch(`/api/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`);
+          const verifyData = await verifyRes.json();
+
+          if (verifyData.success && verifyData.order && verifyData.order.category === 'service') {
+            card.className = 'status-card-box status-success';
+            icon.textContent = '✓';
+            badge.textContent = 'Verified by PayU India';
+            heading.textContent = 'Payment Successful! 🎉';
+            desc.textContent = 'Your Sanskruti Service payment has been verified. Connect directly on WhatsApp to confirm and activate your private session.';
+
+            if (verifyData.order.customerPhone) {
+              rowCustomer.style.display = 'flex';
+              valCustomer.textContent = verifyData.order.customerPhone;
+            }
+
+            if (verifyData.order.items && verifyData.order.items.length > 0) {
+              verifiedPackage.style.display = 'flex';
+              valPackageTitle.textContent = '💎 ' + verifyData.order.items[0].title;
+              valPackagePrice.textContent = '₹' + verifyData.order.items[0].price;
+            }
+
+            const waText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for Order #${txnid} (₹${amount || (verifyData.order.items && verifyData.order.items[0].price) || ''}). PayU Ref: ${mihpayid || 'N/A'}. Verification Token: ${token}. Please confirm my service delivery.`);
+
+            actionButtons.innerHTML = `
+              <a href="https://wa.me/916266091562?text=${waText}" target="_blank" class="btn-whatsapp-action">
+                💬 Activate Service on WhatsApp
+              </a>
+              <a href="/service/" class="btn-secondary-action">
+                ← Return to Services Home
+              </a>
+            `;
+          } else {
+            // Token tampering or wrong category
+            card.className = 'status-card-box status-failed';
+            icon.textContent = '✕';
+            badge.textContent = 'Verification Failed';
+            heading.textContent = 'Invalid Order Signature';
+            desc.textContent = 'This transaction token could not be verified for Sanskruti Services. If amount was debited, please contact our support team.';
+            actionButtons.innerHTML = `
+              <a href="/service/#services" class="btn-primary-action">↻ Return to Services</a>
+              <a href="https://wa.me/916266091562" target="_blank" class="btn-whatsapp-action">💬 WhatsApp Support</a>
+            `;
+          }
+        } catch (e) {
+          console.error('Verification error:', e);
+          card.className = 'status-card-box status-failed';
+          icon.textContent = '⚠️';
+          badge.textContent = 'Connection Error';
+          heading.textContent = 'Verification Delayed';
+          desc.textContent = 'Unable to reach the verification server. Please reload this page in a moment.';
+          actionButtons.innerHTML = `
+            <button onclick="window.location.reload()" class="btn-primary-action">🔄 Retry Verification</button>
+            <a href="https://wa.me/916266091562" target="_blank" class="btn-whatsapp-action">💬 WhatsApp Support</a>
+          `;
+        }
+
+      // ========================================================
+      // 2. PAYMENT CANCELLED (User Cancelled on PayU Gateway)
+      // ========================================================
+      } else if (statusParam === 'cancelled' || statusParam === 'cancel') {
+        card.className = 'status-card-box status-cancelled';
+        icon.textContent = '⚠️';
+        badge.textContent = 'Payment Cancelled';
+        heading.textContent = 'Transaction Cancelled';
+        desc.textContent = errorMsg || 'You cancelled the payment transaction on the PayU gateway. No money was deducted from your bank account or UPI app.';
+
+        actionButtons.innerHTML = `
+          <a href="/service/#services" class="btn-primary-action">
+            ↻ Choose Package & Try Again
+          </a>
+          <a href="https://wa.me/916266091562?text=${encodeURIComponent('Hello Sanskruti, I cancelled payment for order ' + txnid + '. I have a question before paying.')}" target="_blank" class="btn-whatsapp-action">
+            💬 Have Questions? Ask on WhatsApp
+          </a>
+          <a href="/service/" class="btn-secondary-action">
+            ← Return to Services
+          </a>
+        `;
+
+      // ========================================================
+      // 3. PAYMENT FAILED (Bank Declined or Payment Failed)
+      // ========================================================
+      } else if (statusParam === 'failed' || statusParam === 'failure') {
+        card.className = 'status-card-box status-failed';
+        icon.textContent = '✕';
+        badge.textContent = 'Payment Failed';
+        heading.textContent = 'Payment Unsuccessful';
+        desc.textContent = errorMsg || 'The transaction could not be processed by the bank or gateway. No amount was debited from your account. Please retry using UPI or card.';
+
+        actionButtons.innerHTML = `
+          <a href="/service/#services" class="btn-primary-action">
+            ↻ Retry Booking / Choose Package
+          </a>
+          <a href="https://wa.me/916266091562?text=${encodeURIComponent('Hello Sanskruti, my payment failed for Order ' + txnid + '. Error: ' + errorMsg)}" target="_blank" class="btn-whatsapp-action">
+            💬 Payment Help via WhatsApp
+          </a>
+          <a href="/service/" class="btn-secondary-action">
+            ← Return to Services
+          </a>
+        `;
+
+      // ========================================================
+      // 4. PAYMENT PENDING
+      // ========================================================
+      } else if (statusParam === 'pending') {
+        card.className = 'status-card-box status-pending';
+        icon.textContent = '⏳';
+        badge.textContent = 'Payment Pending';
+        heading.textContent = 'Payment Awaiting Confirmation';
+        desc.textContent = 'Your payment is currently being confirmed by your bank or UPI network. Once confirmed, your service voucher will activate automatically.';
+
+        actionButtons.innerHTML = `
+          <button onclick="window.location.reload()" class="btn-primary-action">🔄 Refresh Status</button>
+          <a href="https://wa.me/916266091562?text=${encodeURIComponent('Hello Sanskruti, my payment is pending for Order ' + txnid)}" target="_blank" class="btn-whatsapp-action">
+            💬 Inquire on WhatsApp
+          </a>
+          <a href="/service/" class="btn-secondary-action">
+            ← Return to Services
+          </a>
+        `;
+
+      // ========================================================
+      // 5. SECURITY / TAMPERING ALERT
+      // ========================================================
+      } else {
+        card.className = 'status-card-box status-failed';
+        icon.textContent = '🛡️';
+        badge.textContent = 'Security Notice';
+        heading.textContent = 'Verification Alert';
+        desc.textContent = errorMsg || 'The transaction signature could not be validated. If money was debited from your account, it will automatically refund within 3-5 business days.';
+
+        actionButtons.innerHTML = `
+          <a href="/service/" class="btn-secondary-action">← Return to Services</a>
+          <a href="https://wa.me/916266091562" target="_blank" class="btn-whatsapp-action">💬 WhatsApp Support</a>
+        `;
+      }
+    });
+  </script>
+</body>
+
+</html>

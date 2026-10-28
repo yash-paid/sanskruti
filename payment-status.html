@@ -346,6 +346,12 @@
 
       const typeParam = (urlParams.get('type') || '').toLowerCase();
 
+      // If a service order arrives at root payment-status.html, redirect directly to dedicated service status page
+      if (typeParam === 'service') {
+        window.location.replace(`/service/payment-status.html${window.location.search}`);
+        return;
+      }
+
       // Handle Success
       if (statusParam === 'success') {
         card.className = 'status-card status-success';
@@ -457,12 +463,26 @@
           </a>
         `;
 
-      // Handle Failed / Cancelled
+      // Handle Cancelled
+      } else if (statusParam === 'cancelled' || statusParam === 'cancel') {
+        card.className = 'status-card status-failed';
+        icon.textContent = '⚠️';
+        badge.textContent = 'Payment Cancelled';
+        heading.textContent = 'Transaction Cancelled';
+        msg.textContent = errorMsg || 'You cancelled the payment transaction. No amount was debited from your bank account or UPI app.';
+        actionButtons.innerHTML = `
+          <a href="index.html#catalog" class="btn-primary" style="text-decoration: none;">↻ Try Again / Choose Book</a>
+          <a href="https://wa.me/919238861171?text=${encodeURIComponent('Hello! I cancelled payment for Order ' + txnid + '. I have a question before purchasing.')}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none;">
+            💬 WhatsApp Inquiries
+          </a>
+        `;
+
+      // Handle Failed
       } else if (statusParam === 'failed' || statusParam === 'failure') {
         card.className = 'status-card status-failed';
         icon.textContent = '✕';
         badge.textContent = 'Payment Unsuccessful';
-        heading.textContent = 'Payment Failed or Cancelled';
+        heading.textContent = 'Payment Failed';
         msg.textContent = errorMsg || 'The transaction could not be completed. Your bank account was not charged. You can retry checkout anytime.';
         actionButtons.innerHTML = `
           <a href="index.html#catalog" class="btn-primary" style="text-decoration: none;">↻ Try Again / Choose Book</a>

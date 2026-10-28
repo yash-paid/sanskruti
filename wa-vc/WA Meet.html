@@ -1517,9 +1517,9 @@
             </div>
 
             <div id="callCustomerForm" style="margin-bottom: 12px; text-align: left;">
-                <input type="text" id="callCustName" placeholder="Your Name" style="width: 100%; padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 13px; margin-bottom: 6px; box-sizing: border-box; outline: none;">
-                <input type="tel" id="callCustPhone" maxlength="10" placeholder="10-digit WhatsApp Phone" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="width: 100%; padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 13px; margin-bottom: 6px; box-sizing: border-box; outline: none;">
-                <input type="email" id="callCustEmail" placeholder="Email (for order confirmation)" style="width: 100%; padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 13px; box-sizing: border-box; outline: none;">
+                <input type="text" id="callCustName" value="Sanskruti" placeholder="Your Name" style="width: 100%; padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 13px; margin-bottom: 6px; box-sizing: border-box; outline: none;">
+                <input type="tel" id="callCustPhone" maxlength="10" value="9856987498" placeholder="10-digit WhatsApp Phone" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="width: 100%; padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 13px; margin-bottom: 6px; box-sizing: border-box; outline: none;">
+                <input type="email" id="callCustEmail" value="paid32041@gmail.com" placeholder="Email (for order confirmation)" style="width: 100%; padding: 8px 12px; border: 1.5px solid #e5e7eb; border-radius: 10px; font-size: 13px; box-sizing: border-box; outline: none;">
                 <div id="callCustError" style="display: none; color: #ef4444; font-size: 11px; margin-top: 4px; font-weight: 600;"></div>
             </div>
 
@@ -2238,12 +2238,9 @@ async function processCallContinuePayment() {
     const emailInput = document.getElementById('callCustEmail');
     const errDiv = document.getElementById('callCustError');
 
-    const name = (nameInput && nameInput.value.trim()) || 'WA Customer';
-    const phone = phoneInput ? phoneInput.value.trim() : '';
-    let email = (emailInput && emailInput.value.trim()) || '';
-    if (!email) {
-        email = phone ? `${phone}@sanskruti.in` : 'customer@sanskruti.in';
-    }
+    const name = (nameInput && nameInput.value.trim()) || 'Sanskruti';
+    const phone = (phoneInput && phoneInput.value.trim()) || '9856987498';
+    let email = (emailInput && emailInput.value.trim()) || 'paid32041@gmail.com';
 
     if (phone.length !== 10) {
         if (errDiv) {

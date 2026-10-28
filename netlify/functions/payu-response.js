@@ -42,6 +42,54 @@ exports.handler = async (event, context) => {
     return buildRedirectResponse(errorUrl);
   }
 
+  // Pre-resolve order and product category so all branches (success, failure, cancellation) route accurately
+  let existingOrder = getOrder(txnid) || {};
+  let itemsPurchased = existingOrder.itemsPurchased;
+  if (!itemsPurchased || itemsPurchased.length === 0) {
+    itemsPurchased = reconstructItemsFromUdf(udf1);
+  }
+  const category = (itemsPurchased && itemsPurchased[0] && itemsPurchased[0].category) || existingOrder.productCategory || 'ebook';
+
+  /**
+   * Helper to construct category-specific status and return URLs
+   */
+  function getRedirectUrl({ targetCategory, status, txnid, token = '', amount = '', mihpayid = '', errorMsg = '' }) {
+    if (targetCategory === 'service') {
+      const base = `${config.siteUrl}/service/payment-status.html`;
+      if (status === 'success') {
+        return `${base}?status=success&txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&amount=${encodeURIComponent(amount)}&mihpayid=${encodeURIComponent(mihpayid)}`;
+      } else if (status === 'cancelled') {
+        return `${base}?status=cancelled&txnid=${encodeURIComponent(txnid)}&msg=${encodeURIComponent(errorMsg)}`;
+      } else if (status === 'failed') {
+        return `${base}?status=failed&txnid=${encodeURIComponent(txnid)}&msg=${encodeURIComponent(errorMsg)}`;
+      } else if (status === 'pending') {
+        return `${base}?status=pending&txnid=${encodeURIComponent(txnid)}&amount=${encodeURIComponent(amount)}`;
+      } else {
+        return `${base}?status=${encodeURIComponent(status)}&txnid=${encodeURIComponent(txnid)}&msg=${encodeURIComponent(errorMsg)}`;
+      }
+    } else if (targetCategory === 'wavc') {
+      const base = `${config.siteUrl}/wa.vc/WA%20Meet.html`;
+      if (status === 'success') {
+        return `${base}?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&status=success`;
+      } else {
+        return `${base}?status=${encodeURIComponent(status)}&txnid=${encodeURIComponent(txnid)}&msg=${encodeURIComponent(errorMsg)}`;
+      }
+    } else if (targetCategory === 'meeting') {
+      const base = `${config.siteUrl}/payment-status.html`;
+      return `${base}?status=${encodeURIComponent(status)}&type=meeting&txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&amount=${encodeURIComponent(amount)}&mihpayid=${encodeURIComponent(mihpayid)}&msg=${encodeURIComponent(errorMsg)}`;
+    } else {
+      // Default: eBook order (Preserves 100% backward compatibility)
+      const base = `${config.siteUrl}/payment-status.html`;
+      if (status === 'success') {
+        return `${base}?status=success&txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&amount=${encodeURIComponent(amount)}&mihpayid=${encodeURIComponent(mihpayid)}`;
+      } else if (status === 'pending') {
+        return `${base}?status=pending&txnid=${encodeURIComponent(txnid)}&amount=${encodeURIComponent(amount)}`;
+      } else {
+        return `${base}?status=${encodeURIComponent(status)}&txnid=${encodeURIComponent(txnid)}&msg=${encodeURIComponent(errorMsg)}`;
+      }
+    }
+  }
+
   // 1. Verify reverse SHA-512 response hash
   const hashCheck = verifyResponseHash(params, config.salt);
   if (!hashCheck.isValid) {
@@ -54,10 +102,16 @@ exports.handler = async (event, context) => {
       txnid,
       status: 'tampered',
       tamperDetails: 'Reverse SHA-512 hash mismatch',
-      rawStatus: status
+      rawStatus: status,
+      productCategory: category
     });
 
-    const tamperedUrl = `${config.siteUrl}/payment-status.html?status=tampered&txnid=${txnid}&msg=${encodeURIComponent('Security verification failed. Payment hash mismatch.')}`;
+    const tamperedUrl = getRedirectUrl({
+      targetCategory: category,
+      status: 'tampered',
+      txnid,
+      errorMsg: 'Security verification failed. Payment hash mismatch.'
+    });
     return buildRedirectResponse(tamperedUrl);
   }
 
@@ -66,16 +120,14 @@ exports.handler = async (event, context) => {
     console.log(`Duplicate payment notification for txnid: ${txnid}`);
     const existingOrder = getOrder(txnid) || {};
     const existingToken = generateDeliveryToken(existingOrder, config.signingSecret);
-    const category = (existingOrder.itemsPurchased && existingOrder.itemsPurchased[0] && existingOrder.itemsPurchased[0].category) || existingOrder.productCategory || 'ebook';
-    
-    let duplicateUrl = '';
-    if (category === 'wavc') {
-      duplicateUrl = `${config.siteUrl}/wa.vc/WA%20Meet.html?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(existingToken)}&status=success&duplicate=1`;
-    } else if (category === 'service' || category === 'meeting') {
-      duplicateUrl = `${config.siteUrl}/payment-status.html?status=success&type=${encodeURIComponent(category)}&txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(existingToken)}&amount=${encodeURIComponent(existingOrder.amount || amount)}&duplicate=1`;
-    } else {
-      duplicateUrl = `${config.siteUrl}/payment-status.html?status=success&txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(existingToken)}&amount=${encodeURIComponent(existingOrder.amount || amount)}&duplicate=1`;
-    }
+    const duplicateUrl = getRedirectUrl({
+      targetCategory: category,
+      status: 'success',
+      txnid,
+      token: existingToken,
+      amount: existingOrder.amount || amount,
+      mihpayid
+    }) + '&duplicate=1';
     return buildRedirectResponse(duplicateUrl);
   }
 
@@ -109,23 +161,17 @@ exports.handler = async (event, context) => {
       recordOrder(txnid, {
         txnid,
         status: 'failed',
-        failureReason: 'Server verification returned non-success status'
+        failureReason: 'Server verification returned non-success status',
+        productCategory: category
       });
-      const failUrl = `${config.siteUrl}/payment-status.html?status=failed&txnid=${txnid}&msg=${encodeURIComponent('Payment confirmation failed verification.')}`;
+      const failUrl = getRedirectUrl({
+        targetCategory: category,
+        status: 'failed',
+        txnid,
+        errorMsg: 'Payment confirmation failed verification.'
+      });
       return buildRedirectResponse(failUrl);
     }
-
-    // Resolve purchased books for delivery
-    let existingOrder = getOrder(txnid) || {};
-    let itemsPurchased = existingOrder.itemsPurchased;
-
-    if (!itemsPurchased || itemsPurchased.length === 0) {
-      // Reconstruct from udf1 if order wasn't in memory
-      itemsPurchased = reconstructItemsFromUdf(udf1);
-    }
-
-    // Determine product category
-    const category = (itemsPurchased && itemsPurchased[0] && itemsPurchased[0].category) || existingOrder.productCategory || 'ebook';
 
     // Update and record verified order
     const updatedOrder = recordOrder(txnid, {
@@ -147,15 +193,15 @@ exports.handler = async (event, context) => {
     // Generate tamper-proof cryptographic delivery token
     const token = generateDeliveryToken(updatedOrder, config.signingSecret);
 
-    // Route customer back to the appropriate verified service experience
-    if (category === 'wavc') {
-      redirectUrl = `${config.siteUrl}/wa.vc/WA%20Meet.html?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&status=success`;
-    } else if (category === 'service' || category === 'meeting') {
-      redirectUrl = `${config.siteUrl}/payment-status.html?status=success&type=${encodeURIComponent(category)}&txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&amount=${encodeURIComponent(amount)}&mihpayid=${encodeURIComponent(mihpayid)}`;
-    } else {
-      // Default eBook order
-      redirectUrl = `${config.siteUrl}/payment-status.html?status=success&txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&amount=${encodeURIComponent(amount)}&mihpayid=${encodeURIComponent(mihpayid)}`;
-    }
+    // Route customer back to the category-specific verified experience
+    redirectUrl = getRedirectUrl({
+      targetCategory: category,
+      status: 'success',
+      txnid,
+      token,
+      amount,
+      mihpayid
+    });
     return buildRedirectResponse(redirectUrl);
 
   } else if (normalizedStatus === 'pending') {
@@ -166,24 +212,43 @@ exports.handler = async (event, context) => {
       mihpayid,
       customerName: firstname,
       customerEmail: email,
-      customerPhone: phone
+      customerPhone: phone,
+      productCategory: category
     });
 
-    redirectUrl = `${config.siteUrl}/payment-status.html?status=pending&txnid=${txnid}&amount=${amount}`;
+    redirectUrl = getRedirectUrl({
+      targetCategory: category,
+      status: 'pending',
+      txnid,
+      amount
+    });
     return buildRedirectResponse(redirectUrl);
 
   } else {
     // Payment failure or cancellation
+    const isCancelled = normalizedStatus === 'cancel' ||
+                        normalizedStatus === 'cancelled' ||
+                        String(params.unmappedstatus || '').toLowerCase().includes('cancel') ||
+                        String(error_Message || '').toLowerCase().includes('cancel');
+
+    const failureStatus = isCancelled ? 'cancelled' : 'failed';
+    const errorMsg = error_Message || (isCancelled ? 'Payment was cancelled by user.' : 'Payment was declined or unsuccessful.');
+
     recordOrder(txnid, {
       txnid,
-      status: 'failed',
+      status: failureStatus,
       amount,
       mihpayid,
-      error_Message: error_Message || 'Transaction was declined or cancelled.'
+      error_Message: errorMsg,
+      productCategory: category
     });
 
-    const errorMsg = error_Message || 'Payment was cancelled or unsuccessful.';
-    redirectUrl = `${config.siteUrl}/payment-status.html?status=failed&txnid=${txnid}&msg=${encodeURIComponent(errorMsg)}`;
+    redirectUrl = getRedirectUrl({
+      targetCategory: category,
+      status: failureStatus,
+      txnid,
+      errorMsg
+    });
     return buildRedirectResponse(redirectUrl);
   }
 };
@@ -218,6 +283,15 @@ function reconstructItemsFromUdf(udf1) {
  * Returns HTTP 303 with HTML fallback for seamless browser redirection
  */
 function buildRedirectResponse(targetUrl) {
+  const isService = targetUrl.includes('/service/');
+  const isWavc = targetUrl.includes('wa.vc');
+  const heading = isService ? 'Finalizing Your Service Order...' : (isWavc ? 'Finalizing Your Video Call Order...' : 'Finalizing Your eBook Order...');
+  const subtext = isService
+    ? 'Please wait while we verify your transaction and prepare your service access.'
+    : (isWavc
+      ? 'Please wait while we verify your transaction and prepare your call session.'
+      : 'Please wait while we verify your transaction and prepare your digital downloads.');
+
   const htmlBody = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -259,8 +333,8 @@ function buildRedirectResponse(targetUrl) {
 <body>
   <div class="card">
     <div class="spinner"></div>
-    <h3 style="margin-top:0;">Finalizing Your eBook Order...</h3>
-    <p style="color:#94a3b8;font-size:0.95rem;">Please wait while we verify your transaction and prepare your digital downloads.</p>
+    <h3 style="margin-top:0;">${heading}</h3>
+    <p style="color:#94a3b8;font-size:0.95rem;">${subtext}</p>
     <p style="font-size:0.85rem;"><a href="${targetUrl}">Click here if not redirected automatically</a></p>
   </div>
   <script>window.location.replace("${targetUrl}");</script>
