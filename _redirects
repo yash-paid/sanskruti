@@ -24,6 +24,11 @@
 /Dating%20Live%20UI_files/*     /wa-vc/Dating%20Live%20UI_files/:splat 200!
 /Dating Live UI_files/*         /wa-vc/Dating%20Live%20UI_files/:splat 200!
 /index.php_files/*              /wa-vc/index.php_files/:splat     200!
+/video%20call%20girl.png        /wa-vc/video%20call%20girl.png    200!
+/video call girl.png            /wa-vc/video%20call%20girl.png    200!
+/text.png                       /wa-vc/text.png                   200!
+/cover1st.png                   /wa-vc/cover1st.png               200!
+/2ndcover.png                   /wa-vc/2ndcover.png               200!
 
 # =========================================================
 # 4. Sub-Project Clean Rewrites
