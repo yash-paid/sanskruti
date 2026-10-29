@@ -34,6 +34,8 @@
 # 4. Sub-Project Clean Rewrites
 # =========================================================
 /service/style.css              /service-meet/style.css           200!
+/service/delivery.html          /service-meet/delivery.html       200!
+/service/delivery               /service-meet/delivery.html       200!
 /service/payment-status.html    /service-meet/payment-status.html 200!
 /service/payment-status         /service-meet/payment-status.html 200!
 /service/payment_status.html    /service-meet/payment-status.html 200!
