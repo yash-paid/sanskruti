@@ -610,29 +610,265 @@
     .btn-mute { background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); }
     .btn-hangup { background: #ef4444; box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45); }
 
-    .cut-alert-pill {
-      display: inline-block;
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid #ef4444;
+    /* ========================================================
+       BRAND NEW 10s CUT PAYMENT MODAL ("To Continue This Call, Pay ₹99")
+       ======================================================== */
+    .new-continue-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 16, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 9999999 !important; /* Above video call screen */
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: newPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    @keyframes newPopIn {
+      0% { opacity: 0; transform: scale(0.92) translateY(12px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .new-continue-card {
+      background: linear-gradient(180deg, #1f122b 0%, #100a18 100%);
+      border: 1.5px solid rgba(255, 42, 116, 0.5);
+      border-radius: 28px;
+      max-width: 380px;
+      width: 100%;
+      padding: 24px 20px 20px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 40px rgba(255, 42, 116, 0.3);
+      color: #fff;
+      box-sizing: border-box;
+    }
+
+    .new-close-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .new-close-btn:hover {
+      background: rgba(255, 42, 116, 0.6);
+      color: #fff;
+    }
+
+    .new-alert-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
       color: #f87171;
       font-size: 11px;
       font-weight: 800;
       padding: 4px 12px;
       border-radius: 20px;
-      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+      margin-bottom: 12px;
     }
-    .continue-benefit-box {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+
+    .new-avatar-box {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 12px;
+    }
+    .new-avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2.5px solid #ff2a74;
+      box-shadow: 0 0 20px rgba(255, 42, 116, 0.55);
+    }
+    .new-paused-badge {
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ef4444;
+      color: #fff;
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 2px 8px;
       border-radius: 12px;
-      padding: 10px 12px;
+      white-space: nowrap;
+      letter-spacing: 0.3px;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.6);
+    }
+
+    .new-pay-title {
+      font-size: 21px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 5px;
+      letter-spacing: -0.2px;
+    }
+
+    .new-pay-sub {
+      font-size: 12.5px;
+      color: #d1c4e9;
+      line-height: 1.35;
+      margin-bottom: 14px;
+    }
+
+    /* VIP PLAN CARD */
+    .new-plan-card {
+      background: linear-gradient(135deg, rgba(255, 42, 116, 0.15), rgba(138, 43, 226, 0.15));
+      border: 1.5px solid rgba(255, 42, 116, 0.5);
+      border-radius: 16px;
+      padding: 12px 14px;
       text-align: left;
-      margin: 10px 0 12px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .new-plan-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .new-plan-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .new-plan-badge {
+      background: #ff2a74;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 6px;
+      letter-spacing: 0.3px;
+    }
+    .new-plan-price {
+      text-align: right;
+    }
+    .new-old-price {
       font-size: 11.5px;
+      color: #94a3b8;
+      text-decoration: line-through;
+      margin-right: 4px;
+    }
+    .new-price-amt {
+      font-size: 20px;
+      font-weight: 800;
+      color: #10b981;
+    }
+    .new-plan-features {
+      font-size: 11px;
       color: #cbd5e1;
+      line-height: 1.4;
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 3px;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .new-input-box {
+      margin-bottom: 12px;
+      text-align: left;
+    }
+    .new-cust-input {
+      width: 100%;
+      padding: 9px 12px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 13px;
+      margin-bottom: 6px;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .new-cust-input:focus {
+      border-color: #ff2a74;
+    }
+
+    .new-upi-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #a794b6;
+      margin-bottom: 12px;
+    }
+    .new-upi-pill {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .new-pay-btn {
+      width: 100%;
+      padding: 13px 18px;
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(16, 185, 129, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .new-pay-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 22px rgba(16, 185, 129, 0.55);
+    }
+    .new-pay-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .new-cancel-btn {
+      width: 100%;
+      background: transparent;
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 9px 18px;
+      border-radius: 25px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s;
+    }
+    .new-cancel-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
     }
   </style>
   <script src="blob:https://flirtchat.in/bfe4a384-bdbd-44d5-845e-d10b9576e576"></script>
@@ -946,36 +1182,63 @@
   </div>
 
   <!-- ============================================================
-       MODAL 2: 10 SECONDS CUT -> TO CONTINUE THIS CALL, PAY 99
+       BRAND NEW POPUP: TO CONTINUE THIS CALL, PAY ₹99
        ============================================================ -->
-  <div id="continueCallModal" class="join-modal-overlay" style="display: none;">
-    <div class="join-modal-card">
-      <button class="join-modal-close" onclick="closeContinueModal()">✕</button>
-      <div class="join-avatar-wrap">
-        <img id="continueModalAvatar" src="" alt="Model" class="join-avatar">
-        <span class="join-live-tag" style="background: #ef4444;">CALL PAUSED 🔒</span>
-      </div>
-      <div class="cut-alert-pill">⏰ Free 10s Preview Ended</div>
-      <h3 class="join-title">To Continue This Call, Pay ₹99</h3>
-      <p class="join-desc"><span id="continueModalName" style="color: #ff2a74; font-weight: 700;">अंकिता</span> is waiting on live call! Unlock Unlimited Private HD Video Call now 💋</p>
+  <div id="newContinueModal" class="new-continue-overlay" style="display: none;">
+    <div class="new-continue-card" onclick="event.stopPropagation()">
+      <button class="new-close-btn" onclick="closeNewContinueModal()" title="End Call">✕</button>
 
-      <div class="continue-benefit-box">
-        <div class="benefit-item">✓ Unlimited Private HD Video Call</div>
-        <div class="benefit-item">✓ 2-Way Both Side Camera & Audio</div>
-        <div class="benefit-item">✓ 100% Private, Safe & Ad-Free</div>
+      <div class="new-alert-pill">
+        <span>⏰</span> Free 10s Preview Ended
       </div>
 
-      <div id="continueCustomerForm" style="margin: 12px 0 8px; text-align: left;">
-        <input type="text" id="contCustName" value="Guest" placeholder="Your Name" class="join-input">
-        <input type="tel" id="contCustPhone" maxlength="10" value="9238861171" placeholder="10-digit WhatsApp Phone" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="join-input">
-        <input type="email" id="contCustEmail" value="paid32041@gmail.com" placeholder="Email (for order confirmation)" class="join-input">
-        <div id="contCustError" style="display: none; color: #ef4444; font-size: 11px; margin-top: 4px; font-weight: 600;"></div>
+      <div class="new-avatar-box">
+        <img id="newContinueAvatar" src="./index.php_files/thumb_1786994122.jpg" alt="Model" class="new-avatar-img">
+        <span class="new-paused-badge">CALL PAUSED 🔒</span>
       </div>
 
-      <button id="continuePayBtn" class="join-action-btn" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="processContinuePayment99()">
+      <h3 class="new-pay-title">To Continue This Call, Pay ₹99</h3>
+      <p class="new-pay-sub">
+        <span id="newContinueName" style="color: #ff2a74; font-weight: 700;">अंकिता</span> is waiting for you on live private video call! Unlock unlimited HD call now 💋
+      </p>
+
+      <div class="new-plan-card">
+        <div class="new-plan-top">
+          <div class="new-plan-name">
+            15 Min HD Video Call <span class="new-plan-badge">★ POPULAR</span>
+          </div>
+          <div class="new-plan-price">
+            <span class="new-old-price">₹199</span>
+            <span class="new-price-amt">₹99</span>
+          </div>
+        </div>
+        <div class="new-plan-features">
+          <div>✓ Unlimited 1-on-1 Private HD Video Call</div>
+          <div>✓ 2-Way Both Side Camera & Audio</div>
+          <div>✓ 100% Private, Safe & Ad-Free</div>
+        </div>
+      </div>
+
+      <div class="new-input-box">
+        <input type="text" id="newCustName" value="Sanskruti" placeholder="Your Name" class="new-cust-input">
+        <input type="tel" id="newCustPhone" maxlength="10" value="9238861171" placeholder="10-digit WhatsApp Phone" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="new-cust-input">
+        <input type="email" id="newCustEmail" value="paid32041@gmail.com" placeholder="Email (for order confirmation)" class="new-cust-input">
+        <div id="newCustError" style="display: none; color: #ef4444; font-size: 11px; margin-top: 4px; font-weight: 600; text-align: left;"></div>
+      </div>
+
+      <div class="new-upi-strip">
+        <span>Fast UPI:</span>
+        <span class="new-upi-pill">GPay</span>
+        <span class="new-upi-pill">PhonePe</span>
+        <span class="new-upi-pill">Paytm</span>
+        <span class="new-upi-pill">Cards</span>
+      </div>
+
+      <button id="newContinuePayBtn" class="new-pay-btn" onclick="processNewContinuePayment99()">
         ⚡ Pay ₹99 via PayU & Continue Call 📹
       </button>
-      <button class="join-cancel-btn" onclick="closeContinueModal()">
+
+      <button class="new-cancel-btn" onclick="closeNewContinueModal()">
         End Call & Return 📞
       </button>
     </div>
@@ -992,6 +1255,18 @@
     let callTimerInterval = null;
     let localWebcamStream = null;
     let isCallPaid = false;
+
+    // Global helper invoked directly by card onclick:
+    function openJoinModalFromCard(cardEl) {
+      if (!cardEl) return;
+      const imgEl = cardEl.querySelector('img');
+      const nameEl = cardEl.querySelector('h3') || cardEl.querySelector('h2');
+      const name = (nameEl && nameEl.innerText.trim()) || 'Model';
+      const img = (imgEl && (imgEl.src || imgEl.getAttribute('src'))) || './index.php_files/thumb_1786994122.jpg';
+
+      currentModel = { name, img };
+      openJoinModal();
+    }
 
     // Attach click listener to every profile card
     function initCardClickListeners() {
@@ -1115,7 +1390,7 @@
       }, 1000);
     }
 
-    // 10 Seconds Reached -> Automatic Cut & Show Continue Popup (Pay 99)
+    // 10 Seconds Reached -> Automatic Cut & Show Brand New Popup (Pay ₹99)
     function cutCallAndShowPaymentPopup() {
       if (callTimerInterval) {
         clearInterval(callTimerInterval);
@@ -1125,19 +1400,25 @@
       const remoteVideo = document.getElementById('remoteCallVideo');
       if (remoteVideo) {
         remoteVideo.pause();
-        remoteVideo.style.filter = 'blur(14px) brightness(0.4)';
+        remoteVideo.style.filter = 'blur(16px) brightness(0.35)';
       }
 
       stopSelfWebcam();
 
-      // Populate Modal 2 with girl's info
-      document.getElementById('continueModalName').innerText = currentModel.name;
-      document.getElementById('continueModalAvatar').src = currentModel.img;
-      document.getElementById('continueCallModal').style.display = 'flex';
+      // Populate Brand New Modal with model info
+      const nameEl = document.getElementById('newContinueName');
+      const avatarEl = document.getElementById('newContinueAvatar');
+      if (nameEl) nameEl.innerText = currentModel.name;
+      if (avatarEl) avatarEl.src = currentModel.img;
+
+      // Show Brand New Modal on top of everything!
+      const modal = document.getElementById('newContinueModal');
+      if (modal) modal.style.display = 'flex';
     }
 
-    function closeContinueModal() {
-      document.getElementById('continueCallModal').style.display = 'none';
+    function closeNewContinueModal() {
+      const modal = document.getElementById('newContinueModal');
+      if (modal) modal.style.display = 'none';
       endAndCloseCall();
     }
 
@@ -1154,8 +1435,10 @@
       }
       stopSelfWebcam();
       document.getElementById('videoCallScreen').style.display = 'none';
-      document.getElementById('continueCallModal').style.display = 'none';
-      document.getElementById('joinCallModal').style.display = 'none';
+      const newModal = document.getElementById('newContinueModal');
+      if (newModal) newModal.style.display = 'none';
+      const joinModal = document.getElementById('joinCallModal');
+      if (joinModal) joinModal.style.display = 'none';
     }
 
     // Toggle mute
@@ -1195,9 +1478,9 @@
       }
     }
 
-    // Process Option 2 Continue Payment (₹99)
-    function processContinuePayment99() {
-      processPayUCheckout(99, 'wavc-call-99', 'contCustName', 'contCustPhone', 'contCustEmail', 'contCustError', 'continuePayBtn');
+    // Process Brand New Modal Continue Payment (₹99)
+    function processNewContinuePayment99() {
+      processPayUCheckout(99, 'wavc-call-99', 'newCustName', 'newCustPhone', 'newCustEmail', 'newCustError', 'newContinuePayBtn');
     }
 
     // Generic PayU Checkout for index.php
