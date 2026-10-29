@@ -34,10 +34,16 @@
 # 4. Sub-Project Clean Rewrites
 # =========================================================
 /service/style.css              /service-meet/style.css           200!
-/service/delivery.html          /service-meet/delivery.html       200!
-/service/delivery               /service-meet/delivery.html       200!
-/service/payment-status.html    /service-meet/payment-status.html 200!
-/service/payment-status         /service-meet/payment-status.html 200!
+/service/5%20photos/*                   /service-meet/5%20photos/:splat         200!
+/service/5 photos/*                     /service-meet/5%20photos/:splat         200!
+/service/10%20photos/*                  /service-meet/10%20photos/:splat        200!
+/service/10 photos/*                    /service-meet/10%20photos/:splat        200!
+/service/5%20videos/*                   /service-meet/5%20videos/:splat         200!
+/service/5 videos/*                     /service-meet/5%20videos/:splat         200!
+/service/5%20photos%20plus%203%20videos/* /service-meet/5%20photos%20plus%203%20videos/:splat 200!
+/service/5 photos plus 3 videos/*       /service-meet/5%20photos%20plus%203%20videos/:splat 200!
+/service/payment-status.html            /service-meet/payment-status.html       200!
+/service/payment-status                 /service-meet/payment-status.html       200!
 /service/payment_status.html    /service-meet/payment-status.html 200!
 /service/payment_status         /service-meet/payment-status.html 200!
 /service/index.html             /service-meet/index.html          200!

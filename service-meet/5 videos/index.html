@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your 5 Exclusive HD Videos | Sanskruti Services</title>
+  <link rel="icon" href="/Qr.jpg" type="image/jpeg">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: radial-gradient(circle at 50% 10%, #20052b 0%, #0a050e 100%);
+      color: #fff;
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      padding: 1.5rem 1rem 4rem;
+    }
+    .container { max-width: 900px; margin: 0 auto; text-align: center; }
+    .badge {
+      display: inline-block;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid #10b981;
+      color: #10b981;
+      font-weight: 700;
+      font-size: 0.8rem;
+      padding: 6px 16px;
+      border-radius: 20px;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+    }
+    h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; }
+    p { color: #bfa8cc; font-size: 0.95rem; margin-bottom: 2rem; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 3rem;
+    }
+    .card {
+      background: rgba(22, 11, 31, 0.8);
+      border: 1px solid rgba(255, 42, 116, 0.3);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+    }
+    .vid-wrap {
+      width: 100%;
+      height: 280px;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .vid-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+    }
+    .card-footer { padding: 1.2rem; display: flex; flex-direction: column; gap: 10px; }
+    .title { font-weight: 700; font-size: 1rem; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 12px;
+      background: linear-gradient(135deg, #ff2a74, #8a2be2);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      box-shadow: 0 4px 15px rgba(255, 42, 116, 0.4);
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .wa-box {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+    }
+    .btn-wa {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #25d366;
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 30px;
+      text-decoration: none;
+      font-weight: 700;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="badge">✓ Access Unlocked</div>
+    <h1>Your 5 Exclusive HD Videos</h1>
+    <p>Thank you for your payment! Here are your 5 private HD videos. You can watch them directly or click download to save to your device.</p>
+
+    <div class="grid" id="mediaGrid"></div>
+
+    <div class="wa-box">
+      <h3>Need Help or Want 1-on-1 Live Video Call?</h3>
+      <p style="margin-bottom: 0.5rem;">Connect with Sanskruti directly on WhatsApp for live private video call bookings and special requests.</p>
+      <a href="https://wa.me/919238861171?text=Hello%20Sanskruti,%20I%20have%20received%20my%205%20videos%20package!" target="_blank" class="btn-wa">
+        💬 Connect on WhatsApp
+      </a>
+    </div>
+  </div>
+
+  <script>
+    const grid = document.getElementById('mediaGrid');
+    const videoFiles = ['1.mp4', '2.mp4', '3.mp4', '4.mp4', '5.mp4'];
+
+    videoFiles.forEach((file, index) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div class="vid-wrap">
+          <video controls playsinline preload="metadata">
+            <source src="${file}" type="video/mp4">
+            <source src="/wa-vc/videos/${index + 1}.mp4" type="video/mp4">
+            Your browser does not support video playback.
+          </video>
+        </div>
+        <div class="card-footer">
+          <div class="title">Exclusive HD Video #${index + 1}</div>
+          <a href="${file}" download="Exclusive-Video-${index + 1}.mp4" class="btn">
+            ⬇️ Download HD Video
+          </a>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  </script>
+</body>
+</html>

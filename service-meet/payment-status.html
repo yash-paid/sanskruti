@@ -431,11 +431,24 @@
         desc.textContent = 'Your Sanskruti Service payment has been verified. You can access and download your exclusive photos & videos immediately below, or connect on WhatsApp.';
 
         const initialWaText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for Order #${txnid || 'N/A'}${amount ? ' (₹' + amount + ')' : ''}. PayU Ref: ${mihpayid || 'N/A'}. Please confirm and activate my service.`);
-        const deliveryUrl = `/service/delivery.html?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&amount=${encodeURIComponent(amount)}`;
+        // Smart folder mapping for media services
+        const FOLDER_MAP = {
+          'service-pic-5': '/service/5%20photos/',
+          'service-pic-10': '/service/10%20photos/',
+          'service-combo-1': '/service/5%20photos%20plus%203%20videos/',
+          'service-vid-5': '/service/5%20videos/'
+        };
+
+        // Fallback by amount
+        let mediaFolderUrl = '/service/5%20photos/';
+        if (amount === '100') mediaFolderUrl = '/service/10%20photos/';
+        else if (amount === '120') mediaFolderUrl = '/service/5%20photos%20plus%203%20videos/';
+        else if (amount === '150') mediaFolderUrl = '/service/5%20videos/';
+        else if (amount === '1' || amount === '60') mediaFolderUrl = '/service/5%20photos/';
 
         actionButtons.innerHTML = `
-          <a href="${deliveryUrl}" class="btn-whatsapp-action" style="background: linear-gradient(135deg, #ff2a74, #8a2be2); box-shadow: 0 4px 18px rgba(255, 42, 116, 0.45); margin-bottom: 0.6rem;">
-            📥 View & Download Your Photos & Videos Now →
+          <a id="btnMediaAccess" href="${mediaFolderUrl}" class="btn-whatsapp-action" style="background: linear-gradient(135deg, #ff2a74, #8a2be2); box-shadow: 0 4px 18px rgba(255, 42, 116, 0.45); margin-bottom: 0.6rem;">
+            📥 View & Download Your Photos / Videos Now →
           </a>
           <a href="https://wa.me/919238861171?text=${initialWaText}" target="_blank" class="btn-whatsapp-action">
             💬 Activate / Chat on WhatsApp
@@ -459,14 +472,28 @@
 
                 if (verifyData.order.items && verifyData.order.items.length > 0) {
                   verifiedPackage.style.display = 'flex';
-                  valPackageTitle.textContent = '💎 ' + verifyData.order.items[0].title;
-                  valPackagePrice.textContent = '₹' + verifyData.order.items[0].price;
+                  const boughtItem = verifyData.order.items[0];
+                  valPackageTitle.textContent = '💎 ' + boughtItem.title;
+                  valPackagePrice.textContent = '₹' + boughtItem.price;
+
+                  // Update direct folder link if item is in FOLDER_MAP
+                  if (FOLDER_MAP[boughtItem.id]) {
+                    const mediaBtn = document.getElementById('btnMediaAccess');
+                    if (mediaBtn) {
+                      mediaBtn.href = FOLDER_MAP[boughtItem.id];
+                      mediaBtn.style.display = 'inline-flex';
+                    }
+                  } else if (boughtItem.id && !boughtItem.id.includes('pic') && !boughtItem.id.includes('combo') && !boughtItem.id.includes('vid')) {
+                    // Call or chat service - WhatsApp is primary
+                    const mediaBtn = document.getElementById('btnMediaAccess');
+                    if (mediaBtn) mediaBtn.style.display = 'none';
+                  }
                 }
 
                 const itemTitle = (verifyData.order.items && verifyData.order.items[0] && verifyData.order.items[0].title) || '';
                 const verifiedWaText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for Order #${txnid} (${itemTitle ? itemTitle + ' - ' : ''}₹${amount || (verifyData.order.items && verifyData.order.items[0].price) || ''}). PayU Ref: ${mihpayid || 'N/A'}. Verification Token: ${token}. Please confirm my service delivery.`);
 
-                const waBtn = actionButtons.querySelector('.btn-whatsapp-action');
+                const waBtn = actionButtons.querySelector('a[href*="wa.me"]');
                 if (waBtn) {
                   waBtn.href = `https://wa.me/919238861171?text=${verifiedWaText}`;
                 }
