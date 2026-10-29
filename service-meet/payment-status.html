@@ -430,7 +430,7 @@
         heading.textContent = 'Payment Successful! 🎉';
         desc.textContent = 'Your Sanskruti Service payment has been verified. Connect directly on WhatsApp to confirm and activate your private session.';
 
-        const initialWaText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for Order #${txnid || 'N/A'} (₹${amount || '60'}). PayU Ref: ${mihpayid || 'N/A'}. Please confirm and activate my service.`);
+        const initialWaText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for Order #${txnid || 'N/A'}${amount ? ' (₹' + amount + ')' : ''}. PayU Ref: ${mihpayid || 'N/A'}. Please confirm and activate my service.`);
 
         actionButtons.innerHTML = `
           <a href="https://wa.me/919238861171?text=${initialWaText}" target="_blank" class="btn-whatsapp-action">
