@@ -61,7 +61,7 @@
       transition: transform 0.3s;
     }
     .img-wrap img:hover { transform: scale(1.05); }
-    .card-footer { padding: 1rem; display: flex; flex-direction: column; gap: 8px; }
+    .card-footer { padding: 0.85rem 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .title { font-weight: 700; font-size: 0.95rem; }
     .btn {
       display: inline-flex;
@@ -102,10 +102,10 @@
   <div class="container">
     <div class="badge">✓ Access Unlocked</div>
     <h1>Your 5 Exclusive Photos</h1>
-    <p>Thank you for your payment! Here are your 5 high-definition unlocked photos. Click below each photo to download directly to your device.</p>
+    <p>Thank you for your payment! Here are your 5 high-definition unlocked exclusive photos.</p>
 
     <div class="grid" id="mediaGrid">
-      <!-- Generated via JS for 1.jpg to 5.jpg -->
+      <!-- Generated via JS for actual uploaded photos -->
     </div>
 
     <div class="wa-box">
@@ -119,20 +119,23 @@
 
   <script>
     const grid = document.getElementById('mediaGrid');
-    const photoFiles = ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'];
+    const photoFiles = [
+      'IMG (62).jpg',
+      'IMG (70).jpg',
+      'IMG (86).jpg',
+      'IMG (117).jpg',
+      'IMG (125).jpg'
+    ];
 
     photoFiles.forEach((file, index) => {
       const card = document.createElement('div');
       card.className = 'card';
       card.innerHTML = `
         <div class="img-wrap">
-          <img src="${file}" alt="Exclusive Photo #${index + 1}" onerror="this.src='/wa-vc/photos/${index + 1}.jpg'">
+          <img src="${encodeURI(file)}" alt="Exclusive Photo #${index + 1}" loading="lazy">
         </div>
         <div class="card-footer">
           <div class="title">Exclusive Photo #${index + 1}</div>
-          <a href="${file}" download="Exclusive-Photo-${index + 1}.jpg" class="btn">
-            ⬇️ Download HD Photo
-          </a>
         </div>
       `;
       grid.appendChild(card);

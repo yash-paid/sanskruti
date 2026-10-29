@@ -69,7 +69,7 @@
       height: 100%;
       object-fit: cover;
     }
-    .card-footer { padding: 1rem; display: flex; flex-direction: column; gap: 8px; }
+    .card-footer { padding: 0.85rem 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .title { font-weight: 700; font-size: 0.95rem; }
     .btn {
       display: inline-flex;
@@ -134,45 +134,52 @@
     const pGrid = document.getElementById('photosGrid');
     const vGrid = document.getElementById('videosGrid');
 
+    const photoFiles = [
+      'IMG (126).jpg',
+      'IMG (127).jpg',
+      'IMG (135).jpg',
+      'IMG (166).jpg',
+      'IMG (205).jpg'
+    ];
+
+    const videoFiles = [
+      'VID (13).mp4',
+      'VID (28).mp4',
+      'VID (43).mp4'
+    ];
+
     // 5 Photos
-    for (let i = 1; i <= 5; i++) {
+    photoFiles.forEach((file, index) => {
       const card = document.createElement('div');
       card.className = 'card';
       card.innerHTML = `
         <div class="media-wrap">
-          <img src="photo${i}.jpg" alt="Exclusive Photo #${i}" onerror="this.src='/wa-vc/photos/${i}.jpg'">
+          <img src="${encodeURI(file)}" alt="Exclusive Photo #${index + 1}" loading="lazy">
         </div>
         <div class="card-footer">
-          <div class="title">Exclusive Photo #${i}</div>
-          <a href="photo${i}.jpg" download="Exclusive-Photo-${i}.jpg" class="btn">
-            ⬇️ Download HD Photo
-          </a>
+          <div class="title">Exclusive Photo #${index + 1}</div>
         </div>
       `;
       pGrid.appendChild(card);
-    }
+    });
 
     // 3 Videos
-    for (let i = 1; i <= 3; i++) {
+    videoFiles.forEach((file, index) => {
       const card = document.createElement('div');
       card.className = 'card';
       card.innerHTML = `
         <div class="media-wrap">
           <video controls playsinline preload="metadata">
-            <source src="video${i}.mp4" type="video/mp4">
-            <source src="/wa-vc/videos/${i}.mp4" type="video/mp4">
+            <source src="${encodeURI(file)}" type="video/mp4">
             Your browser does not support video playback.
           </video>
         </div>
         <div class="card-footer">
-          <div class="title">Exclusive HD Video #${i}</div>
-          <a href="video${i}.mp4" download="Exclusive-Video-${i}.mp4" class="btn">
-            ⬇️ Download HD Video
-          </a>
+          <div class="title">Exclusive HD Video #${index + 1}</div>
         </div>
       `;
       vGrid.appendChild(card);
-    }
+    });
   </script>
 </body>
 </html>

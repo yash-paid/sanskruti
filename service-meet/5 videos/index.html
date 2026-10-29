@@ -60,7 +60,7 @@
       object-fit: cover;
       background: #000;
     }
-    .card-footer { padding: 1.2rem; display: flex; flex-direction: column; gap: 10px; }
+    .card-footer { padding: 0.85rem 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .title { font-weight: 700; font-size: 1rem; }
     .btn {
       display: inline-flex;
@@ -100,15 +100,15 @@
 <body>
   <div class="container">
     <div class="badge">✓ Access Unlocked</div>
-    <h1>Your 5 Exclusive HD Videos</h1>
-    <p>Thank you for your payment! Here are your 5 private HD videos. You can watch them directly or click download to save to your device.</p>
+    <h1>Your Exclusive HD Videos</h1>
+    <p>Thank you for your payment! Here are your private HD videos. You can watch them directly below.</p>
 
     <div class="grid" id="mediaGrid"></div>
 
     <div class="wa-box">
       <h3>Need Help or Want 1-on-1 Live Video Call?</h3>
       <p style="margin-bottom: 0.5rem;">Connect with Sanskruti directly on WhatsApp for live private video call bookings and special requests.</p>
-      <a href="https://wa.me/919238861171?text=Hello%20Sanskruti,%20I%20have%20received%20my%205%20videos%20package!" target="_blank" class="btn-wa">
+      <a href="https://wa.me/919238861171?text=Hello%20Sanskruti,%20I%20have%20received%20my%20videos%20package!" target="_blank" class="btn-wa">
         💬 Connect on WhatsApp
       </a>
     </div>
@@ -116,7 +116,14 @@
 
   <script>
     const grid = document.getElementById('mediaGrid');
-    const videoFiles = ['1.mp4', '2.mp4', '3.mp4', '4.mp4', '5.mp4'];
+    const videoFiles = [
+      'VID (10).mp4',
+      'VID (11).mp4',
+      'VID (26).mp4',
+      'VID (28).mp4',
+      'VID (43).mp4',
+      'VID (44).mp4'
+    ];
 
     videoFiles.forEach((file, index) => {
       const card = document.createElement('div');
@@ -124,16 +131,12 @@
       card.innerHTML = `
         <div class="vid-wrap">
           <video controls playsinline preload="metadata">
-            <source src="${file}" type="video/mp4">
-            <source src="/wa-vc/videos/${index + 1}.mp4" type="video/mp4">
+            <source src="${encodeURI(file)}" type="video/mp4">
             Your browser does not support video playback.
           </video>
         </div>
         <div class="card-footer">
           <div class="title">Exclusive HD Video #${index + 1}</div>
-          <a href="${file}" download="Exclusive-Video-${index + 1}.mp4" class="btn">
-            ⬇️ Download HD Video
-          </a>
         </div>
       `;
       grid.appendChild(card);
