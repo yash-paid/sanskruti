@@ -1561,13 +1561,13 @@
                     unlimited private HD video call now 💋</p>
 
                 <div class="call-plans">
-                    <div class="call-plan active" id="cplan1" onclick="selectCallPlan(1, 99)">
+                    <div class="call-plan active" id="cplan1" onclick="selectCallPlan(1, 79)">
                         <div class="plan-radio"></div>
                         <div class="plan-details">
                             <div class="plan-title">15 Min HD Video Call <span class="hot-tag">POPULAR</span></div>
                             <div class="plan-sub">1-on-1 Private • Both Side Cam • No Ads</div>
                         </div>
-                        <div class="plan-amt">₹99</div>
+                        <div class="plan-amt">₹79</div>
                     </div>
                     <div class="call-plan" id="cplan2" onclick="selectCallPlan(2, 179)">
                         <div class="plan-radio"></div>
@@ -1602,7 +1602,7 @@
                 </div>
 
                 <button class="pay-continue-btn" id="payContinueBtn" onclick="processCallContinuePayment()">
-                    ⚡ Pay ₹99 via PayU & Continue Video Call 📹
+                    ⚡ Pay ₹79 via PayU & Continue Video Call 📹
                 </button>
                 <button class="pay-hangup-btn" onclick="cancelCallPaymentAndHangup()">
                     End Call 📞
@@ -1689,7 +1689,7 @@
         const chatList = document.getElementById("chatList");
         let incomingCallTimer = null;
         let callPaymentTimer = null;
-        let currentCallPlanPrice = 99;
+        let currentCallPlanPrice = 79;
         let callTimer = null;
         let callDurationSec = 0;
         let localMediaStream = null;
@@ -2597,7 +2597,7 @@
                                     statusEl.style.color = "#fbbf24";
                                 }
                             } else {
-                                // Default: Video Call Room (₹1 or ₹99)
+                                // Default: Video Call Room (₹1, ₹79 or ₹99)
                                 startVideoCallDirect("Connected • Verified Video Room 💎");
                                 const statusEl = document.getElementById("callStatusText");
                                 if (statusEl) {
