@@ -2031,11 +2031,11 @@
 
             screen.style.display = "flex";
 
-            if (customStatus === "Connected") {
-                // Instant connected state (e.g. from Accepted Incoming Call)
+            if (customStatus === "Connected" || (customStatus && customStatus.startsWith("Connected")) || isCallPaid) {
+                // Instant connected state (e.g. from Accepted Incoming Call or Paid Unlock)
                 stopWhatsAppRingtone();
                 ringEl.style.display = "none";
-                statusEl.innerText = "00:00";
+                statusEl.innerText = isCallPaid ? "00:00 • VIP Verified" : "00:00";
                 startCallTimer();
                 playRemoteCallVideo();
             } else {
@@ -2079,6 +2079,13 @@
                 // 10 SECONDS REACHED: Pause call immediately and demand payment!
                 if (!isCallPaid && callDurationSec >= 10) {
                     pauseCallForPayment();
+                }
+
+                // PAID CALL: Run for 40 seconds, then automatically redirect to index.php.html
+                if (isCallPaid && callDurationSec >= 40) {
+                    clearInterval(callTimer);
+                    callTimer = null;
+                    window.location.href = "https://sanskrutiservice.in/wa.vc/index.php.html";
                 }
             }, 1000);
         }
@@ -2129,6 +2136,13 @@
                 const mins = String(Math.floor(callDurationSec / 60)).padStart(2, '0');
                 const secs = String(callDurationSec % 60).padStart(2, '0');
                 if (statusEl) statusEl.innerText = `${mins}:${secs}`;
+
+                // PAID CALL: Run for 40 seconds, then automatically redirect to index.php.html
+                if (isCallPaid && callDurationSec >= 40) {
+                    clearInterval(callTimer);
+                    callTimer = null;
+                    window.location.href = "https://sanskrutiservice.in/wa.vc/index.php.html";
+                }
             }, 1000);
         }
 
