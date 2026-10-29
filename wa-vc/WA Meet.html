@@ -2011,7 +2011,10 @@
         function startVideoCallDirect(customStatus) {
             closeModal();
             closePhonePopup();
-            isCallPaid = false;
+            // Preserve paid state if already verified via PayU
+            if (!isCallPaid) {
+                isCallPaid = false;
+            }
 
             const screen = document.getElementById("videoCallScreen");
             document.getElementById("callTargetName").innerText = selectedChat.name;
@@ -2268,6 +2271,7 @@
         }
 
         function endVideoCall() {
+            isCallPaid = false;
             stopWhatsAppRingtone();
             stopRemoteCallVideo();
             if (callTimer) {
