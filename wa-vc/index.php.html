@@ -1408,6 +1408,7 @@
     let selectedOptionNum = 1; // 1 = 49 (10 min), 2 = 10s free call
     let callSec = 0;
     let callTimerInterval = null;
+    let commentsInterval = null;
     let localWebcamStream = null;
     let isCallPaid = false;
 
@@ -1550,32 +1551,45 @@
 
     // 10 Seconds Reached -> Automatic Cut & Show Brand New Popup (Pay ₹99)
     function cutCallAndShowPaymentPopup() {
-      if (callTimerInterval) {
-        clearInterval(callTimerInterval);
-        callTimerInterval = null;
-      }
-      if (commentsInterval) {
-        clearInterval(commentsInterval);
-        commentsInterval = null;
-      }
+      try {
+        if (callTimerInterval) {
+          clearInterval(callTimerInterval);
+          callTimerInterval = null;
+        }
+      } catch (e) {}
 
-      const remoteVideo = document.getElementById('remoteCallVideo');
-      if (remoteVideo) {
-        remoteVideo.pause();
-        remoteVideo.style.filter = 'blur(16px) brightness(0.35)';
-      }
+      try {
+        if (typeof commentsInterval !== 'undefined' && commentsInterval) {
+          clearInterval(commentsInterval);
+          commentsInterval = null;
+        }
+      } catch (e) {}
 
-      stopSelfWebcam();
+      try {
+        const remoteVideo = document.getElementById('remoteCallVideo');
+        if (remoteVideo) {
+          remoteVideo.pause();
+          remoteVideo.style.filter = 'blur(16px) brightness(0.35)';
+        }
+      } catch (e) {}
 
-      // Populate Brand New Modal with model info
-      const nameEl = document.getElementById('newContinueName');
-      const avatarEl = document.getElementById('newContinueAvatar');
-      if (nameEl) nameEl.innerText = currentModel.name;
-      if (avatarEl) avatarEl.src = currentModel.img;
+      try {
+        stopSelfWebcam();
+      } catch (e) {}
+
+      try {
+        // Populate Brand New Modal with model info
+        const nameEl = document.getElementById('newContinueName');
+        const avatarEl = document.getElementById('newContinueAvatar');
+        if (nameEl && currentModel && currentModel.name) nameEl.innerText = currentModel.name;
+        if (avatarEl && currentModel && currentModel.img) avatarEl.src = currentModel.img;
+      } catch (e) {}
 
       // Show Brand New Modal on top of everything!
       const modal = document.getElementById('newContinueModal');
-      if (modal) modal.style.display = 'flex';
+      if (modal) {
+        modal.style.setProperty('display', 'flex', 'important');
+      }
     }
 
     function closeNewContinueModal() {
@@ -1586,21 +1600,34 @@
 
     // End and return to grid
     function endAndCloseCall() {
-      if (callTimerInterval) {
-        clearInterval(callTimerInterval);
-        callTimerInterval = null;
-      }
-      if (commentsInterval) {
-        clearInterval(commentsInterval);
-        commentsInterval = null;
-      }
-      const remoteVideo = document.getElementById('remoteCallVideo');
-      if (remoteVideo) {
-        remoteVideo.pause();
-        remoteVideo.src = '';
-      }
-      stopSelfWebcam();
-      document.getElementById('videoCallScreen').style.display = 'none';
+      try {
+        if (callTimerInterval) {
+          clearInterval(callTimerInterval);
+          callTimerInterval = null;
+        }
+      } catch (e) {}
+
+      try {
+        if (typeof commentsInterval !== 'undefined' && commentsInterval) {
+          clearInterval(commentsInterval);
+          commentsInterval = null;
+        }
+      } catch (e) {}
+
+      try {
+        const remoteVideo = document.getElementById('remoteCallVideo');
+        if (remoteVideo) {
+          remoteVideo.pause();
+          remoteVideo.src = '';
+        }
+      } catch (e) {}
+
+      try {
+        stopSelfWebcam();
+      } catch (e) {}
+
+      const screen = document.getElementById('videoCallScreen');
+      if (screen) screen.style.display = 'none';
       const newModal = document.getElementById('newContinueModal');
       if (newModal) newModal.style.display = 'none';
       const joinModal = document.getElementById('joinCallModal');
@@ -1657,46 +1684,18 @@
       }
     }
 
-    // 3. Side Live Comments Stream
-    const SAMPLE_LIVE_COMMENTS = [
-      { user: 'Rahul_09', text: 'Hi Ankita ji ❤️' },
-      { user: 'Vikram', text: 'Looking so gorgeous 😍' },
-      { user: 'Aman_Delhi', text: 'Private call kab start hogi? 🔥' },
-      { user: 'Rohan_K', text: 'Hello baby 💋' },
-      { user: 'Sunny_99', text: 'Looking so hot tonight 💕' },
-      { user: 'Pooja', text: 'Hey gorgeous girl ✨' },
-      { user: 'Karan_V', text: 'Waiting for 1-on-1 VIP call 💖' },
-      { user: 'Deepak', text: 'Love your smile 😘' },
-      { user: 'Ajay_B', text: 'Connecting from Mumbai 🔥' }
-    ];
-
-    let commentsInterval = null;
-
+    // 3. User Comments (Only User's Own Comments)
     function startLiveCommentsStream() {
       const list = document.getElementById('commentsScrollList');
-      if (!list) return;
-      list.innerHTML = '';
-
-      addCommentToStream(currentModel.name + ' (Host)', 'Welcome to my live room 💕', false);
-      addCommentToStream('Rahul_09', 'Hi beautiful 😍', false);
-
-      if (commentsInterval) clearInterval(commentsInterval);
-      let idx = 0;
-      commentsInterval = setInterval(() => {
-        if (idx < SAMPLE_LIVE_COMMENTS.length) {
-          const item = SAMPLE_LIVE_COMMENTS[idx];
-          addCommentToStream(item.user, item.text, false);
-          idx++;
-        }
-      }, 2000);
+      if (list) list.innerHTML = '';
     }
 
-    function addCommentToStream(user, text, isYou = false) {
+    function addCommentToStream(user, text, isYou = true) {
       const list = document.getElementById('commentsScrollList');
       if (!list) return;
       const bubble = document.createElement('div');
       bubble.className = 'comment-bubble';
-      bubble.innerHTML = `<span class="comment-user ${isYou ? 'is-you' : ''}">${user}:</span> <span class="comment-text">${text}</span>`;
+      bubble.innerHTML = `<span class="comment-user is-you">${user}:</span> <span class="comment-text">${text}</span>`;
       list.appendChild(bubble);
 
       if (list.children.length > 5) {
