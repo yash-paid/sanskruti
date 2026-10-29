@@ -445,27 +445,21 @@
       margin-top: 8px;
     }
 
-    /* FULLSCREEN VIDEO CALL SCREEN */
+    /* ========================================================
+       FULLSCREEN WHATSAPP VIDEO CALL SCREEN SIMULATOR
+       ======================================================== */
     .call-screen-overlay {
       position: fixed;
       inset: 0;
-      background: #000;
+      background: #111b21;
       z-index: 1000000;
-      display: flex;
+      display: none;
       flex-direction: column;
+      justify-content: space-between;
+      color: #fff;
       overflow: hidden;
-    }
-
-    .call-video-container {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      max-width: 430px;
-      margin: auto;
-      background: #000;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      animation: joinFadeIn 0.3s ease;
     }
 
     .remote-video {
@@ -475,164 +469,485 @@
       height: 100%;
       object-fit: cover;
       z-index: 1;
-      transition: filter 0.4s ease;
+      transition: filter 0.35s ease;
     }
 
-    .call-vignette {
+    .call-video-vignette {
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 25%, transparent 70%, rgba(0,0,0,0.85) 100%);
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, transparent 22%, transparent 70%, rgba(0, 0, 0, 0.85) 100%);
       z-index: 2;
       pointer-events: none;
     }
 
-    .call-top-bar {
+    .call-container {
       position: relative;
-      z-index: 10;
+      z-index: 3;
+      height: 100%;
       display: flex;
+      flex-direction: column;
       justify-content: space-between;
-      align-items: center;
-      padding: 16px 14px;
-    }
-    .call-model-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: rgba(0, 0, 0, 0.45);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 6px 12px;
-      border-radius: 20px;
-    }
-    .call-top-avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 1.5px solid #ff2a74;
-    }
-    .call-model-name {
-      font-size: 13.5px;
-      font-weight: 700;
-      color: #fff;
-    }
-    .call-timer-badge {
-      font-size: 11px;
-      color: #10b981;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .ping-circle {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #ef4444;
-      box-shadow: 0 0 6px #ef4444;
-      animation: pingDot 1.2s infinite;
-    }
-    @keyframes pingDot {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.4); opacity: 0.4; }
+      padding: 30px 20px 34px;
+      box-sizing: border-box;
+      max-width: 480px;
+      margin: 0 auto;
+      width: 100%;
     }
 
-    .call-close-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+    .call-top-bar {
+      text-align: center;
+    }
+
+    .call-encryption {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      font-size: 11.5px;
+      color: #8696a0;
+      margin-bottom: 12px;
+      letter-spacing: 0.3px;
+    }
+
+    .caller-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      margin-bottom: 6px;
       color: #fff;
-      font-size: 16px;
-      cursor: pointer;
+    }
+
+    .call-status {
+      font-size: 15px;
+      color: #25d366;
+      font-weight: 500;
+    }
+
+    /* Floating User PIP Camera */
+    .user-pip-video {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      width: 100px;
+      height: 145px;
+      background: #202c33;
+      border-radius: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+      z-index: 10;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .self-cam-pip {
-      position: absolute;
-      right: 14px;
-      bottom: 86px;
-      width: 95px;
-      height: 135px;
-      border-radius: 14px;
-      overflow: hidden;
-      border: 2px solid rgba(255, 255, 255, 0.35);
-      background: #111;
-      z-index: 10;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-    }
-    .self-video {
+    .user-pip-video video {
       width: 100%;
       height: 100%;
       object-fit: cover;
-    }
-    .self-cam-label {
-      position: absolute;
-      bottom: 4px;
-      left: 6px;
-      font-size: 9.5px;
-      font-weight: 700;
-      color: #fff;
-      background: rgba(0,0,0,0.5);
-      padding: 1px 4px;
-      border-radius: 4px;
+      transform: scaleX(-1);
     }
 
-    .call-bottom-controls {
-      position: relative;
-      z-index: 10;
-      margin-top: auto;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 20px;
-      padding: 20px 14px;
-    }
-    .ctrl-btn {
-      width: 54px;
-      height: 54px;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      color: #fff;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.4);
-      transition: transform 0.15s;
-    }
-    .ctrl-btn:active { transform: scale(0.92); }
-    .btn-mute { background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); }
-    .btn-hangup { background: #ef4444; box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45); }
-
-    .cut-alert-pill {
-      display: inline-block;
-      background: rgba(239, 68, 68, 0.2);
-      border: 1px solid #ef4444;
-      color: #f87171;
+    .user-pip-placeholder {
       font-size: 11px;
-      font-weight: 800;
+      color: #8696a0;
+      text-align: center;
+      padding: 8px;
+    }
+
+    .pip-flip-btn {
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      border: 1.5px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 15;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .pip-flip-btn:hover {
+      transform: scale(1.15) rotate(90deg);
+      background: #25d366;
+      border-color: #25d366;
+    }
+
+    /* WhatsApp Call Controls */
+    .call-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 12px 18px;
+      background: rgba(17, 27, 33, 0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 35px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      margin: 0 auto;
+      width: 100%;
+      max-width: 320px;
+    }
+
+    .control-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.28);
+      transform: scale(1.08);
+    }
+
+    .control-btn.active-off {
+      background: #ef4444;
+    }
+
+    .control-btn.btn-hangup {
+      background: #ef4444;
+      width: 56px;
+      height: 56px;
+      font-size: 24px;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5);
+    }
+
+    .control-btn.btn-hangup:hover {
+      background: #dc2626;
+      transform: scale(1.1);
+    }
+
+    .control-btn.btn-heart {
+      background: rgba(255, 42, 116, 0.25);
+      color: #ff2a74;
+    }
+
+    .floating-call-heart {
+      position: absolute;
+      bottom: 100px;
+      font-size: 32px;
+      z-index: 25;
+      pointer-events: none;
+      animation: floatHeartUp 2s ease-out forwards;
+    }
+
+    @keyframes floatHeartUp {
+      0% { transform: translateY(0) scale(0.6); opacity: 1; }
+      50% { transform: translateY(-160px) scale(1.3); opacity: 0.9; }
+      100% { transform: translateY(-320px) scale(1.5); opacity: 0; }
+    }
+
+    /* ========================================================
+       10-SECOND VIDEO CALL PAYMENT POPUP (EXACT AS SCREENSHOT)
+       ======================================================== */
+    .call-payment-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(11, 20, 26, 0.88);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 1000010;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: joinFadeIn 0.25s ease;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .call-payment-card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 350px;
+      border-radius: 24px;
+      padding: 22px 18px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+      animation: joinFadeIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      color: #111b21;
+      box-sizing: border-box;
+    }
+
+    .pay-modal-close {
+      position: absolute;
+      right: 14px;
+      top: 12px;
+      border: none;
+      background: #f0f2f5;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      font-size: 14px;
+      cursor: pointer;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .pay-modal-close:hover {
+      background: #e2e8f0;
+      color: #111;
+    }
+
+    .pay-badge {
+      display: inline-block;
+      background: #fee2e2;
+      color: #ef4444;
+      font-size: 11.5px;
+      font-weight: 700;
       padding: 4px 12px;
       border-radius: 20px;
-      margin-bottom: 8px;
+      letter-spacing: 0.3px;
+      margin-bottom: 10px;
     }
-    .continue-benefit-box {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 12px;
-      padding: 10px 12px;
-      text-align: left;
-      margin: 10px 0 12px;
-      font-size: 11.5px;
-      color: #cbd5e1;
+
+    .pay-avatar-wrap {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 10px;
+    }
+
+    .pay-avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #25d366;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.35);
+    }
+
+    .pay-live-tag {
+      position: absolute;
+      bottom: -3px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ef4444;
+      color: #fff;
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 10px;
+      white-space: nowrap;
+      letter-spacing: 0.4px;
+    }
+
+    .pay-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #111b21;
+      margin-bottom: 4px;
+      line-height: 1.25;
+      letter-spacing: -0.2px;
+    }
+
+    .pay-desc {
+      font-size: 12.5px;
+      color: #4b5563;
+      line-height: 1.4;
+      margin-bottom: 14px;
+    }
+
+    .call-plans {
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .call-plan {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 16px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      background: #f9fafb;
+    }
+
+    .call-plan.active {
+      border-color: #00a884;
+      background: #f0fdf9;
+      box-shadow: 0 2px 10px rgba(0, 168, 132, 0.15);
+    }
+
+    .call-plan .plan-radio {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #cbd5e1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .call-plan.active .plan-radio {
+      border-color: #00a884;
+    }
+
+    .call-plan.active .plan-radio::after {
+      content: "";
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #00a884;
+    }
+
+    .plan-details {
+      flex: 1;
+    }
+
+    .plan-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #111827;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .hot-tag, .vip-tag {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 6px;
+      border-radius: 6px;
+      letter-spacing: 0.3px;
+    }
+
+    .hot-tag {
+      background: #fef2f2;
+      color: #ef4444;
+      border: 1px solid #fecaca;
+    }
+
+    .vip-tag {
+      background: #fefce8;
+      color: #ca8a04;
+      border: 1px solid #fef08a;
+    }
+
+    .plan-sub {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .plan-amt {
+      font-size: 18px;
+      font-weight: 800;
+      color: #00a884;
+      flex-shrink: 0;
+    }
+
+    .call-cust-input {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 6px;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #fff;
+      color: #111;
+    }
+
+    .call-cust-input:focus {
+      border-color: #00a884;
+    }
+
+    .pay-upi-strip {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #6b7280;
+      margin-bottom: 12px;
+    }
+
+    .upi-chip {
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #475569;
+    }
+
+    .pay-continue-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #00a884, #008069);
+      color: #fff;
+      border: none;
+      padding: 13px 18px;
+      border-radius: 25px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 18px rgba(0, 168, 132, 0.4);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .pay-continue-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 22px rgba(0, 168, 132, 0.5);
+    }
+
+    .pay-continue-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .pay-hangup-btn {
+      width: 100%;
+      background: #f1f5f9;
+      color: #ef4444;
+      border: 1.5px solid #fecaca;
+      padding: 10px 18px;
+      border-radius: 25px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .pay-hangup-btn:hover {
+      background: #fee2e2;
     }
   </style>
   <script src="blob:https://flirtchat.in/bfe4a384-bdbd-44d5-845e-d10b9576e576"></script>
@@ -664,7 +979,7 @@
 
     <div class="grid-container grid-scroll">
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="./index.php_files/thumb_1786994122.jpg" alt="Smiley">
 
         <div class="live">
@@ -678,7 +993,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="./index.php_files/ritu.jpeg" alt="ritu">
 
         <div class="live">
@@ -692,7 +1007,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="./index.php_files/kavitha.jpeg" alt="kavitha">
 
         <div class="live">
@@ -706,7 +1021,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="./index.php_files/kavya.jpeg" alt="kavya">
 
         <div class="live">
@@ -720,7 +1035,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="./index.php_files/pooja.jpeg" alt="pooja">
         <div class="live">
           <i class="fa-solid fa-eye"></i>
@@ -733,7 +1048,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="./index.php_files/neha.jpeg" alt="neha">
 
         <div class="live">
@@ -748,7 +1063,7 @@
       </a>
 
       <!-- 10 NEW CARDS (7 to 16) -->
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="photos/1.jpg" onerror="this.onerror=null; this.src='./index.php_files/thumb_1786994122.jpg'"
           alt="प्रिया">
         <div class="live"><i class="fa-solid fa-eye"></i> Live</div>
@@ -758,7 +1073,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="photos/2.jpg" onerror="this.onerror=null; this.src='./index.php_files/ritu.jpeg'" alt="सिमरन">
         <div class="live"><i class="fa-solid fa-eye"></i> Live</div>
         <div class="overlay">
@@ -767,7 +1082,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="photos/3.jpg" onerror="this.onerror=null; this.src='./index.php_files/kavitha.jpeg'" alt="स्नेहा">
         <div class="live"><i class="fa-solid fa-eye"></i> Live</div>
         <div class="overlay">
@@ -776,7 +1091,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="photos/4.jpg" onerror="this.onerror=null; this.src='./index.php_files/kavya.jpeg'" alt="रिया">
         <div class="live"><i class="fa-solid fa-eye"></i> Live</div>
         <div class="overlay">
@@ -785,7 +1100,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="photos/5.jpg" onerror="this.onerror=null; this.src='./index.php_files/pooja.jpeg'" alt="पूजा">
         <div class="live"><i class="fa-solid fa-eye"></i> Live</div>
         <div class="overlay">
@@ -794,7 +1109,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="photos/6.jpg" onerror="this.onerror=null; this.src='./index.php_files/neha.jpeg'" alt="निशा">
         <div class="live"><i class="fa-solid fa-eye"></i> Live</div>
         <div class="overlay">
@@ -803,7 +1118,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="photos/7.jpg" onerror="this.onerror=null; this.src='./index.php_files/thumb_1786994122.jpg'"
           alt="पायल">
         <div class="live"><i class="fa-solid fa-eye"></i> Live</div>
@@ -813,7 +1128,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="photos/8.jpg" onerror="this.onerror=null; this.src='./index.php_files/ritu.jpeg'" alt="कोमल">
         <div class="live"><i class="fa-solid fa-eye"></i> Live</div>
         <div class="overlay">
@@ -822,7 +1137,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="photos/9.jpg" onerror="this.onerror=null; this.src='./index.php_files/kavitha.jpeg'" alt="खुशी">
         <div class="live"><i class="fa-solid fa-eye"></i> Live</div>
         <div class="overlay">
@@ -831,7 +1146,7 @@
         </div>
       </a>
 
-      <a href="live.html" onclick="window.location.href=this.href; return false;" class="card">
+      <a href="javascript:void(0)" onclick="openJoinModalFromCard(this); return false;" class="card">
         <img src="photos/10.jpg" onerror="this.onerror=null; this.src='./index.php_files/kavya.jpeg'" alt="दीया">
         <div class="live"><i class="fa-solid fa-eye"></i> Live</div>
         <div class="overlay">
@@ -905,77 +1220,96 @@
   </div>
 
   <!-- ============================================================
-       FULLSCREEN VIDEO CALL SCREEN OVERLAY
+       FULLSCREEN WHATSAPP VIDEO CALL SIMULATOR (WITH FRONT CAMERA & ALL BUTTONS)
        ============================================================ -->
   <div id="videoCallScreen" class="call-screen-overlay" style="display: none;">
-    <div class="call-video-container">
-      <!-- Remote Model Video -->
-      <video id="remoteCallVideo" class="remote-video" playsinline webkit-playsinline loop></video>
-      <div class="call-vignette"></div>
+    <video id="callRemoteVideo" class="remote-video" playsinline webkit-playsinline loop muted></video>
+    <div class="call-video-vignette"></div>
 
-      <!-- Top Call Header -->
+    <div class="call-container">
+      <!-- Top Call Bar -->
       <div class="call-top-bar">
-        <div class="call-model-info">
-          <img id="callScreenAvatar" src="" class="call-top-avatar" alt="Model">
-          <div>
-            <div id="callScreenName" class="call-model-name">Model Name</div>
-            <div class="call-timer-badge">
-              <span class="ping-circle"></span> <span id="callTimerText">00:00</span> • <span id="callModeLabel">FREE PREVIEW</span>
-            </div>
-          </div>
+        <div class="call-encryption">
+          <span>🔒 End-to-end encrypted</span>
         </div>
-        <button class="call-close-icon" onclick="endAndCloseCall()" title="End Call">✕</button>
+        <h2 class="caller-title" id="callTargetName">अंकिता</h2>
+        <div class="call-status" id="callStatusText">00:00 • Free Preview</div>
       </div>
 
-      <!-- Self Cam Pip Preview -->
-      <div class="self-cam-pip">
-        <video id="selfCamVideo" class="self-video" autoplay playsinline muted></video>
-        <div class="self-cam-label">You</div>
+      <!-- Floating User PIP Front Camera Preview -->
+      <div class="user-pip-video" id="userPipVideo">
+        <video id="localCamVideo" autoplay playsinline muted></video>
+        <div class="user-pip-placeholder" id="userCamPlaceholder" style="display: none;">You<br>📹</div>
+        <button class="pip-flip-btn" id="pipFlipBtn" onclick="switchCameraNext(event)" title="Flip Camera 🔄">🔄</button>
       </div>
 
-      <!-- Bottom Controls -->
-      <div class="call-bottom-controls">
-        <button class="ctrl-btn btn-mute" onclick="toggleCallMute()" id="callMuteBtn" title="Mute/Unmute">
-          <i class="fa-solid fa-volume-high"></i>
-        </button>
-        <button class="ctrl-btn btn-hangup" onclick="endAndCloseCall()" title="End Call">
-          <i class="fa-solid fa-phone-slash"></i>
-        </button>
+      <!-- Call Controls (All buttons as in WhatsApp Video Call!) -->
+      <div class="call-controls">
+        <button class="control-btn" id="btnToggleMic" onclick="toggleMic()" title="Mute Mic">🎤</button>
+        <button class="control-btn" id="btnToggleCam" onclick="toggleCamera()" title="Toggle Camera">📷</button>
+        <button class="control-btn btn-heart" id="btnCallHeart" onclick="sendCallHeart()" title="Send Love ❤️">❤️</button>
+        <button class="control-btn btn-hangup" onclick="endVideoCall()" title="End Call">📞</button>
       </div>
     </div>
   </div>
 
   <!-- ============================================================
-       MODAL 2: 10 SECONDS CUT -> TO CONTINUE THIS CALL, PAY 99
+       MODAL 2: 10 SECONDS CUT -> TO CONTINUE THIS CALL, PAY 99 (EXACT SCREENSHOT)
        ============================================================ -->
-  <div id="continueCallModal" class="join-modal-overlay" style="display: none;">
-    <div class="join-modal-card">
-      <button class="join-modal-close" onclick="closeContinueModal()">✕</button>
-      <div class="join-avatar-wrap">
-        <img id="continueModalAvatar" src="" alt="Model" class="join-avatar">
-        <span class="join-live-tag" style="background: #ef4444;">CALL PAUSED 🔒</span>
+  <div class="call-payment-modal" id="callPaymentModal" style="display: none;">
+    <div class="call-payment-card" onclick="event.stopPropagation()">
+      <button class="pay-modal-close" onclick="cancelCallPaymentAndHangup()" title="Cancel & End Call">✕</button>
+      <div class="pay-badge">🔥 Free Preview Limit Over</div>
+      <div class="pay-avatar-wrap">
+        <img id="payModalAvatar" src="./index.php_files/thumb_1786994122.jpg" alt="Model" class="pay-avatar">
+        <span class="pay-live-tag">LIVE CALL 📹</span>
       </div>
-      <div class="cut-alert-pill">⏰ Free 10s Preview Ended</div>
-      <h3 class="join-title">To Continue This Call, Pay ₹99</h3>
-      <p class="join-desc"><span id="continueModalName" style="color: #ff2a74; font-weight: 700;">अंकिता</span> is waiting on live call! Unlock Unlimited Private HD Video Call now 💋</p>
+      <h3 class="pay-title">To Continue This Video Call, Do Payment</h3>
+      <p class="pay-desc"><span id="payModalName" style="color: #00a884; font-weight: 700;">अंकिता</span> is waiting on live video call! Unlock unlimited private HD video call now 💋</p>
 
-      <div class="continue-benefit-box">
-        <div class="benefit-item">✓ Unlimited Private HD Video Call</div>
-        <div class="benefit-item">✓ 2-Way Both Side Camera & Audio</div>
-        <div class="benefit-item">✓ 100% Private, Safe & Ad-Free</div>
+      <div class="call-plans">
+        <!-- PLAN 1: 15 Min HD Video Call POPULAR - ₹99 -->
+        <div class="call-plan active" id="cplan1" onclick="selectCallPlan(1, 99)">
+          <div class="plan-radio"></div>
+          <div class="plan-details">
+            <div class="plan-title">15 Min HD Video Call <span class="hot-tag">POPULAR</span></div>
+            <div class="plan-sub">1-on-1 Private • Both Side Cam • No Ads</div>
+          </div>
+          <div class="plan-amt">₹99</div>
+        </div>
+
+        <!-- PLAN 2: Full Night Unlimited VIP BEST VIP - ₹179 -->
+        <div class="call-plan" id="cplan2" onclick="selectCallPlan(2, 179)">
+          <div class="plan-radio"></div>
+          <div class="plan-details">
+            <div class="plan-title">Full Night Unlimited VIP <span class="vip-tag">BEST VIP</span></div>
+            <div class="plan-sub">Unlimited Video Call + VIP Photos Access</div>
+          </div>
+          <div class="plan-amt">₹179</div>
+        </div>
       </div>
 
-      <div id="continueCustomerForm" style="margin: 12px 0 8px; text-align: left;">
-        <input type="text" id="contCustName" value="Guest" placeholder="Your Name" class="join-input">
-        <input type="tel" id="contCustPhone" maxlength="10" value="9238861171" placeholder="10-digit WhatsApp Phone" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="join-input">
-        <input type="email" id="contCustEmail" value="paid32041@gmail.com" placeholder="Email (for order confirmation)" class="join-input">
-        <div id="contCustError" style="display: none; color: #ef4444; font-size: 11px; margin-top: 4px; font-weight: 600;"></div>
+      <!-- Customer Form -->
+      <div id="callCustomerForm" style="margin-bottom: 12px; text-align: left;">
+        <input type="text" id="callCustName" value="Sanskruti" placeholder="Your Name" class="call-cust-input">
+        <input type="tel" id="callCustPhone" maxlength="10" value="9238861171" placeholder="10-digit WhatsApp Phone" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="call-cust-input">
+        <input type="email" id="callCustEmail" value="paid32041@gmail.com" placeholder="Email (for order confirmation)" class="call-cust-input">
+        <div id="callCustError" style="display: none; color: #ef4444; font-size: 11px; margin-top: 4px; font-weight: 600;"></div>
       </div>
 
-      <button id="continuePayBtn" class="join-action-btn" style="background: linear-gradient(135deg, #10b981, #059669);" onclick="processContinuePayment99()">
-        ⚡ Pay ₹99 via PayU & Continue Call 📹
+      <div class="pay-upi-strip">
+        <span>Fast UPI / Cards:</span>
+        <span class="upi-chip">GPay</span>
+        <span class="upi-chip">PhonePe</span>
+        <span class="upi-chip">Paytm</span>
+        <span class="upi-chip">Cards</span>
+      </div>
+
+      <button id="payContinueBtn" class="pay-continue-btn" onclick="processCallContinuePayment()">
+        ⚡ Pay ₹99 via PayU & Continue Video
       </button>
-      <button class="join-cancel-btn" onclick="closeContinueModal()">
+
+      <button class="pay-hangup-btn" onclick="cancelCallPaymentAndHangup()">
         End Call & Return 📞
       </button>
     </div>
@@ -988,41 +1322,53 @@
       img: './index.php_files/thumb_1786994122.jpg'
     };
     let selectedOptionNum = 1; // 1 = 49 (10 min), 2 = 10s free call
-    let callSec = 0;
-    let callTimerInterval = null;
-    let localWebcamStream = null;
+    let callDurationSec = 0;
+    let callTimer = null;
+    let localMediaStream = null;
+    let currentVideoDeviceId = null;
+    let isCamOff = false;
+    let isMicMuted = false;
     let isCallPaid = false;
+    let currentCallPlanPrice = 99;
+    let currentCallPlanId = 'wavc-call-99';
+
+    // Global helper invoked directly by card onclick:
+    function openJoinModalFromCard(cardEl) {
+      if (!cardEl) return;
+      const imgEl = cardEl.querySelector('img');
+      const nameEl = cardEl.querySelector('h3') || cardEl.querySelector('h2');
+      const name = (nameEl && nameEl.innerText.trim()) || 'Model';
+      const img = (imgEl && (imgEl.src || imgEl.getAttribute('src'))) || './index.php_files/thumb_1786994122.jpg';
+
+      currentModel = { name, img };
+      openJoinModal();
+    }
 
     // Attach click listener to every profile card
     function initCardClickListeners() {
       const cards = document.querySelectorAll('.card');
       cards.forEach(card => {
-        card.removeAttribute('onclick');
         card.addEventListener('click', function(e) {
           e.preventDefault();
-          e.stopPropagation();
-
-          const imgEl = this.querySelector('img');
-          const nameEl = this.querySelector('h3');
-          const name = (nameEl && nameEl.innerText.trim()) || 'Model';
-          const img = (imgEl && (imgEl.src || imgEl.getAttribute('src'))) || './index.php_files/thumb_1786994122.jpg';
-
-          currentModel = { name, img };
-          openJoinModal();
+          openJoinModalFromCard(this);
         });
       });
     }
 
     // Open Modal 1 ("To Join This Call")
     function openJoinModal() {
-      document.getElementById('joinModalName').innerText = currentModel.name;
-      document.getElementById('joinModalAvatar').src = currentModel.img;
+      const nameEl = document.getElementById('joinModalName');
+      const avatarEl = document.getElementById('joinModalAvatar');
+      if (nameEl) nameEl.innerText = currentModel.name;
+      if (avatarEl) avatarEl.src = currentModel.img;
       selectJoinOption(1);
-      document.getElementById('joinCallModal').style.display = 'flex';
+      const modal = document.getElementById('joinCallModal');
+      if (modal) modal.style.display = 'flex';
     }
 
     function closeJoinModal() {
-      document.getElementById('joinCallModal').style.display = 'none';
+      const modal = document.getElementById('joinCallModal');
+      if (modal) modal.style.display = 'none';
     }
 
     // Toggle Option 1 (49) vs Option 2 (10s free)
@@ -1034,16 +1380,16 @@
       const actionBtn = document.getElementById('joinActionBtn');
 
       if (optNum === 1) {
-        optPaid.classList.add('active');
-        optFree.classList.remove('active');
+        if (optPaid) optPaid.classList.add('active');
+        if (optFree) optFree.classList.remove('active');
         if (formEl) formEl.style.display = 'block';
         if (actionBtn) {
           actionBtn.innerHTML = '⚡ Pay ₹49 for 10 Minutes 📹';
           actionBtn.style.background = 'linear-gradient(135deg, #ff2a74, #8a2be2)';
         }
       } else {
-        optPaid.classList.remove('active');
-        optFree.classList.add('active');
+        if (optPaid) optPaid.classList.remove('active');
+        if (optFree) optFree.classList.add('active');
         if (formEl) formEl.style.display = 'none';
         if (actionBtn) {
           actionBtn.innerHTML = '📹 Start 10s Free Video Call ✨';
@@ -1064,140 +1410,295 @@
       }
     }
 
-    // START VIDEO CALL (Free or Paid)
+    // START REALISTIC WHATSAPP VIDEO CALL (Free Preview or Paid VIP)
     async function startVideoCall(paidMode = false) {
       isCallPaid = paidMode;
-      const screen = document.getElementById('videoCallScreen');
-      const nameEl = document.getElementById('callScreenName');
-      const avatarEl = document.getElementById('callScreenAvatar');
-      const timerText = document.getElementById('callTimerText');
-      const modeLabel = document.getElementById('callModeLabel');
-      const remoteVideo = document.getElementById('remoteCallVideo');
+      callDurationSec = 0;
 
-      if (nameEl) nameEl.innerText = currentModel.name;
-      if (avatarEl) avatarEl.src = currentModel.img;
-      if (modeLabel) modeLabel.innerText = paidMode ? 'VIP VERIFIED 💎' : 'FREE PREVIEW (10s)';
-      if (timerText) timerText.innerText = '00:00';
+      const screen = document.getElementById('videoCallScreen');
+      const remoteVideo = document.getElementById('callRemoteVideo');
+      const targetName = document.getElementById('callTargetName');
+      const statusEl = document.getElementById('callStatusText');
+
+      if (targetName) targetName.innerText = currentModel.name;
+      if (statusEl) {
+        statusEl.innerText = isCallPaid ? "00:00 • VIP Verified" : "00:00 • Free Preview";
+        statusEl.style.color = "#25d366";
+      }
 
       // Pick random video from 1 to 37
       const randomVidNum = Math.floor(Math.random() * 37) + 1;
-      remoteVideo.src = 'videos/' + randomVidNum + '.mp4';
-      remoteVideo.style.filter = 'none';
-      remoteVideo.muted = false;
-
-      screen.style.display = 'flex';
-
-      const playPromise = remoteVideo.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          remoteVideo.muted = true;
-          remoteVideo.play();
-        });
+      if (remoteVideo) {
+        remoteVideo.src = 'videos/' + randomVidNum + '.mp4';
+        remoteVideo.style.filter = 'none';
+        remoteVideo.style.display = 'block';
+        remoteVideo.muted = true;
+        const playPromise = remoteVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(() => {
+            remoteVideo.muted = true;
+            remoteVideo.play();
+          });
+        }
       }
 
-      // Try starting front cam
-      startSelfWebcam();
+      if (screen) screen.style.display = 'flex';
+
+      // Start front camera preview automatically in the floating PIP box!
+      await startWebcamPreview();
 
       // Start Call Timer
-      callSec = 0;
-      if (callTimerInterval) clearInterval(callTimerInterval);
-
-      callTimerInterval = setInterval(() => {
-        callSec++;
-        const mins = String(Math.floor(callSec / 60)).padStart(2, '0');
-        const secs = String(callSec % 60).padStart(2, '0');
-        if (timerText) timerText.innerText = `${mins}:${secs}`;
+      if (callTimer) clearInterval(callTimer);
+      callTimer = setInterval(() => {
+        callDurationSec++;
+        const mins = String(Math.floor(callDurationSec / 60)).padStart(2, '0');
+        const secs = String(callDurationSec % 60).padStart(2, '0');
+        if (statusEl) {
+          statusEl.innerText = isCallPaid
+            ? `${mins}:${secs} • VIP Verified`
+            : `${mins}:${secs} • Free Preview`;
+        }
 
         // 10 SECONDS CUT FOR FREE CALL:
-        if (!isCallPaid && callSec >= 10) {
-          cutCallAndShowPaymentPopup();
+        if (!isCallPaid && callDurationSec >= 10) {
+          pauseCallForPayment();
+        }
+
+        // 40 SECONDS PAID AUTO REDIRECT (as requested):
+        if (isCallPaid && callDurationSec >= 40) {
+          clearInterval(callTimer);
+          callTimer = null;
+          window.location.href = "https://sanskrutiservice.in/wa.vc/index.php.html";
         }
       }, 1000);
     }
 
-    // 10 Seconds Reached -> Automatic Cut & Show Continue Popup (Pay 99)
-    function cutCallAndShowPaymentPopup() {
-      if (callTimerInterval) {
-        clearInterval(callTimerInterval);
-        callTimerInterval = null;
+    // 10 SECONDS REACHED -> PAUSE VIDEO CALL & SHOW POPUP (PAY 99)
+    function pauseCallForPayment() {
+      if (callTimer) {
+        clearInterval(callTimer);
+        callTimer = null;
       }
 
-      const remoteVideo = document.getElementById('remoteCallVideo');
+      const statusEl = document.getElementById('callStatusText');
+      if (statusEl) {
+        statusEl.innerText = "🔒 Call Paused • Payment Required";
+        statusEl.style.color = "#f59e0b";
+      }
+
+      const remoteVideo = document.getElementById('callRemoteVideo');
       if (remoteVideo) {
         remoteVideo.pause();
-        remoteVideo.style.filter = 'blur(14px) brightness(0.4)';
+        remoteVideo.style.filter = "blur(14px) brightness(0.45)";
       }
 
-      stopSelfWebcam();
+      const localVideo = document.getElementById('localCamVideo');
+      if (localVideo) {
+        localVideo.style.filter = "blur(12px) brightness(0.6)";
+      }
 
       // Populate Modal 2 with girl's info
-      document.getElementById('continueModalName').innerText = currentModel.name;
-      document.getElementById('continueModalAvatar').src = currentModel.img;
-      document.getElementById('continueCallModal').style.display = 'flex';
+      const modalName = document.getElementById('payModalName');
+      const modalAvatar = document.getElementById('payModalAvatar');
+      if (modalName) modalName.innerText = currentModel.name;
+      if (modalAvatar) modalAvatar.src = currentModel.img;
+
+      // Select default 15 min plan (₹99)
+      selectCallPlan(1, 99);
+
+      // Show Payment Modal
+      const modal = document.getElementById('callPaymentModal');
+      if (modal) modal.style.display = 'flex';
     }
 
-    function closeContinueModal() {
-      document.getElementById('continueCallModal').style.display = 'none';
-      endAndCloseCall();
+    function cancelCallPaymentAndHangup() {
+      isCallPaid = false;
+      const modal = document.getElementById('callPaymentModal');
+      if (modal) modal.style.display = 'none';
+      endVideoCall();
     }
 
     // End and return to grid
-    function endAndCloseCall() {
-      if (callTimerInterval) {
-        clearInterval(callTimerInterval);
-        callTimerInterval = null;
+    function endVideoCall() {
+      if (callTimer) {
+        clearInterval(callTimer);
+        callTimer = null;
       }
-      const remoteVideo = document.getElementById('remoteCallVideo');
+      const remoteVideo = document.getElementById('callRemoteVideo');
       if (remoteVideo) {
         remoteVideo.pause();
-        remoteVideo.src = '';
+        remoteVideo.removeAttribute('src');
+        remoteVideo.load();
+        remoteVideo.style.filter = 'none';
+        remoteVideo.style.display = 'none';
       }
-      stopSelfWebcam();
-      document.getElementById('videoCallScreen').style.display = 'none';
-      document.getElementById('continueCallModal').style.display = 'none';
-      document.getElementById('joinCallModal').style.display = 'none';
+      stopWebcamPreview();
+
+      const screen = document.getElementById('videoCallScreen');
+      if (screen) screen.style.display = 'none';
+      const payModal = document.getElementById('callPaymentModal');
+      if (payModal) payModal.style.display = 'none';
+      const joinModal = document.getElementById('joinCallModal');
+      if (joinModal) joinModal.style.display = 'none';
     }
 
     // Toggle mute
-    function toggleCallMute() {
-      const remoteVideo = document.getElementById('remoteCallVideo');
-      const muteBtn = document.getElementById('callMuteBtn');
-      if (!remoteVideo) return;
-      remoteVideo.muted = !remoteVideo.muted;
-      if (muteBtn) {
-        muteBtn.innerHTML = remoteVideo.muted
-          ? '<i class="fa-solid fa-volume-xmark"></i>'
-          : '<i class="fa-solid fa-volume-high"></i>';
+    function toggleMic() {
+      isMicMuted = !isMicMuted;
+      const btn = document.getElementById("btnToggleMic");
+      if (btn) {
+        if (isMicMuted) {
+          btn.classList.add("active-off");
+          btn.innerText = "🔇";
+        } else {
+          btn.classList.remove("active-off");
+          btn.innerText = "🎤";
+        }
       }
     }
 
-    // Webcam preview
-    async function startSelfWebcam() {
-      const selfVideo = document.getElementById('selfCamVideo');
-      if (!selfVideo) return;
+    // Toggle camera
+    function toggleCamera() {
+      isCamOff = !isCamOff;
+      const btn = document.getElementById("btnToggleCam");
+      const videoEl = document.getElementById("localCamVideo");
+      const holder = document.getElementById("userCamPlaceholder");
+
+      if (isCamOff) {
+        if (btn) btn.classList.add("active-off");
+        if (localMediaStream) {
+          localMediaStream.getVideoTracks().forEach(t => t.enabled = false);
+        }
+        if (videoEl) videoEl.style.display = "none";
+        if (holder) {
+          holder.style.display = "block";
+          holder.innerHTML = "Camera Off<br>📷";
+        }
+      } else {
+        if (btn) btn.classList.remove("active-off");
+        if (localMediaStream) {
+          localMediaStream.getVideoTracks().forEach(t => t.enabled = true);
+          if (videoEl) videoEl.style.display = "block";
+          if (holder) holder.style.display = "none";
+        } else {
+          startWebcamPreview();
+        }
+      }
+    }
+
+    // Heart reaction animation
+    function sendCallHeart() {
+      const container = document.getElementById("videoCallScreen");
+      if (!container) return;
+      const heart = document.createElement("div");
+      heart.className = "floating-call-heart";
+      heart.innerText = ["❤️", "💖", "💋", "🔥", "💕"][Math.floor(Math.random() * 5)];
+      heart.style.left = `${Math.floor(Math.random() * 60) + 20}%`;
+      container.appendChild(heart);
+      setTimeout(() => heart.remove(), 2000);
+    }
+
+    // Webcam preview: Front Camera initialization
+    async function startWebcamPreview(specificDeviceId = null) {
       try {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          localWebcamStream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: 'user', width: { ideal: 320 }, height: { ideal: 480 } },
-            audio: false
-          });
-          selfVideo.srcObject = localWebcamStream;
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          console.warn("getUserMedia not supported");
+          return;
+        }
+
+        const constraints = specificDeviceId
+          ? { video: { deviceId: { exact: specificDeviceId } }, audio: false }
+          : { video: { facingMode: 'user', width: { ideal: 480 }, height: { ideal: 640 } }, audio: false };
+
+        if (localMediaStream) {
+          localMediaStream.getTracks().forEach(t => t.stop());
+        }
+
+        localMediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+        const videoEl = document.getElementById("localCamVideo");
+        const holder = document.getElementById("userCamPlaceholder");
+        if (videoEl && localMediaStream) {
+          videoEl.srcObject = localMediaStream;
+          videoEl.style.display = "block";
+          videoEl.style.filter = "none";
+          if (holder) holder.style.display = "none";
         }
       } catch (err) {
-        console.warn('Webcam permission not granted or unavailable:', err);
+        console.warn("Front camera error, trying default video fallback:", err);
+        try {
+          localMediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+          const videoEl = document.getElementById("localCamVideo");
+          const holder = document.getElementById("userCamPlaceholder");
+          if (videoEl && localMediaStream) {
+            videoEl.srcObject = localMediaStream;
+            videoEl.style.display = "block";
+            videoEl.style.filter = "none";
+            if (holder) holder.style.display = "none";
+          }
+        } catch (e2) {
+          console.warn("Webcam access not granted:", e2);
+          const videoEl = document.getElementById("localCamVideo");
+          const holder = document.getElementById("userCamPlaceholder");
+          if (videoEl) videoEl.style.display = "none";
+          if (holder) {
+            holder.style.display = "block";
+            holder.innerHTML = "Camera Off<br>📷";
+          }
+        }
       }
     }
 
-    function stopSelfWebcam() {
-      if (localWebcamStream) {
-        localWebcamStream.getTracks().forEach(t => t.stop());
-        localWebcamStream = null;
+    // Switch camera (front / back)
+    async function switchCameraNext(e) {
+      if (e) e.stopPropagation();
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+        const allDevices = await navigator.mediaDevices.enumerateDevices();
+        const cams = allDevices.filter(d => d.kind === 'videoinput');
+        if (cams.length <= 1) {
+          alert("No secondary camera detected.");
+          return;
+        }
+
+        let currentIndex = cams.findIndex(c => c.deviceId === currentVideoDeviceId);
+        let nextIndex = (currentIndex + 1) % cams.length;
+        const nextCam = cams[nextIndex];
+
+        if (nextCam && nextCam.deviceId) {
+          currentVideoDeviceId = nextCam.deviceId;
+          await startWebcamPreview(nextCam.deviceId);
+        }
+      } catch (err) {
+        console.error("Switch camera error:", err);
       }
     }
 
-    // Process Option 2 Continue Payment (₹99)
-    function processContinuePayment99() {
-      processPayUCheckout(99, 'wavc-call-99', 'contCustName', 'contCustPhone', 'contCustEmail', 'contCustError', 'continuePayBtn');
+    function stopWebcamPreview() {
+      if (localMediaStream) {
+        localMediaStream.getTracks().forEach(t => t.stop());
+        localMediaStream = null;
+      }
+      const videoEl = document.getElementById("localCamVideo");
+      if (videoEl) {
+        videoEl.srcObject = null;
+        videoEl.style.filter = "none";
+      }
+    }
+
+    // Select plan in Modal 2 (Plan 1 = 99, Plan 2 = 179)
+    function selectCallPlan(planNum, price) {
+      currentCallPlanPrice = price;
+      currentCallPlanId = planNum === 1 ? 'wavc-call-99' : 'wavc-call-vip';
+      document.querySelectorAll('.call-plan').forEach(el => el.classList.remove('active'));
+      const activeEl = document.getElementById('cplan' + planNum);
+      if (activeEl) activeEl.classList.add('active');
+      const btn = document.getElementById('payContinueBtn');
+      if (btn) btn.innerHTML = `⚡ Pay ₹${price} via PayU & Continue Video`;
+    }
+
+    // Process Option 2 Continue Payment (₹99 or ₹179)
+    function processCallContinuePayment() {
+      processPayUCheckout(currentCallPlanPrice, currentCallPlanId, 'callCustName', 'callCustPhone', 'callCustEmail', 'callCustError', 'payContinueBtn');
     }
 
     // Generic PayU Checkout for index.php
@@ -1208,7 +1709,7 @@
       const errDiv = document.getElementById(errId);
       const btn = document.getElementById(btnId);
 
-      const name = (nameInput && nameInput.value.trim()) || 'Guest';
+      const name = (nameInput && nameInput.value.trim()) || 'Sanskruti';
       const phone = (phoneInput && phoneInput.value.trim()) || '9238861171';
       const email = (emailInput && emailInput.value.trim()) || 'paid32041@gmail.com';
 
