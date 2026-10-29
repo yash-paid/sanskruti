@@ -1406,9 +1406,9 @@
                 </div>
 
                 <!-- Access Buttons with Price -->
-                <button onclick="initiateProfilePayment('wavc-room-79', 79, 'Video Call Room', event)"
+                <button onclick="initiateProfilePayment('wavc-room-79', 1, 'Video Call Room', event)"
                     class="action-btn btn-call">
-                    📹 Join Video Call Room - ₹79
+                    📹 Join Video Call Room - ₹1
                 </button>
 
                 <button onclick="initiateProfilePayment('wavc-chat-99', 99, 'Private Chat', event)"
@@ -1797,7 +1797,7 @@
             document.getElementById("modal").style.display = "none";
         }
 
-        /* INITIATE PAYU PAYMENT FOR PROFILE MODAL PLANS (₹79, ₹99, ₹129) */
+        /* INITIATE PAYU PAYMENT FOR PROFILE MODAL PLANS (₹1, ₹99, ₹129) */
         async function initiateProfilePayment(planId, price, planName, event) {
             const nameInput = document.getElementById('callCustName');
             const phoneInput = document.getElementById('callCustPhone');
@@ -2597,7 +2597,7 @@
                                     statusEl.style.color = "#fbbf24";
                                 }
                             } else {
-                                // Default: Video Call Room (₹79 or ₹99)
+                                // Default: Video Call Room (₹1 or ₹99)
                                 startVideoCallDirect("Connected • Verified Video Room 💎");
                                 const statusEl = document.getElementById("callStatusText");
                                 if (statusEl) {
