@@ -68,7 +68,8 @@ exports.handler = async (event, context) => {
         return `${base}?status=${encodeURIComponent(status)}&txnid=${encodeURIComponent(txnid)}&msg=${encodeURIComponent(errorMsg)}`;
       }
     } else if (targetCategory === 'wavc') {
-      const base = `${config.siteUrl}/wa.vc/WA%20Meet.html`;
+      const isIndexPhp = udf5 === 'index-php' || (udf1 && (udf1.includes('wavc-call-49') || udf1.includes('wavc-call-99')));
+      const base = isIndexPhp ? `${config.siteUrl}/wa.vc/index.php.html` : `${config.siteUrl}/wa.vc/WA%20Meet.html`;
       if (status === 'success') {
         return `${base}?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&status=success`;
       } else {
