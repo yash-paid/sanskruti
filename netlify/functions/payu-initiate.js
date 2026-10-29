@@ -110,7 +110,7 @@ exports.handler = async (event, context) => {
     const udf2 = cleanPhone;
     const udf3 = orderCalc.appliedCoupon ? `COUPON_${orderCalc.appliedCoupon}` : 'NO_COUPON';
     const udf4 = `${orderCalc.itemsPurchased.length}_items`;
-    const udf5 = (reqBody && reqBody.source === 'index-php') ? 'index-php' : 'sanskruti-web';
+    const udf5 = (body && body.source === 'index-php') ? 'index-php' : 'sanskruti-web';
 
     // 5. Generate secure SHA-512 request hash server-side
     const hash = generateRequestHash({
