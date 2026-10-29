@@ -162,7 +162,7 @@ const SERVICES = {
   'wavc-call-15':     { id: 'wavc-call-15',     title: 'WA Meet 15 Min HD Video Call',        price: 99,   category: 'wavc' },
   'wavc-call-vip':    { id: 'wavc-call-vip',    title: 'WA Meet Full Night VIP Access',       price: 179,  category: 'wavc' },
   'wavc-room-79':     { id: 'wavc-room-79',     title: 'WA Meet Video Call Room Access',      price: 1,    category: 'wavc' },
-  'wavc-chat-99':     { id: 'wavc-chat-99',     title: 'WA Meet Private Chat Access',         price: 99,   category: 'wavc' },
+  'wavc-chat-99':     { id: 'wavc-chat-99',     title: 'WA Meet Private Chat Access',         price: 46,   category: 'wavc' },
   'wavc-vvip-129':    { id: 'wavc-vvip-129',    title: 'WA Meet VVIP Room Access',            price: 129,  category: 'wavc' },
 
   // NearMe Meeting Advance (/meeting/)
