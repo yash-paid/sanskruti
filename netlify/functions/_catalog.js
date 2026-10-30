@@ -161,7 +161,7 @@ const SERVICES = {
   // WA.vc Call Plans (/wa.vc/)
   'wavc-call-15':     { id: 'wavc-call-15',     title: 'WA Meet 15 Min HD Video Call',        price: 99,   category: 'wavc' },
   'wavc-call-vip':    { id: 'wavc-call-vip',    title: 'WA Meet Full Night VIP Access',       price: 179,  category: 'wavc' },
-  'wavc-room-79':     { id: 'wavc-room-79',     title: 'WA Meet Video Call Room Access',      price: 1,    category: 'wavc' },
+  'wavc-room-79':     { id: 'wavc-room-79',     title: 'WA Meet Video Call Room Access',      price: 49,   category: 'wavc' },
   'wavc-chat-99':     { id: 'wavc-chat-99',     title: 'WA Meet Private Chat Access',         price: 49,   category: 'wavc' },
   'wavc-call-49':     { id: 'wavc-call-49',     title: 'WA Meet 10 Min Call (50% OFF)',       price: 49,   category: 'wavc' },
   'wavc-call-99':     { id: 'wavc-call-99',     title: 'WA Meet Continue Video Call',         price: 99,   category: 'wavc' },
