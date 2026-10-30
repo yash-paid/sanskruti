@@ -37,13 +37,20 @@
       margin-bottom: 3rem;
     }
     .card {
-      background: rgba(22, 11, 31, 0.8);
+      background: rgba(22, 11, 31, 0.85);
       border: 1px solid rgba(255, 42, 116, 0.3);
       border-radius: 16px;
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       display: flex;
       flex-direction: column;
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 35px rgba(255, 42, 116, 0.25);
+      border-color: rgba(255, 42, 116, 0.7);
     }
     .img-wrap {
       width: 100%;
@@ -53,31 +60,54 @@
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      position: relative;
     }
     .img-wrap img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      transition: transform 0.3s;
+      transition: transform 0.35s ease;
     }
-    .img-wrap img:hover { transform: scale(1.05); }
-    .card-footer { padding: 0.85rem 1rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .title { font-weight: 700; font-size: 0.95rem; }
-    .btn {
+    .card:hover .img-wrap img {
+      transform: scale(1.08);
+    }
+    .img-zoom-hint {
+      position: absolute;
+      bottom: 10px;
+      background: rgba(10, 5, 16, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #fff;
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 5px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 42, 116, 0.4);
       display: inline-flex;
       align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 10px;
-      background: linear-gradient(135deg, #ff2a74, #8a2be2);
-      color: #fff;
-      text-decoration: none;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 0.88rem;
-      box-shadow: 0 4px 15px rgba(255, 42, 116, 0.4);
+      gap: 5px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+      pointer-events: none;
+      transition: all 0.2s;
     }
-    .btn:hover { transform: translateY(-2px); }
+    .card:hover .img-zoom-hint {
+      background: #ff2a74;
+      border-color: #ff2a74;
+      transform: scale(1.05);
+    }
+    .card-footer {
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(15, 7, 22, 0.6);
+    }
+    .title { font-weight: 700; font-size: 0.95rem; }
+    .click-tag {
+      font-size: 0.75rem;
+      color: #ff9ad5;
+      font-weight: 600;
+    }
     .wa-box {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
@@ -95,6 +125,174 @@
       text-decoration: none;
       font-weight: 700;
       margin-top: 10px;
+      transition: transform 0.2s;
+    }
+    .btn-wa:hover {
+      transform: scale(1.04);
+    }
+
+    /* ==========================================================
+       FULLSCREEN LIGHTBOX / PHOTO ZOOM MODAL
+       ========================================================== */
+    .lightbox-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 2, 10, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 999999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 14px;
+      box-sizing: border-box;
+      animation: lbFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .lightbox-modal.active {
+      display: flex;
+    }
+
+    @keyframes lbFadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .lightbox-topbar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, transparent 100%);
+      z-index: 20;
+    }
+    .lightbox-counter {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #fff;
+      background: rgba(255, 42, 116, 0.25);
+      border: 1px solid rgba(255, 42, 116, 0.6);
+      padding: 5px 14px;
+      border-radius: 20px;
+      letter-spacing: 0.3px;
+    }
+    .lightbox-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .lightbox-btn {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .lightbox-btn:hover {
+      background: rgba(255, 42, 116, 0.7);
+      border-color: #ff2a74;
+      transform: scale(1.05);
+    }
+    .lightbox-close {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      padding: 0;
+      justify-content: center;
+      font-size: 1.15rem;
+      background: rgba(239, 68, 68, 0.35);
+      border-color: rgba(239, 68, 68, 0.6);
+    }
+    .lightbox-close:hover {
+      background: #ef4444;
+      border-color: #ef4444;
+    }
+
+    .lightbox-stage {
+      position: relative;
+      max-width: 94vw;
+      max-height: 82vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 14px;
+      margin-top: 30px;
+    }
+    .lightbox-img {
+      max-width: 90vw;
+      max-height: 78vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95), 0 0 50px rgba(255, 42, 116, 0.3);
+      cursor: zoom-in;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .lightbox-img.zoomed {
+      transform: scale(1.85);
+      cursor: zoom-out;
+    }
+
+    /* Prev / Next Nav Buttons */
+    .lightbox-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      font-size: 1.4rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 20;
+    }
+    .lightbox-nav:hover {
+      background: #ff2a74;
+      border-color: #ff2a74;
+      transform: translateY(-50%) scale(1.1);
+    }
+    .lightbox-nav.prev { left: 18px; }
+    .lightbox-nav.next { right: 18px; }
+
+    .lightbox-footer-tip {
+      position: absolute;
+      bottom: 14px;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      font-weight: 600;
+      pointer-events: none;
+    }
+
+    @media (max-width: 600px) {
+      .lightbox-nav.prev { left: 8px; width: 40px; height: 40px; font-size: 1.15rem; }
+      .lightbox-nav.next { right: 8px; width: 40px; height: 40px; font-size: 1.15rem; }
+      .lightbox-counter { font-size: 0.8rem; padding: 4px 10px; }
+      .lightbox-btn { font-size: 0.75rem; padding: 6px 10px; }
+      .lightbox-img.zoomed { transform: scale(2.2); }
+      .lightbox-footer-tip { font-size: 0.72rem; }
     }
   </style>
 </head>
@@ -102,11 +300,9 @@
   <div class="container">
     <div class="badge">✓ Access Unlocked</div>
     <h1>Your 5 Exclusive Photos</h1>
-    <p>Thank you for your payment! Here are your 5 high-definition unlocked exclusive photos.</p>
+    <p>Thank you for your payment! Click on any photo to zoom in high-definition.</p>
 
-    <div class="grid" id="mediaGrid">
-      <!-- Generated via JS for actual uploaded photos -->
-    </div>
+    <div class="grid" id="mediaGrid"></div>
 
     <div class="wa-box">
       <h3>Need Help or Want More Custom Photos?</h3>
@@ -114,6 +310,34 @@
       <a href="https://wa.me/919183053829?text=Hello%20Sanskruti,%20I%20have%20received%20my%205%20photos%20package!" target="_blank" class="btn-wa">
         💬 Connect on WhatsApp
       </a>
+    </div>
+  </div>
+
+  <!-- Fullscreen Lightbox / Zoom Modal -->
+  <div id="imageLightbox" class="lightbox-modal" onclick="handleLightboxBackdropClick(event)">
+    <div class="lightbox-topbar">
+      <div id="lightboxCounter" class="lightbox-counter">Photo 1 of 5</div>
+      <div class="lightbox-actions">
+        <button class="lightbox-btn" onclick="toggleImageZoom(event)" title="Toggle Zoom">
+          🔍 <span id="zoomBtnText">Zoom In</span>
+        </button>
+        <a id="lightboxDlBtn" class="lightbox-btn" href="#" download title="Download HD Photo">
+          ⬇ Download
+        </a>
+        <button class="lightbox-btn lightbox-close" onclick="closeLightbox()" title="Close (Esc)">✕</button>
+      </div>
+    </div>
+
+    <button class="lightbox-nav prev" onclick="navigatePhoto(-1, event)" title="Previous Photo (Left Arrow)">❮</button>
+
+    <div class="lightbox-stage">
+      <img id="lightboxImg" class="lightbox-img" src="" alt="Zoomed Photo" onclick="toggleImageZoom(event)">
+    </div>
+
+    <button class="lightbox-nav next" onclick="navigatePhoto(1, event)" title="Next Photo (Right Arrow)">❯</button>
+
+    <div class="lightbox-footer-tip">
+      💡 Tip: Tap photo to zoom in & out • Swipe or use arrows to change photo
     </div>
   </div>
 
@@ -127,19 +351,141 @@
       'IMG (125).jpg'
     ];
 
+    let currentPhotoIdx = 0;
+    let isZoomed = false;
+
+    // Render Cards
     photoFiles.forEach((file, index) => {
       const card = document.createElement('div');
       card.className = 'card';
+      card.title = `Click to zoom Exclusive Photo #${index + 1}`;
+      card.onclick = () => openLightbox(index);
+
       card.innerHTML = `
         <div class="img-wrap">
           <img src="${encodeURI(file)}" alt="Exclusive Photo #${index + 1}" loading="lazy">
+          <div class="img-zoom-hint">🔍 Tap to Zoom</div>
         </div>
         <div class="card-footer">
           <div class="title">Exclusive Photo #${index + 1}</div>
+          <span class="click-tag">View HD ↗</span>
         </div>
       `;
       grid.appendChild(card);
     });
+
+    // Open Lightbox
+    function openLightbox(index) {
+      currentPhotoIdx = index;
+      updateLightboxImage();
+      const modal = document.getElementById('imageLightbox');
+      if (modal) modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    // Close Lightbox
+    function closeLightbox() {
+      const modal = document.getElementById('imageLightbox');
+      if (modal) modal.classList.remove('active');
+      document.body.style.overflow = '';
+      resetZoom();
+    }
+
+    // Backdrop click to close (when clicking outside the image)
+    function handleLightboxBackdropClick(e) {
+      if (e.target.id === 'imageLightbox' || e.target.classList.contains('lightbox-stage')) {
+        closeLightbox();
+      }
+    }
+
+    // Update Image & Counter
+    function updateLightboxImage() {
+      const file = photoFiles[currentPhotoIdx];
+      const img = document.getElementById('lightboxImg');
+      const counter = document.getElementById('lightboxCounter');
+      const dlBtn = document.getElementById('lightboxDlBtn');
+
+      if (img) img.src = encodeURI(file);
+      if (counter) counter.textContent = `Photo ${currentPhotoIdx + 1} of ${photoFiles.length}`;
+      if (dlBtn) {
+        dlBtn.href = encodeURI(file);
+        dlBtn.download = file;
+      }
+      resetZoom();
+    }
+
+    // Navigate Next/Prev
+    function navigatePhoto(direction, e) {
+      if (e) e.stopPropagation();
+      currentPhotoIdx = (currentPhotoIdx + direction + photoFiles.length) % photoFiles.length;
+      updateLightboxImage();
+    }
+
+    // Toggle 2x Zoom
+    function toggleImageZoom(e) {
+      if (e) e.stopPropagation();
+      const img = document.getElementById('lightboxImg');
+      const text = document.getElementById('zoomBtnText');
+      if (!img) return;
+
+      isZoomed = !isZoomed;
+      if (isZoomed) {
+        img.classList.add('zoomed');
+        if (text) text.textContent = 'Zoom Out';
+      } else {
+        img.classList.remove('zoomed');
+        if (text) text.textContent = 'Zoom In';
+      }
+    }
+
+    function resetZoom() {
+      isZoomed = false;
+      const img = document.getElementById('lightboxImg');
+      const text = document.getElementById('zoomBtnText');
+      if (img) img.classList.remove('zoomed');
+      if (text) text.textContent = 'Zoom In';
+    }
+
+    // Keyboard controls (Arrow keys and Escape)
+    window.addEventListener('keydown', (e) => {
+      const modal = document.getElementById('imageLightbox');
+      if (!modal || !modal.classList.contains('active')) return;
+
+      if (e.key === 'Escape') {
+        closeLightbox();
+      } else if (e.key === 'ArrowRight') {
+        navigatePhoto(1);
+      } else if (e.key === 'ArrowLeft') {
+        navigatePhoto(-1);
+      }
+    });
+
+    // Touch Swipe Support for Mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const lightboxEl = document.getElementById('imageLightbox');
+
+    if (lightboxEl) {
+      lightboxEl.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+
+      lightboxEl.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+      }, { passive: true });
+    }
+
+    function handleSwipe() {
+      const threshold = 45;
+      if (touchEndX < touchStartX - threshold) {
+        // Swipe Left -> Next
+        navigatePhoto(1);
+      } else if (touchEndX > touchStartX + threshold) {
+        // Swipe Right -> Prev
+        navigatePhoto(-1);
+      }
+    }
   </script>
 </body>
 </html>

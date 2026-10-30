@@ -144,7 +144,7 @@ const VALID_COUPONS = {
 // Authoritative Non-eBook Services & Access Packages (Server-Enforced Pricing)
 const SERVICES = {
   // Sanskruti Services (/service/)
-  'service-pic-5':    { id: 'service-pic-5',    title: '5 Exclusive Photos Package',          price: 1,    category: 'service' },
+  'service-pic-5':    { id: 'service-pic-5',    title: '5 Exclusive Photos Package',          price: 60,   category: 'service' },
   'service-pic-10':   { id: 'service-pic-10',   title: '10 Exclusive Photos Package',         price: 100,  category: 'service' },
   'service-combo-1':  { id: 'service-combo-1',  title: '5 Photos + 3 Videos Package',         price: 120,  category: 'service' },
   'service-vid-5':    { id: 'service-vid-5',    title: '5 Exclusive Videos Package',          price: 150,  category: 'service' },
