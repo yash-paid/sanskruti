@@ -59,7 +59,7 @@ exports.handler = async (event, context) => {
   const safeFilename = `${bookMeta.title.replace(/[^a-zA-Z0-9]/g, '_')}_Sanskruti_eBook.txt`;
   const fileContent = `================================================================================
 SANSKRUTI E-BOOKS — OFFICIAL DIGITAL EDITION & LICENSED READER COPY
-Website: https://sanskrutiservice.in | Official Support: +91 92388 61171
+Website: https://sanskrutiservice.in | Official Support: +91 91830 53829
 ================================================================================
 
 ORDER VERIFICATION & LICENSING DETAILS:
@@ -100,7 +100,7 @@ CORE TAKEAWAYS & ACTION PROTOCOLS:
 SUPPORT & COMMUNITY:
 Need assistance with EPUB readers, audio summaries, or WhatsApp delivery?
 Our customer support is always here for you:
-• WhatsApp Support: +91 92388 61171
+• WhatsApp Support: +91 91830 53829
 • Website: https://sanskrutiservice.in
 • Location: Sishu Vihar, Patrapada, Bhubaneswar, Odisha - 751019
 

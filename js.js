@@ -867,9 +867,9 @@ function showCheckoutModal() {
   const modalBody = document.getElementById('checkoutModalBody');
   if (!modal || !modalBody) return;
 
-  const upiId = "9238861171@ybl";
+  const upiId = "9183053829@ybl";
   const upiPayLink = `upi://pay?pa=${upiId}&pn=Sanskruti%20eBooks&am=${item.price}&cu=INR&tn=${encodeURIComponent('Order for ' + item.title.substring(0, 30))}`;
-  const whatsappNumber = "919238861171";
+  const whatsappNumber = "919183053829";
   const whatsappPreFilled = encodeURIComponent(`Namaste Sanskruti eBooks Team, I want to purchase "${item.title}" for ₹${item.price}. I have paid via UPI / please send me the direct payment & download link.`);
 
   const modeBadge = payuEnvState.isLive
@@ -914,7 +914,7 @@ function showCheckoutModal() {
             <input type="text" id="custName" value="Sanskruti" placeholder="Your Full Name *" required autocomplete="name" oninput="this.classList.remove('input-error')" />
           </div>
           <div class="form-group">
-            <input type="tel" id="custWhatsapp" value="9238861171" placeholder="10-digit WhatsApp Number * (e.g. 9876543210)" required autocomplete="tel" oninput="this.classList.remove('input-error')" />
+            <input type="tel" id="custWhatsapp" value="9183053829" placeholder="10-digit WhatsApp Number * (e.g. 9876543210)" required autocomplete="tel" oninput="this.classList.remove('input-error')" />
           </div>
           <div class="form-group">
             <input type="email" id="custEmail" value="paid32041@gmail.com" placeholder="Email Address * (for PayU receipt & downloads)" required autocomplete="email" oninput="this.classList.remove('input-error')" />
@@ -951,7 +951,7 @@ async function initiatePayUCheckout(e) {
   const btn = document.getElementById('btnPayUCheckout');
 
   const name = (nameInput && nameInput.value.trim()) || 'Sanskruti';
-  let phone = (phoneInput && phoneInput.value.trim().replace(/[^0-9]/g, '')) || '9238861171';
+  let phone = (phoneInput && phoneInput.value.trim().replace(/[^0-9]/g, '')) || '9183053829';
   const email = (emailInput && emailInput.value.trim().toLowerCase()) || 'paid32041@gmail.com';
   const item = state.activeCheckoutItem;
 
@@ -1100,7 +1100,7 @@ function handleManualUpiSubmit() {
         <button class="btn-primary" onclick="simulateDownload('${item.title}')">
           📥 Direct Download Sample PDF
         </button>
-        <a href="https://wa.me/919238861171?text=${encodeURIComponent('Hello! I submitted payment via UPI for ' + item.title + '. My name is ' + name)}" target="_blank" class="whatsapp-nav-btn">
+        <a href="https://wa.me/919183053829?text=${encodeURIComponent('Hello! I submitted payment via UPI for ' + item.title + '. My name is ' + name)}" target="_blank" class="whatsapp-nav-btn">
           💬 Confirm on WhatsApp
         </a>
       </div>
@@ -1117,7 +1117,7 @@ function simulateDownload(bookTitle) {
   showToast(`Initiating download for "${bookTitle}"...`);
   setTimeout(() => {
     // Generate a downloadable sample text file as a mock eBook representation
-    const sampleContent = `========================================================\nSANSKRUTI E-BOOKS - DIGITAL EDITION\nTitle: ${bookTitle}\nLicensed To: Verified Reader\n========================================================\n\nThank you for choosing Sanskruti eBooks!\nEnjoy your journey of self-mastery, healthy living, and mental strength.\n\nSupport & Inquiries: +91 9238861171\nWebsite: https://sanskrutiservice.in\n========================================================`;
+    const sampleContent = `========================================================\nSANSKRUTI E-BOOKS - DIGITAL EDITION\nTitle: ${bookTitle}\nLicensed To: Verified Reader\n========================================================\n\nThank you for choosing Sanskruti eBooks!\nEnjoy your journey of self-mastery, healthy living, and mental strength.\n\nSupport & Inquiries: +91 9183053829\nWebsite: https://sanskrutiservice.in\n========================================================`;
     const blob = new Blob([sampleContent], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1161,7 +1161,7 @@ function submitLeadCapture(e) {
   }, 600);
 
   // Pre-fill WhatsApp message for the user
-  const waUrl = `https://wa.me/919238861171?text=${encodeURIComponent('Hello Sanskruti eBooks! I requested the Free 3-Chapter Starter Pack for my number: ' + phone)}`;
+  const waUrl = `https://wa.me/919183053829?text=${encodeURIComponent('Hello Sanskruti eBooks! I requested the Free 3-Chapter Starter Pack for my number: ' + phone)}`;
   window.open(waUrl, '_blank');
 
   document.getElementById('leadWhatsapp').value = '';
