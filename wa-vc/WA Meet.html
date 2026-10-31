@@ -1451,7 +1451,7 @@
 
         <!-- FULLSCREEN WHATSAPP VIDEO CALL SIMULATOR -->
         <div class="video-call-screen" id="videoCallScreen">
-            <video id="callRemoteVideo" class="call-remote-video" autoplay playsinline loop muted></video>
+            <video id="callRemoteVideo" class="call-remote-video" autoplay playsinline webkit-playsinline loop muted preload="auto"></video>
             <div class="call-video-vignette" id="callVideoVignette"></div>
             <div class="call-bg-overlay" id="callBgOverlay"></div>
             <div class="call-container">
@@ -1957,7 +1957,19 @@
         /* ========================================================
            FULLSCREEN VIDEO CALL CONTROLLER (ZERO PAYMENT API)
            ======================================================== */
-        const TOTAL_CALL_VIDEOS = 36;
+        const TOTAL_CALL_VIDEOS = 37;
+        let preloadedCallVideoNum = null;
+
+        function prepareRemoteVideo() {
+            const videoEl = document.getElementById("callRemoteVideo");
+            if (!videoEl) return;
+            preloadedCallVideoNum = Math.floor(Math.random() * TOTAL_CALL_VIDEOS) + 1;
+            videoEl.src = 'videos/' + preloadedCallVideoNum + '.mp4';
+            videoEl.preload = 'auto';
+            videoEl.muted = true;
+            videoEl.playsInline = true;
+            videoEl.load();
+        }
 
         function playRemoteCallVideo() {
             const videoEl = document.getElementById("callRemoteVideo");
@@ -1967,18 +1979,35 @@
 
             if (!videoEl) return;
 
-            // Pick a random video from 1 to 36
-            const randomNum = Math.floor(Math.random() * TOTAL_CALL_VIDEOS) + 1;
-            videoEl.src = 'videos/' + randomNum + '.mp4';
+            if (!videoEl.src || videoEl.src === '' || videoEl.src.endsWith('/')) {
+                prepareRemoteVideo();
+            }
+
             videoEl.muted = true;
             videoEl.playsInline = true;
             videoEl.autoplay = true;
             videoEl.loop = true;
-            videoEl.style.display = 'block';
             videoEl.style.filter = 'none';
-            if (vignetteEl) vignetteEl.style.display = 'block';
-            if (bgOverlay) bgOverlay.style.display = 'none';
-            if (avatarCenter) avatarCenter.style.display = 'none';
+
+            let timerStarted = false;
+            function onVideoActuallyPlaying() {
+                if (timerStarted) return;
+                timerStarted = true;
+                videoEl.style.display = 'block';
+                if (vignetteEl) vignetteEl.style.display = 'block';
+                if (bgOverlay) bgOverlay.style.display = 'none';
+                if (avatarCenter) avatarCenter.style.display = 'none';
+                startCallTimer();
+            }
+
+            videoEl.onplaying = onVideoActuallyPlaying;
+
+            // Fallback safety timeout (if onplaying delayed, switch and start timer)
+            setTimeout(() => {
+                if (!timerStarted) {
+                    onVideoActuallyPlaying();
+                }
+            }, 1800);
 
             const p = videoEl.play();
             if (p !== undefined) {
@@ -2030,13 +2059,15 @@
             if (videoEl) videoEl.style.filter = "none";
 
             screen.style.display = "flex";
+            document.getElementById("callBgOverlay").style.display = "block";
+            document.getElementById("callAvatarCenter").style.display = "block";
+            prepareRemoteVideo();
 
             if (customStatus === "Connected" || (customStatus && customStatus.startsWith("Connected")) || isCallPaid) {
                 // Instant connected state (e.g. from Accepted Incoming Call or Paid Unlock)
                 stopWhatsAppRingtone();
                 ringEl.style.display = "none";
                 statusEl.innerText = isCallPaid ? "00:00 • VIP Verified" : "00:00";
-                startCallTimer();
                 playRemoteCallVideo();
             } else {
                 // Normal dial flow
@@ -2054,7 +2085,6 @@
                     if (screen.style.display === "flex") {
                         stopWhatsAppRingtone();
                         ringEl.style.display = "none";
-                        startCallTimer();
                         playRemoteCallVideo();
                     }
                 }, 3500);
