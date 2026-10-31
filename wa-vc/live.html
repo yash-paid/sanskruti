@@ -437,7 +437,7 @@
     <!-- Video Background Layer -->
     <div class="video-wrap">
       <video id="myVideo" playsinline webkit-playsinline muted autoplay loop preload="auto">
-        <source src="videos/1.mp4" type="video/mp4">
+        <source src="/wa-vc/videos/1.mp4" type="video/mp4">
       </video>
     </div>
 
@@ -597,7 +597,7 @@
     function pickRandomVideo() {
       const randomNum = Math.floor(Math.random() * TOTAL_VIDEOS) + 1;
       const videoEl = document.getElementById('myVideo');
-      videoEl.src = 'videos/' + randomNum + '.mp4';
+      videoEl.src = '/wa-vc/videos/' + randomNum + '.mp4';
       videoEl.play().catch(function(err){
         console.log("Waiting for user tap to play");
       });

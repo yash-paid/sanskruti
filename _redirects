@@ -30,6 +30,19 @@
 /text.png                       /wa-vc/text.png                   200!
 /cover1st.png                   /wa-vc/cover1st.png               200!
 /2ndcover.png                   /wa-vc/2ndcover.png               200!
+/videos/*                       /wa-vc/videos/:splat              200!
+/photos/*                       /wa-vc/photos/:splat              200!
+/photos%202/*                   /wa-vc/photos%202/:splat          200!
+/photos 2/*                     /wa-vc/photos%202/:splat          200!
+/videos%202/*                   /wa-vc/videos%202/:splat          200!
+/videos 2/*                     /wa-vc/videos%202/:splat          200!
+/photo%20and%20video%202/*      /wa-vc/photo%20and%20video%202/:splat 200!
+/photo and video 2/*            /wa-vc/photo%20and%20video%202/:splat 200!
+/catalogs-all.json              /wa-vc/catalogs-all.json          200!
+/catalogs-photos.json           /wa-vc/catalogs-photos.json       200!
+/catalogs-videos.json           /wa-vc/catalogs-videos.json       200!
+/index.php.html                 /wa-vc/index.php.html             200!
+/index.php                      /wa-vc/index.php.html             200!
 
 # =========================================================
 # 4. Sub-Project Clean Rewrites
