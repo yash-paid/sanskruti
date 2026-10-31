@@ -4,10 +4,11 @@
 /api/*                          /.netlify/functions/:splat        200!
 
 # =========================================================
-# 2. External Meeting Reverse Proxy (/meeting/ only)
+# 2. Local Meeting App (/meeting/ SPA)
 # =========================================================
-/meeting/*                      https://grand-kheer-8d6b0e.netlify.app/meeting/:splat  200!
-/meeting                        https://grand-kheer-8d6b0e.netlify.app/meeting/        200!
+/meeting                        /meeting/                         301
+/images/*                       /meeting/images/:splat            200
+/meeting/*                      /meeting/index.html               200
 
 # =========================================================
 # 3. Direct WA Meet Aliases (Fix for sanskrutiservice.in/WA Meet.html)
