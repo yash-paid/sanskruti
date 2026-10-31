@@ -298,6 +298,253 @@
       background: rgba(255, 255, 255, 0.12);
       color: #fff;
     }
+
+    /* VIP Video Call Upgrade Modal Overlay */
+    .vc-upgrade-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(4, 3, 10, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      animation: vcFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes vcFadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .vc-upgrade-card {
+      background: linear-gradient(180deg, rgba(26, 14, 38, 0.98) 0%, rgba(13, 8, 20, 0.99) 100%);
+      border: 1px solid rgba(255, 42, 116, 0.4);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(255, 42, 116, 0.3);
+      border-radius: 24px;
+      max-width: 480px;
+      width: 100%;
+      padding: 2rem 1.6rem;
+      text-align: center;
+      position: relative;
+      max-height: 94vh;
+      overflow-y: auto;
+    }
+
+    .vc-close-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .vc-close-btn:hover {
+      background: rgba(239, 68, 68, 0.4);
+      transform: rotate(90deg);
+    }
+
+    .vc-upgrade-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(255, 42, 116, 0.2), rgba(138, 43, 226, 0.2));
+      border: 1px solid rgba(255, 42, 116, 0.5);
+      color: #ff85b3;
+      font-size: 0.76rem;
+      font-weight: 800;
+      padding: 5px 14px;
+      border-radius: 50px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 0.9rem;
+    }
+
+    .vc-avatar-wrap {
+      position: relative;
+      width: 84px;
+      height: 84px;
+      margin: 0 auto 0.9rem;
+    }
+    .vc-avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2.5px solid #ff2a74;
+      box-shadow: 0 0 20px rgba(255, 42, 116, 0.5);
+    }
+    .vc-online-badge {
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #10b981;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 10px;
+      white-space: nowrap;
+      letter-spacing: 0.4px;
+    }
+
+    .vc-upgrade-title {
+      color: #fff;
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin-bottom: 0.45rem;
+      line-height: 1.25;
+    }
+    .vc-upgrade-desc {
+      color: #f1f5f9;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      margin-bottom: 1.15rem;
+      background: rgba(255, 42, 116, 0.1);
+      border: 1px dashed rgba(255, 42, 116, 0.35);
+      padding: 0.85rem 1rem;
+      border-radius: 14px;
+      text-align: left;
+    }
+
+    .vc-plan-box {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1rem 1.1rem;
+      text-align: left;
+      margin-bottom: 1rem;
+    }
+    .vc-plan-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .vc-plan-tag {
+      color: #a78bfa;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .vc-plan-heading {
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .vc-plan-pricing {
+      text-align: right;
+    }
+    .vc-plan-amt {
+      color: #ffd700;
+      font-size: 1.6rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .vc-plan-sub {
+      color: #94a3b8;
+      font-size: 0.7rem;
+      margin-top: 2px;
+    }
+
+    .vc-features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      font-size: 0.84rem;
+      color: #e2e8f0;
+    }
+    .vc-feat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .vc-feat-item strong {
+      color: #ff70a6;
+    }
+
+    .vc-cust-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .vc-input {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.88rem;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .vc-input:focus {
+      border-color: #ff2a74;
+    }
+
+    .vc-pay-btn {
+      width: 100%;
+      padding: 0.95rem;
+      background: linear-gradient(135deg, #ff2a74 0%, #d946ef 50%, #8a2be2 100%);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(255, 42, 116, 0.45);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .vc-pay-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 42, 116, 0.6);
+    }
+    .vc-pay-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .vc-skip-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.85rem;
+      padding: 0.4rem;
+      transition: color 0.2s;
+      width: 100%;
+      text-decoration: underline;
+    }
+    .vc-skip-btn:hover {
+      color: #fff;
+    }
   </style>
 </head>
 
@@ -374,11 +621,198 @@
     </div>
   </main>
 
+  <!-- VIP Video Call Upgrade Modal -->
+  <div id="vcUpgradeModal" class="vc-upgrade-overlay" style="display: none;" onclick="closeVcUpgradeModal()">
+    <div class="vc-upgrade-card" onclick="event.stopPropagation()">
+      <button class="vc-close-btn" onclick="closeVcUpgradeModal()" title="Close">✕</button>
+
+      <div class="vc-upgrade-pill">
+        <span>🔥</span> SPECIAL VIP UPGRADE OFFER
+      </div>
+
+      <div class="vc-avatar-wrap">
+        <img src="/service-meet/Screenshot_20250518-223430.WhatsAppBusiness.png" alt="Sanskruti" class="vc-avatar-img">
+        <span class="vc-online-badge">● LIVE AVAILABLE</span>
+      </div>
+
+      <h2 class="vc-upgrade-title" id="vcUpgradeTitle">Full View & Audio VIP Upgrade</h2>
+      <div class="vc-upgrade-desc" id="vcUpgradeDesc">
+        Agar aapko mera Face, Boobies, Pussy dekhna hai aur clear aawaz sunna hai toh extra pay karna hoga, sath hi extra time milega! 💋
+      </div>
+
+      <!-- Plan Summary Card -->
+      <div class="vc-plan-box">
+        <div class="vc-plan-row">
+          <div>
+            <div class="vc-plan-tag" id="vcPlanTag">Video Call Plan</div>
+            <div class="vc-plan-heading" id="vcPlanHeading">VIP Upgrade</div>
+          </div>
+          <div class="vc-plan-pricing">
+            <div class="vc-plan-amt" id="vcPlanAmt">₹50</div>
+            <div class="vc-plan-sub">One-Time Fee</div>
+          </div>
+        </div>
+        <div class="vc-features-list">
+          <div class="vc-feat-item">✓ <strong>Face Show:</strong> Complete Face + 2-Way Live Audio</div>
+          <div class="vc-feat-item">✓ <strong>Body Show:</strong> Full Boobies & Pussy Show Live</div>
+          <div class="vc-feat-item">✓ <strong>Extra Duration:</strong> <span id="vcExtraTimeText">+10 Min Extra Time</span></div>
+          <div class="vc-feat-item">✓ <strong>100% Private:</strong> Safe & Encrypted 1-on-1 Call</div>
+        </div>
+      </div>
+
+      <!-- Quick Details Form -->
+      <div class="vc-cust-form">
+        <input type="text" id="vcCustName" value="Guest" placeholder="Your Name" class="vc-input">
+        <input type="tel" id="vcCustPhone" maxlength="10" value="9183053829" placeholder="10-digit WhatsApp Phone" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="vc-input">
+        <input type="email" id="vcCustEmail" value="paid32041@gmail.com" placeholder="Email" class="vc-input">
+        <div id="vcCustError" style="display: none; color: #ef4444; font-size: 11px; margin-top: 4px; font-weight: 600;"></div>
+      </div>
+
+      <!-- Pay Button -->
+      <button id="vcUpgradePayBtn" class="vc-pay-btn" onclick="initiateVcUpgradePayment()">
+        ⚡ Pay via PayU & Unlock VIP Call 📹
+      </button>
+
+      <!-- Skip Button -->
+      <button class="vc-skip-btn" onclick="closeVcUpgradeModal()">
+        Skip Upgrade & Continue on WhatsApp (Without Upgrade) →
+      </button>
+    </div>
+  </div>
+
   <footer style="padding: 2.5rem 1rem; text-align: center; color: #64748b; font-size: 0.88rem; border-top: 1px solid rgba(255,255,255,0.06);">
     <p>© 2026 Sanskruti Services. 100% Genuine & Verified Virtual Experience.</p>
   </footer>
 
   <script>
+    let currentUpgradePlan = null;
+
+    function setupVcUpgrade(planType) {
+      const config = {
+        '10': {
+          price: 50,
+          extraTime: '+10 Min Extra Time',
+          itemId: 'service-vc-upgrade-50',
+          title: '10 Min Video Call Plan',
+          heading: 'VIP Full View Upgrade (+10 Min Extra)',
+          desc: 'Agar aapko mera <strong>Face, Boobies, Pussy</strong> dekhna hai aur clear aawaz sunna hai toh <strong>extra ₹50</strong> pay karna hoga, sath hi aapko <strong>+10 Minute extra time</strong> bhi milega! 💋',
+          btnText: '⚡ Pay ₹50 via PayU & Unlock Full VIP Call 📹'
+        },
+        '30': {
+          price: 100,
+          extraTime: '+20 Min Extra Time',
+          itemId: 'service-vc-upgrade-100',
+          title: '30 Min Video Call Plan',
+          heading: 'VIP Full View Upgrade (+20 Min Extra)',
+          desc: 'Agar aapko mera <strong>Face, Boobies, Pussy</strong> dekhna hai aur clear aawaz sunna hai toh <strong>extra ₹100</strong> pay karna hoga, sath hi aapko <strong>+20 Minute extra time</strong> bhi milega! 💋',
+          btnText: '⚡ Pay ₹100 via PayU & Unlock Full VIP Call 📹'
+        },
+        '60': {
+          price: 150,
+          extraTime: '+30 Min Extra Time',
+          itemId: 'service-vc-upgrade-150',
+          title: '60 Min Video Call Plan',
+          heading: 'VIP Full View Upgrade (+30 Min Extra)',
+          desc: 'Agar aapko mera <strong>Face, Boobies, Pussy</strong> dekhna hai aur clear aawaz sunna hai toh <strong>extra ₹150</strong> pay karna hoga, sath hi aapko <strong>+30 Minute extra time</strong> bhi milega! 💋',
+          btnText: '⚡ Pay ₹150 via PayU & Unlock Full VIP Call 📹'
+        }
+      };
+
+      const plan = config[planType];
+      if (!plan) return;
+      currentUpgradePlan = plan;
+
+      const descEl = document.getElementById('vcUpgradeDesc');
+      const tagEl = document.getElementById('vcPlanTag');
+      const headEl = document.getElementById('vcPlanHeading');
+      const amtEl = document.getElementById('vcPlanAmt');
+      const extraEl = document.getElementById('vcExtraTimeText');
+      const btnEl = document.getElementById('vcUpgradePayBtn');
+
+      if (descEl) descEl.innerHTML = plan.desc;
+      if (tagEl) tagEl.textContent = plan.title;
+      if (headEl) headEl.textContent = plan.heading;
+      if (amtEl) amtEl.textContent = '₹' + plan.price;
+      if (extraEl) extraEl.textContent = plan.extraTime;
+      if (btnEl) btnEl.innerHTML = plan.btnText;
+
+      const modal = document.getElementById('vcUpgradeModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeVcUpgradeModal() {
+      const modal = document.getElementById('vcUpgradeModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function initiateVcUpgradePayment() {
+      if (!currentUpgradePlan) return;
+      const nameInput = document.getElementById('vcCustName');
+      const phoneInput = document.getElementById('vcCustPhone');
+      const emailInput = document.getElementById('vcCustEmail');
+      const errDiv = document.getElementById('vcCustError');
+      const btn = document.getElementById('vcUpgradePayBtn');
+
+      const name = (nameInput && nameInput.value.trim()) || 'Guest';
+      const phone = (phoneInput && phoneInput.value.trim().replace(/[^0-9]/g, '')) || '9183053829';
+      const email = (emailInput && emailInput.value.trim()) || 'paid32041@gmail.com';
+
+      if (!phone || phone.length !== 10) {
+        if (errDiv) {
+          errDiv.textContent = 'Please enter a valid 10-digit WhatsApp number.';
+          errDiv.style.display = 'block';
+        }
+        return;
+      }
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Connecting to PayU Gateway...';
+        if (errDiv) errDiv.style.display = 'none';
+
+        const res = await fetch('/api/payu-initiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            itemType: 'service',
+            itemId: currentUpgradePlan.itemId,
+            name: name,
+            phone: phone,
+            email: email
+          })
+        });
+
+        const data = await res.json();
+        if (!data.success || !data.actionUrl) {
+          throw new Error(data.error || 'Failed to initiate secure PayU checkout.');
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.actionUrl;
+        form.style.display = 'none';
+
+        for (const [k, v] of Object.entries(data.params || {})) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = k;
+          input.value = v;
+          form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+      } catch (err) {
+        console.error('VC Upgrade Payment Error:', err);
+        btn.disabled = false;
+        btn.innerHTML = currentUpgradePlan.btnText;
+        if (errDiv) {
+          errDiv.textContent = err.message || 'Payment initiation failed. Please try again.';
+          errDiv.style.display = 'block';
+        }
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const statusParam = (urlParams.get('status') || '').toLowerCase();
@@ -458,6 +892,36 @@
           </a>
         `;
 
+        // Check if this payment is an upgrade payment or a video call plan
+        const isUpgradePayment = (amount === '50' || amount === '100' || amount === '150');
+
+        if (isUpgradePayment) {
+          heading.textContent = 'VIP Upgrade Unlocked! 🎉';
+          desc.textContent = 'Aapka Video Call VIP Upgrade (Full Face, Body Show, Audio & Extra Time) verify ho gaya hai! Neeche WhatsApp par connect karke VIP call start karein.';
+          const btnMedia = document.getElementById('btnMediaAccess');
+          if (btnMedia) btnMedia.style.display = 'none';
+
+          const upgradeWaText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for the Video Call VIP Upgrade (₹${amount})! Order #${txnid || 'N/A'}. PayU Ref: ${mihpayid || 'N/A'}. Please start my Full Face, Body & Audio VIP Video Call.`);
+          const waBtn = actionButtons.querySelector('a[href*="wa.me"]');
+          if (waBtn) {
+            waBtn.href = `https://wa.me/919183053829?text=${upgradeWaText}`;
+          }
+        } else {
+          let vcType = null;
+          if (amount === '199') vcType = '10';
+          else if (amount === '300') vcType = '30';
+          else if (amount === '400') vcType = '60';
+
+          if (vcType) {
+            const btnMedia = document.getElementById('btnMediaAccess');
+            if (btnMedia) btnMedia.style.display = 'none';
+            desc.textContent = 'Aapka Video Call payment verify ho gaya hai! Apna VIP upgrade offer check karein ya WhatsApp par connect karein.';
+            setTimeout(() => {
+              setupVcUpgrade(vcType);
+            }, 600);
+          }
+        }
+
         // Asynchronously enrich with cryptographic server verification details if available
         if (token && txnid) {
           try {
@@ -468,6 +932,16 @@
                 if (verifyData.order.customerPhone) {
                   rowCustomer.style.display = 'flex';
                   valCustomer.textContent = verifyData.order.customerPhone;
+                  const pInput = document.getElementById('vcCustPhone');
+                  if (pInput) pInput.value = verifyData.order.customerPhone;
+                }
+                if (verifyData.order.customerName) {
+                  const nInput = document.getElementById('vcCustName');
+                  if (nInput) nInput.value = verifyData.order.customerName;
+                }
+                if (verifyData.order.customerEmail) {
+                  const eInput = document.getElementById('vcCustEmail');
+                  if (eInput) eInput.value = verifyData.order.customerEmail;
                 }
 
                 if (verifyData.order.items && verifyData.order.items.length > 0) {
@@ -487,6 +961,19 @@
                     // Call or chat service - WhatsApp is primary
                     const mediaBtn = document.getElementById('btnMediaAccess');
                     if (mediaBtn) mediaBtn.style.display = 'none';
+                  }
+
+                  // Check if bought item is an upgrade or a video call
+                  if (boughtItem.id === 'service-vc-upgrade-50' || boughtItem.id === 'service-vc-upgrade-100' || boughtItem.id === 'service-vc-upgrade-150') {
+                    closeVcUpgradeModal();
+                    heading.textContent = 'VIP Upgrade Unlocked! 🎉';
+                    desc.textContent = 'Aapka Video Call VIP Upgrade (Full Face, Body Show, Audio & Extra Time) verify ho gaya hai! Neeche WhatsApp par connect karke VIP call start karein.';
+                  } else if (boughtItem.id === 'service-vc-10') {
+                    setupVcUpgrade('10');
+                  } else if (boughtItem.id === 'service-vc-30') {
+                    setupVcUpgrade('30');
+                  } else if (boughtItem.id === 'service-vc-60') {
+                    setupVcUpgrade('60');
                   }
                 }
 
