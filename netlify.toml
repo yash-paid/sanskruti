@@ -9,18 +9,21 @@
   status = 200
   force = true
 
-# External Meeting Reverse Proxy
-[[redirects]]
-  from = "/meeting/*"
-  to = "https://grand-kheer-8d6b0e.netlify.app/meeting/:splat"
-  status = 200
-  force = true
-
+# Meeting App (Local SPA & Static Assets)
 [[redirects]]
   from = "/meeting"
-  to = "https://grand-kheer-8d6b0e.netlify.app/meeting/"
+  to = "/meeting/"
+  status = 301
+
+[[redirects]]
+  from = "/images/*"
+  to = "/meeting/images/:splat"
   status = 200
-  force = true
+
+[[redirects]]
+  from = "/meeting/*"
+  to = "/meeting/index.html"
+  status = 200
 
 # Sub-Project Clean Rewrites
 [[redirects]]
