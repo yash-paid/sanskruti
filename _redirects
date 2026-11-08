@@ -1,87 +1,90 @@
-# =========================================================
-# 1. PayU Serverless Backend APIs (CRITICAL - PRESERVED)
-# =========================================================
-/api/*                          /.netlify/functions/:splat        200!
+# ==============================================================================
+# SANSKRUTI SERVICES - CANONICAL ROUTING
+# Single source of truth. Physical files are always served directly by Netlify
+# CDN before any non-forced (200) rewrite rule is evaluated.
+# ==============================================================================
 
-# =========================================================
-# 2. Local Meeting App (/meeting/ SPA)
-# =========================================================
-/meeting                        /meeting/                         301
-/images/*                       /meeting/images/:splat            200
-/meeting/*                      /meeting/index.html               200
+# 1. API PROXY - PayU initiate, verify, download, callbacks
+/api/*                                    /.netlify/functions/:splat                200!
 
-# =========================================================
-# 3. Direct WA Meet Aliases (Fix for sanskrutiservice.in/WA Meet.html)
-# =========================================================
-/WA%20Meet.html                 /wa-vc/WA%20Meet.html             200!
-/WA%20Meet                      /wa-vc/WA%20Meet.html             200!
-/WA Meet.html                   /wa-vc/WA%20Meet.html             200!
-/wa-meet.html                   /wa-vc/WA%20Meet.html             200!
-/wa-meet                        /wa-vc/WA%20Meet.html             200!
-/live.html                      /wa-vc/live.html                  200!
-/live                           /wa-vc/live.html                  200!
-/WA%20Meet_files/*              /wa-vc/WA%20Meet_files/:splat     200!
-/WA Meet_files/*                /wa-vc/WA%20Meet_files/:splat     200!
-/Dating%20Live%20UI_files/*     /wa-vc/Dating%20Live%20UI_files/:splat 200!
-/Dating Live UI_files/*         /wa-vc/Dating%20Live%20UI_files/:splat 200!
-/index.php_files/*              /wa-vc/index.php_files/:splat     200!
-/video%20call%20girl.png        /wa-vc/video%20call%20girl.png    200!
-/video call girl.png            /wa-vc/video%20call%20girl.png    200!
-/text.png                       /wa-vc/text.png                   200!
-/cover1st.png                   /wa-vc/cover1st.png               200!
-/2ndcover.png                   /wa-vc/2ndcover.png               200!
-/videos/*                       /wa-vc/videos/:splat              200!
-/photos/*                       /wa-vc/photos/:splat              200!
-/photos%202/*                   /wa-vc/photos%202/:splat          200!
-/photos 2/*                     /wa-vc/photos%202/:splat          200!
-/videos%202/*                   /wa-vc/videos%202/:splat          200!
-/videos 2/*                     /wa-vc/videos%202/:splat          200!
-/photo%20and%20video%202/*      /wa-vc/photo%20and%20video%202/:splat 200!
-/photo and video 2/*            /wa-vc/photo%20and%20video%202/:splat 200!
-/catalogs-all.json              /wa-vc/catalogs-all.json          200!
-/catalogs-photos.json           /wa-vc/catalogs-photos.json       200!
-/catalogs-videos.json           /wa-vc/catalogs-videos.json       200!
-/index.php.html                 /wa-vc/index.php.html             200!
-/index.php                      /wa-vc/index.php.html             200!
+# 2. ROOT EBOOK WEBSITE
+/                                         /index.html                               200
+/index.html                               /index.html                               200
 
-# =========================================================
-# 4. Sub-Project Clean Rewrites
-# =========================================================
-/service/style.css              /service-meet/style.css           200!
-/service/5%20photos/*                   /service-meet/5%20photos/:splat         200!
-/service/5 photos/*                     /service-meet/5%20photos/:splat         200!
-/service/10%20photos/*                  /service-meet/10%20photos/:splat        200!
-/service/10 photos/*                    /service-meet/10%20photos/:splat        200!
-/service/5%20videos/*                   /service-meet/5%20videos/:splat         200!
-/service/5 videos/*                     /service-meet/5%20videos/:splat         200!
-/service/5%20photos%20plus%203%20videos/* /service-meet/5%20photos%20plus%203%20videos/:splat 200!
-/service/5 photos plus 3 videos/*       /service-meet/5%20photos%20plus%203%20videos/:splat 200!
-/service/payment-status.html            /service-meet/payment-status.html       200!
-/service/payment-status                 /service-meet/payment-status.html       200!
-/service/payment_status.html    /service-meet/payment-status.html 200!
-/service/payment_status         /service-meet/payment-status.html 200!
-/service/index.html             /service-meet/index.html          200!
-/service/*                      /service-meet/:splat              200!
-/service                        /service-meet/index.html          200!
-/service-meet/*                 /service-meet/:splat              200!
-/service-meet                   /service-meet/index.html          200!
-/wa.vc/*                        /wa-vc/:splat                     200!
-/wa.vc                          /wa-vc/                           301
+# 3. EBOOK LEGAL & UTILITY PAGES
+/payment-status.html                      /payment-status.html                      200
+/payment-status                           /payment-status.html                      200
+/contact.html                             /contact.html                             200
+/contact                                  /contact.html                             200
+/privacy-policy.html                      /privacy-policy.html                      200
+/privacy-policy                           /privacy-policy.html                      200
+/terms-and-conditions.html                /terms-and-conditions.html                200
+/terms-and-conditions                     /terms-and-conditions.html                200
+/terms                                    /terms-and-conditions.html                200
+/shipping-return-policy.html              /shipping-return-policy.html              200
+/shipping-return-policy                   /shipping-return-policy.html              200
+/refund-cancellation-policy.html          /refund-cancellation-policy.html          200
+/refund-cancellation-policy               /refund-cancellation-policy.html          200
+/about                                    /                                         301
+/about.html                               /                                         301
 
-# =========================================================
-# 5. Existing Main Website Clean URLs
-# =========================================================
-/payment-status                 /payment-status.html              200
-/about                          /                                 301
-/about.html                     /                                 301
-/contact                        /contact.html                     200
-/privacy-policy                 /privacy-policy.html              200
-/terms                          /terms-and-conditions.html        200
-/terms-and-conditions           /terms-and-conditions.html        200
-/shipping-return-policy         /shipping-return-policy.html      200
-/refund-cancellation-policy     /refund-cancellation-policy.html  200
+# 4. SERVICE WEBSITE & PAYMENT STATUS
+/service/payment-status.html              /service-meet/payment-status.html         200!
+/service/payment-status                   /service-meet/payment-status.html         200!
+/service/payment_status.html              /service-meet/payment-status.html         200!
+/service/payment_status                   /service-meet/payment-status.html         200!
+/service/                                 /service-meet/index.html                  200!
+/service                                  /service-meet/index.html                  200!
+/service/*                                /service-meet/:splat                      200!
 
-# =========================================================
-# 6. Global Catch-All Fallback (MUST BE LAST)
-# =========================================================
-/*                              /index.html                       200
+# 5. MEETING SPA ROUTES (physical assets in /meeting/ served directly by CDN)
+/meeting                                  /meeting/                                 301
+/meeting/                                 /meeting/index.html                       200
+/meeting/location                         /meeting/index.html                       200
+/meeting/profiles                         /meeting/index.html                       200
+/meeting/profile/*                        /meeting/index.html                       200
+
+# 6. WA.VC PAGES (explicit - no broad wildcard)
+/wa.vc/                                   /wa-vc/index.html                         200!
+/wa.vc                                    /wa-vc/index.html                         200!
+/wa.vc/index.php                          /wa-vc/index.php.html                     200!
+/wa.vc/index.php.html                     /wa-vc/index.php.html                     200!
+/wa.vc/WA%20Meet.html                     /wa-vc/WA%20Meet.html                     200!
+/wa.vc/live.html                          /wa-vc/live.html                          200!
+/wa.vc/live                               /wa-vc/live.html                          200!
+
+# 6a. WA.VC DATA FILES (fetched relatively by index.html JS)
+/wa.vc/catalogs-all.json                  /wa-vc/catalogs-all.json                  200!
+/wa.vc/catalogs-photos.json               /wa-vc/catalogs-photos.json               200!
+/wa.vc/catalogs-videos.json               /wa-vc/catalogs-videos.json               200!
+
+# 6b. WA.VC STATIC IMAGES (referenced relatively by index.html)
+/wa.vc/video%20call%20girl.png            /wa-vc/video%20call%20girl.png            200!
+/wa.vc/text.png                           /wa-vc/text.png                           200!
+
+# 6c. WA.VC ASSET DIRECTORIES (required by relative paths in each page)
+# WA Meet.html uses ./WA Meet_files/style_bm.css, icon, images
+/wa.vc/WA%20Meet_files/*                  /wa-vc/WA%20Meet_files/:splat             200!
+# index.php.html uses ./index.php_files/all.min.css and fallback images
+/wa.vc/index.php_files/*                  /wa-vc/index.php_files/:splat             200!
+# index.php.html uses photos/1.jpg through photos/10.jpg relatively
+/wa.vc/photos/*                           /wa-vc/photos/:splat                      200!
+# index.html catalog media (photo and video 2, photos 2, videos 2) fetched relatively
+/wa.vc/photo%20and%20video%202/*          /wa-vc/photo%20and%20video%202/:splat     200!
+/wa.vc/photos%202/*                       /wa-vc/photos%202/:splat                  200!
+/wa.vc/videos%202/*                       /wa-vc/videos%202/:splat                  200!
+
+# 7. WA.VC DIRECT ROOT ALIASES (for bookmarked / typed / linked URLs)
+/WA%20Meet.html                           /wa-vc/WA%20Meet.html                     200!
+/wa-meet.html                             /wa-vc/WA%20Meet.html                     200!
+/wa-meet                                  /wa-vc/WA%20Meet.html                     200!
+/live.html                                /wa-vc/live.html                          200!
+/live                                     /wa-vc/live.html                          200!
+/index.php.html                           /wa-vc/index.php.html                     200!
+/index.php                                /wa-vc/index.php.html                     200!
+
+# 8. GLOBAL FALLBACK -> SERVICE WEBSITE
+# No ! flag: physical files (style.css, js.js, root images, etc.) are never shadowed.
+# Any URL not matched above AND not a physical file on disk -> Service website.
+# This includes /wa.vc/random-typo, /meeting/bad-path, /xyz123, etc.
+/*                                        /service-meet/index.html                  200

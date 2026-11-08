@@ -12,5 +12,12 @@
     "netlify-functions"
   ],
   "author": "Sanskruti eBooks",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "netlify-cli": "^27.16.2"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "netlify-cli@27.16.2": true
+  }
 }

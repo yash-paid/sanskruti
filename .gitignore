@@ -21,3 +21,9 @@ sanskruti_orders.json
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Local Netlify folder
+.netlify
+
+# Backup files
+*.backup_*
