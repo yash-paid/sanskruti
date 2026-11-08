@@ -69,6 +69,8 @@
 /wa.vc/index.php_files/*                  /wa-vc/index.php_files/:splat             200!
 # index.php.html uses photos/1.jpg through photos/10.jpg relatively
 /wa.vc/photos/*                           /wa-vc/photos/:splat                      200!
+# index.php.html & WA Meet use videos/*.mp4 relatively from /wa.vc/
+/wa.vc/videos/*                           /wa-vc/videos/:splat                      200!
 # index.html catalog media (photo and video 2, photos 2, videos 2) fetched relatively
 /wa.vc/photo%20and%20video%202/*          /wa-vc/photo%20and%20video%202/:splat     200!
 /wa.vc/photos%202/*                       /wa-vc/photos%202/:splat                  200!

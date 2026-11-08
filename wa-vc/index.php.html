@@ -188,8 +188,15 @@
     }
 
     @keyframes joinFadeIn {
-      from { opacity: 0; transform: scale(0.96); }
-      to { opacity: 1; transform: scale(1); }
+      from {
+        opacity: 0;
+        transform: scale(0.96);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     .join-modal-card {
@@ -201,7 +208,7 @@
       padding: 22px 18px 18px;
       text-align: center;
       position: relative;
-      box-shadow: 0 25px 60px rgba(0,0,0,0.85), 0 0 35px rgba(255, 42, 116, 0.25);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(255, 42, 116, 0.25);
       color: #fff;
       box-sizing: border-box;
     }
@@ -223,6 +230,7 @@
       justify-content: center;
       transition: background 0.2s;
     }
+
     .join-modal-close:hover {
       background: rgba(255, 42, 116, 0.5);
     }
@@ -233,6 +241,7 @@
       height: 76px;
       margin: 0 auto 12px;
     }
+
     .join-avatar {
       width: 100%;
       height: 100%;
@@ -241,6 +250,7 @@
       border: 2.5px solid #ff2a74;
       box-shadow: 0 0 18px rgba(255, 42, 116, 0.55);
     }
+
     .join-live-tag {
       position: absolute;
       bottom: -6px;
@@ -264,6 +274,7 @@
       margin-bottom: 4px;
       letter-spacing: -0.2px;
     }
+
     .join-desc {
       font-size: 12.5px;
       color: #cbb8d8;
@@ -288,10 +299,12 @@
       text-align: left;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
     .join-option-card:hover {
       border-color: rgba(255, 42, 116, 0.5);
       background: rgba(255, 42, 116, 0.08);
     }
+
     .join-option-card.active {
       border-color: #ff2a74;
       background: linear-gradient(135deg, rgba(255, 42, 116, 0.18), rgba(138, 43, 226, 0.12));
@@ -309,6 +322,7 @@
       margin-bottom: 6px;
       letter-spacing: 0.3px;
     }
+
     .opt-badge.free-badge {
       background: #10b981;
     }
@@ -323,18 +337,20 @@
       width: 18px;
       height: 18px;
       border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.4);
+      border: 2px solid rgba(255, 255, 255, 0.4);
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: all 0.2s;
     }
+
     .join-option-card.active .opt-radio {
       border-color: #ff2a74;
       background: #ff2a74;
       box-shadow: 0 0 8px #ff2a74;
     }
+
     .join-option-card.active .opt-radio::after {
       content: '';
       width: 6px;
@@ -346,12 +362,14 @@
     .opt-text {
       flex: 1;
     }
+
     .opt-title {
       font-size: 14px;
       font-weight: 700;
       color: #fff;
       margin-bottom: 2px;
     }
+
     .opt-sub {
       font-size: 11px;
       color: #a794b6;
@@ -362,6 +380,7 @@
       text-align: right;
       flex-shrink: 0;
     }
+
     .opt-price .old-price {
       display: block;
       font-size: 12px;
@@ -369,11 +388,13 @@
       text-decoration: line-through;
       margin-bottom: 1px;
     }
+
     .opt-price .new-price {
       font-size: 19px;
       font-weight: 800;
       color: #10b981;
     }
+
     .opt-price .free-text {
       font-size: 16px;
       font-weight: 800;
@@ -394,6 +415,7 @@
       outline: none;
       transition: border-color 0.2s;
     }
+
     .join-input:focus {
       border-color: #ff2a74;
     }
@@ -411,13 +433,16 @@
       box-shadow: 0 6px 20px rgba(255, 42, 116, 0.45);
       transition: transform 0.18s, box-shadow 0.18s;
     }
+
     .join-action-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(255, 42, 116, 0.6);
     }
+
     .join-action-btn:active {
       transform: scale(0.98);
     }
+
     .join-action-btn:disabled {
       opacity: 0.65;
       cursor: not-allowed;
@@ -435,6 +460,7 @@
       cursor: pointer;
       margin-top: 8px;
     }
+
     .join-cancel-btn:hover {
       background: rgba(255, 255, 255, 0.08);
     }
@@ -481,7 +507,7 @@
     .call-vignette {
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 25%, transparent 70%, rgba(0,0,0,0.85) 100%);
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, transparent 25%, transparent 70%, rgba(0, 0, 0, 0.85) 100%);
       z-index: 2;
       pointer-events: none;
     }
@@ -494,6 +520,7 @@
       align-items: center;
       padding: 16px 14px;
     }
+
     .call-model-info {
       display: flex;
       align-items: center;
@@ -505,6 +532,7 @@
       padding: 6px 12px;
       border-radius: 20px;
     }
+
     .call-top-avatar {
       width: 36px;
       height: 36px;
@@ -512,11 +540,13 @@
       object-fit: cover;
       border: 1.5px solid #ff2a74;
     }
+
     .call-model-name {
       font-size: 13.5px;
       font-weight: 700;
       color: #fff;
     }
+
     .call-timer-badge {
       font-size: 11px;
       color: #10b981;
@@ -525,17 +555,152 @@
       align-items: center;
       gap: 5px;
     }
+
+    .call-timer-badge.connecting {
+      color: #fbbf24;
+    }
+
+    .call-timer-badge.error {
+      color: #ef4444;
+    }
+
     .ping-circle {
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: #ef4444;
-      box-shadow: 0 0 6px #ef4444;
+      background: #10b981;
+      box-shadow: 0 0 6px #10b981;
       animation: pingDot 1.2s infinite;
     }
+
+    .ping-circle.connecting {
+      background: #fbbf24;
+      box-shadow: 0 0 6px #fbbf24;
+    }
+
+    .ping-circle.error {
+      background: #ef4444;
+      box-shadow: 0 0 6px #ef4444;
+    }
+
+    /* Connecting / Buffering Video Call Screen Overlay */
+    .call-connecting-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at center, rgba(17, 24, 39, 0.88) 0%, rgba(10, 15, 29, 0.96) 100%);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 15;
+      padding: 24px;
+      text-align: center;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .connecting-avatar-wrapper {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    .connecting-avatar-img {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #ff2a74;
+      box-shadow: 0 0 25px rgba(255, 42, 116, 0.55);
+      display: block;
+    }
+
+    .connecting-ripple {
+      position: absolute;
+      top: -10px;
+      left: -10px;
+      right: -10px;
+      bottom: -10px;
+      border-radius: 50%;
+      border: 2px solid #ff2a74;
+      animation: ripplePulse 1.8s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+      pointer-events: none;
+    }
+
+    @keyframes ripplePulse {
+      0% { transform: scale(0.95); opacity: 0.9; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+
+    .connecting-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+
+    .connecting-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(251, 191, 36, 0.15);
+      border: 1px solid rgba(251, 191, 36, 0.35);
+      color: #fbbf24;
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 14px;
+    }
+
+    .connecting-status-pill.error {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.35);
+      color: #ef4444;
+    }
+
+    .connecting-subtext {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.65);
+      max-width: 260px;
+      line-height: 1.4;
+      margin-bottom: 18px;
+    }
+
+    .connecting-retry-btn {
+      background: linear-gradient(135deg, #ff2a74, #8a2be2);
+      color: #fff;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 25px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 4px 15px rgba(255, 42, 116, 0.4);
+      transition: transform 0.2s;
+    }
+
+    .connecting-retry-btn:active {
+      transform: scale(0.96);
+    }
+
     @keyframes pingDot {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.4); opacity: 0.4; }
+
+      0%,
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.4);
+        opacity: 0.4;
+      }
     }
 
     .call-close-icon {
@@ -563,13 +728,15 @@
       border: 2px solid rgba(255, 255, 255, 0.35);
       background: #111;
       z-index: 10;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
     }
+
     .self-video {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
+
     .self-cam-label {
       position: absolute;
       bottom: 4px;
@@ -577,7 +744,7 @@
       font-size: 9.5px;
       font-weight: 700;
       color: #fff;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0, 0, 0, 0.5);
       padding: 1px 4px;
       border-radius: 4px;
     }
@@ -602,8 +769,8 @@
       gap: 6px;
       max-height: 160px;
       overflow-y: hidden;
-      mask-image: linear-gradient(to top, rgba(0,0,0,1) 80%, rgba(0,0,0,0));
-      -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 80%, rgba(0,0,0,0));
+      mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0));
+      -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0));
       padding-bottom: 4px;
     }
 
@@ -627,8 +794,15 @@
     }
 
     @keyframes commentFadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .comment-user {
@@ -636,6 +810,7 @@
       color: #ff9ad5;
       font-size: 10.5px;
     }
+
     .comment-user.is-you {
       color: #25d366;
     }
@@ -666,6 +841,7 @@
       color: #fff;
       font-size: 11px;
     }
+
     .comment-input::placeholder {
       color: #94a3b8;
     }
@@ -684,6 +860,7 @@
       font-size: 10px;
       transition: transform 0.15s;
     }
+
     .comment-send-btn:active {
       transform: scale(0.9);
     }
@@ -722,7 +899,9 @@
       transform: scale(0.92);
     }
 
-    .btn-mute, .btn-cam, .btn-chat {
+    .btn-mute,
+    .btn-cam,
+    .btn-chat {
       background: rgba(255, 255, 255, 0.22);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
@@ -752,7 +931,8 @@
       background: rgba(10, 10, 16, 0.88);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      z-index: 9999999 !important; /* Above video call screen */
+      z-index: 9999999 !important;
+      /* Above video call screen */
       display: none;
       align-items: center;
       justify-content: center;
@@ -763,8 +943,15 @@
     }
 
     @keyframes newPopIn {
-      0% { opacity: 0; transform: scale(0.92) translateY(12px); }
-      100% { opacity: 1; transform: scale(1) translateY(0); }
+      0% {
+        opacity: 0;
+        transform: scale(0.92) translateY(12px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
     }
 
     .new-continue-card {
@@ -798,6 +985,7 @@
       justify-content: center;
       transition: all 0.2s;
     }
+
     .new-close-btn:hover {
       background: rgba(255, 42, 116, 0.6);
       color: #fff;
@@ -824,6 +1012,7 @@
       height: 76px;
       margin: 0 auto 12px;
     }
+
     .new-avatar-img {
       width: 100%;
       height: 100%;
@@ -832,6 +1021,7 @@
       border: 2.5px solid #ff2a74;
       box-shadow: 0 0 20px rgba(255, 42, 116, 0.55);
     }
+
     .new-paused-badge {
       position: absolute;
       bottom: -6px;
@@ -873,12 +1063,14 @@
       margin-bottom: 12px;
       position: relative;
     }
+
     .new-plan-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 4px;
     }
+
     .new-plan-name {
       font-size: 14px;
       font-weight: 800;
@@ -887,6 +1079,7 @@
       align-items: center;
       gap: 6px;
     }
+
     .new-plan-badge {
       background: #ff2a74;
       color: #fff;
@@ -896,20 +1089,24 @@
       border-radius: 6px;
       letter-spacing: 0.3px;
     }
+
     .new-plan-price {
       text-align: right;
     }
+
     .new-old-price {
       font-size: 11.5px;
       color: #94a3b8;
       text-decoration: line-through;
       margin-right: 4px;
     }
+
     .new-price-amt {
       font-size: 20px;
       font-weight: 800;
       color: #10b981;
     }
+
     .new-plan-features {
       font-size: 11px;
       color: #cbd5e1;
@@ -926,6 +1123,7 @@
       margin-bottom: 12px;
       text-align: left;
     }
+
     .new-cust-input {
       width: 100%;
       padding: 9px 12px;
@@ -939,6 +1137,7 @@
       outline: none;
       transition: border-color 0.2s;
     }
+
     .new-cust-input:focus {
       border-color: #ff2a74;
     }
@@ -952,6 +1151,7 @@
       color: #a794b6;
       margin-bottom: 12px;
     }
+
     .new-upi-pill {
       background: rgba(255, 255, 255, 0.1);
       padding: 2px 7px;
@@ -977,10 +1177,12 @@
       justify-content: center;
       gap: 8px;
     }
+
     .new-pay-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 22px rgba(16, 185, 129, 0.55);
     }
+
     .new-pay-btn:disabled {
       opacity: 0.65;
       cursor: not-allowed;
@@ -999,6 +1201,7 @@
       margin-top: 8px;
       transition: background 0.2s;
     }
+
     .new-cancel-btn:hover {
       background: rgba(255, 255, 255, 0.08);
       color: #fff;
@@ -1223,7 +1426,8 @@
         <span class="join-live-tag">LIVE NOW 💋</span>
       </div>
       <h3 class="join-title">To Join This Call</h3>
-      <p class="join-desc">Choose an option to connect with <span id="joinModalName" style="color: #ff2a74; font-weight: 700;">अंकिता</span> on Private HD Video Call</p>
+      <p class="join-desc">Choose an option to connect with <span id="joinModalName"
+          style="color: #ff2a74; font-weight: 700;">अंकिता</span> on Private HD Video Call</p>
 
       <div class="join-options">
         <!-- OPTION 1: Pay 49 for 10 minutes (99 cut, 50% OFF) -->
@@ -1261,9 +1465,12 @@
       <!-- Quick User Details (Shown for Option 1 checkout) -->
       <div id="joinCustomerForm" style="margin: 12px 0 8px; text-align: left;">
         <input type="text" id="joinCustName" value="Guest" placeholder="Your Name" class="join-input">
-        <input type="tel" id="joinCustPhone" maxlength="10" value="9183053829" placeholder="10-digit WhatsApp Phone" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="join-input">
-        <input type="email" id="joinCustEmail" value="paid32041@gmail.com" placeholder="Email (for order confirmation)" class="join-input">
-        <div id="joinCustError" style="display: none; color: #ef4444; font-size: 11px; margin-top: 4px; font-weight: 600;"></div>
+        <input type="tel" id="joinCustPhone" maxlength="10" value="9183053829" placeholder="10-digit WhatsApp Phone"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="join-input">
+        <input type="email" id="joinCustEmail" value="paid32041@gmail.com" placeholder="Email (for order confirmation)"
+          class="join-input">
+        <div id="joinCustError"
+          style="display: none; color: #ef4444; font-size: 11px; margin-top: 4px; font-weight: 600;"></div>
       </div>
 
       <button id="joinActionBtn" class="join-action-btn" onclick="executeSelectedOption()">
@@ -1282,6 +1489,23 @@
       <video id="remoteCallVideo" class="remote-video" playsinline webkit-playsinline loop preload="auto"></video>
       <div class="call-vignette"></div>
 
+      <!-- Connecting / Buffering State Card (Shown until 1st video frame plays) -->
+      <div id="callConnectingOverlay" class="call-connecting-overlay" style="display: flex;">
+        <div class="connecting-avatar-wrapper">
+          <div class="connecting-ripple"></div>
+          <img id="connectingAvatar" src="" class="connecting-avatar-img" alt="Connecting">
+        </div>
+        <div id="connectingModelName" class="connecting-title">Model Name</div>
+        <div id="connectingStatusPill" class="connecting-status-pill">
+          <span class="ping-circle connecting" id="connectingDot"></span>
+          <span id="connectingStatusLabel">CONNECTING...</span>
+        </div>
+        <div id="connectingSubtext" class="connecting-subtext">Setting up secure private HD video stream...</div>
+        <button id="connectingRetryBtn" class="connecting-retry-btn" onclick="retryActiveVideoCall()">
+          🔄 Tap to Retry Video
+        </button>
+      </div>
+
       <!-- Top Call Header -->
       <div class="call-top-bar">
         <div class="call-model-info">
@@ -1289,7 +1513,8 @@
           <div>
             <div id="callScreenName" class="call-model-name">Model Name</div>
             <div class="call-timer-badge">
-              <span class="ping-circle"></span> <span id="callTimerText">00:00</span> • <span id="callModeLabel">FREE PREVIEW</span>
+              <span class="ping-circle"></span> <span id="callTimerText">00:00</span> • <span id="callModeLabel">FREE
+                PREVIEW</span>
             </div>
           </div>
         </div>
@@ -1300,7 +1525,8 @@
       <div class="call-comments-container" id="callCommentsContainer">
         <div class="comments-scroll" id="commentsScrollList"></div>
         <div class="comment-input-bar">
-          <input type="text" id="userCommentInput" placeholder="Say something..." onkeypress="handleCommentKeyPress(event)" class="comment-input">
+          <input type="text" id="userCommentInput" placeholder="Say something..."
+            onkeypress="handleCommentKeyPress(event)" class="comment-input">
           <button class="comment-send-btn" onclick="sendUserComment()" title="Send">➤</button>
         </div>
       </div>
@@ -1315,22 +1541,40 @@
       <div class="call-bottom-controls">
         <!-- 1. Mute Button -->
         <button class="ctrl-btn btn-mute" onclick="toggleCallMute()" id="callMuteBtn" title="Mute/Unmute">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="micSvg"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" id="micSvg">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+          </svg>
         </button>
 
         <!-- 2. Camera Off / On Button -->
         <button class="ctrl-btn btn-cam" onclick="toggleCallCamera()" id="callCamBtn" title="Camera On/Off">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="camSvg"><path d="M23 7l-7 5 7 5V7z"></path><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round" id="camSvg">
+            <path d="M23 7l-7 5 7 5V7z"></path>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+          </svg>
         </button>
 
         <!-- 3. Comments Toggle Button -->
         <button class="ctrl-btn btn-chat" onclick="toggleCommentsVisibility()" id="callChatBtn" title="Comments">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
         </button>
 
         <!-- 4. End Call Button -->
         <button class="ctrl-btn btn-hangup" onclick="endAndCloseCall()" title="End Call">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(135deg);"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(135deg);">
+            <path
+              d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
+            </path>
+          </svg>
         </button>
       </div>
     </div>
@@ -1354,7 +1598,8 @@
 
       <h3 class="new-pay-title">To Continue This Call, Pay ₹99</h3>
       <p class="new-pay-sub">
-        <span id="newContinueName" style="color: #ff2a74; font-weight: 700;">अंकिता</span> is waiting for you on live private video call! Unlock unlimited HD call now 💋
+        <span id="newContinueName" style="color: #ff2a74; font-weight: 700;">अंकिता</span> is waiting for you on live
+        private video call! Unlock unlimited HD call now 💋
       </p>
 
       <div class="new-plan-card">
@@ -1376,9 +1621,13 @@
 
       <div class="new-input-box">
         <input type="text" id="newCustName" value="Sanskruti" placeholder="Your Name" class="new-cust-input">
-        <input type="tel" id="newCustPhone" maxlength="10" value="9183053829" placeholder="10-digit WhatsApp Phone" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="new-cust-input">
-        <input type="email" id="newCustEmail" value="paid32041@gmail.com" placeholder="Email (for order confirmation)" class="new-cust-input">
-        <div id="newCustError" style="display: none; color: #ef4444; font-size: 11px; margin-top: 4px; font-weight: 600; text-align: left;"></div>
+        <input type="tel" id="newCustPhone" maxlength="10" value="9183053829" placeholder="10-digit WhatsApp Phone"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="new-cust-input">
+        <input type="email" id="newCustEmail" value="paid32041@gmail.com" placeholder="Email (for order confirmation)"
+          class="new-cust-input">
+        <div id="newCustError"
+          style="display: none; color: #ef4444; font-size: 11px; margin-top: 4px; font-weight: 600; text-align: left;">
+        </div>
       </div>
 
       <div class="new-upi-strip">
@@ -1411,6 +1660,10 @@
     let commentsInterval = null;
     let localWebcamStream = null;
     let isCallPaid = false;
+    let isCallInitiating = false;
+    let isCallActive = false;
+    let currentVideoAbortController = null;
+    let callConnectTimeout = null;
 
     // Global helper invoked directly by card onclick:
     function openJoinModalFromCard(cardEl) {
@@ -1429,7 +1682,7 @@
       const cards = document.querySelectorAll('.card');
       cards.forEach(card => {
         card.removeAttribute('onclick');
-        card.addEventListener('click', function(e) {
+        card.addEventListener('click', function (e) {
           e.preventDefault();
           e.stopPropagation();
 
@@ -1495,75 +1748,238 @@
       }
     }
 
-    // START VIDEO CALL (Free or Paid)
+    // START VIDEO CALL (Free or Paid) with proper CONNECTING -> CONNECTED flow
     async function startVideoCall(paidMode = false) {
+      if (isCallInitiating || isCallActive) return; // Prevent duplicate initiation
+      isCallInitiating = true;
       isCallPaid = paidMode;
+
       const screen = document.getElementById('videoCallScreen');
       const nameEl = document.getElementById('callScreenName');
       const avatarEl = document.getElementById('callScreenAvatar');
+      const timerBadge = document.querySelector('.call-timer-badge');
+      const timerDot = timerBadge ? timerBadge.querySelector('.ping-circle') : null;
       const timerText = document.getElementById('callTimerText');
       const modeLabel = document.getElementById('callModeLabel');
       const remoteVideo = document.getElementById('remoteCallVideo');
 
+      // Connecting overlay elements
+      const connOverlay = document.getElementById('callConnectingOverlay');
+      const connAvatar = document.getElementById('connectingAvatar');
+      const connName = document.getElementById('connectingModelName');
+      const connPill = document.getElementById('connectingStatusPill');
+      const connDot = document.getElementById('connectingDot');
+      const connLabel = document.getElementById('connectingStatusLabel');
+      const connSubtext = document.getElementById('connectingSubtext');
+      const connRetryBtn = document.getElementById('connectingRetryBtn');
+
+      // 1. Populate metadata
       if (nameEl) nameEl.innerText = currentModel.name;
       if (avatarEl) avatarEl.src = currentModel.img;
       if (modeLabel) modeLabel.innerText = paidMode ? 'VIP VERIFIED 💎' : 'FREE PREVIEW (10s)';
-      if (timerText) timerText.innerText = '00:00';
 
-      // Pick random video from 1 to 37
-      const randomVidNum = Math.floor(Math.random() * 37) + 1;
-      remoteVideo.src = '/wa-vc/videos/' + randomVidNum + '.mp4';
-      remoteVideo.style.filter = 'none';
-      remoteVideo.muted = false;
+      // 2. Set Header Status to CONNECTING (do NOT start billable timer yet)
+      if (timerBadge) {
+        timerBadge.classList.add('connecting');
+        timerBadge.classList.remove('error');
+      }
+      if (timerDot) {
+        timerDot.classList.add('connecting');
+        timerDot.classList.remove('error');
+      }
+      if (timerText) timerText.innerText = 'CONNECTING...';
+
+      // 3. Show full screen and connecting overlay
+      if (connOverlay) {
+        connOverlay.style.display = 'flex';
+        connOverlay.style.opacity = '1';
+        connOverlay.style.visibility = 'visible';
+      }
+      if (connAvatar) connAvatar.src = currentModel.img;
+      if (connName) connName.innerText = currentModel.name;
+      if (connPill) {
+        connPill.classList.remove('error');
+      }
+      if (connDot) {
+        connDot.classList.add('connecting');
+        connDot.classList.remove('error');
+      }
+      if (connLabel) connLabel.innerText = 'CONNECTING...';
+      if (connSubtext) connSubtext.innerText = 'Setting up secure private HD video stream...';
+      if (connRetryBtn) connRetryBtn.style.display = 'none';
 
       screen.style.display = 'flex';
 
-      const playPromise = remoteVideo.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          remoteVideo.muted = true;
-          remoteVideo.play();
-        });
+      // Pick random video from 1 to 36
+      const randomVidNum = Math.floor(Math.random() * 36) + 1;
+      const videoUrl = 'videos/' + randomVidNum + '.mp4';
+
+      // Setup abort controller for loading lifecycle
+      if (currentVideoAbortController) currentVideoAbortController.abort();
+      currentVideoAbortController = new AbortController();
+      const signal = currentVideoAbortController.signal;
+
+      // Timeout guard: 12 seconds
+      if (callConnectTimeout) clearTimeout(callConnectTimeout);
+      callConnectTimeout = setTimeout(() => {
+        if (!isCallActive && isCallInitiating) {
+          handleVideoLoadError('Connection timed out. Video could not be buffered.');
+        }
+      }, 12000);
+
+      // 4. Preload and wait for canplay / playing
+      remoteVideo.style.filter = 'none';
+      remoteVideo.muted = false;
+      remoteVideo.preload = 'auto';
+
+      let videoStarted = false;
+
+      function onCanPlayThrough() {
+        if (signal.aborted || videoStarted) return;
+        attemptVideoPlayback();
       }
 
-      // Try starting front cam
-      startSelfWebcam();
-
-      // Start Live Comments Stream on Side
-      startLiveCommentsStream();
-
-      // Start Call Timer
-      callSec = 0;
-      if (callTimerInterval) clearInterval(callTimerInterval);
-
-      callTimerInterval = setInterval(() => {
-        callSec++;
-        const mins = String(Math.floor(callSec / 60)).padStart(2, '0');
-        const secs = String(callSec % 60).padStart(2, '0');
-        if (timerText) timerText.innerText = `${mins}:${secs}`;
-
-        // 10 SECONDS CUT FOR FREE CALL:
-        if (!isCallPaid && callSec >= 10) {
-          cutCallAndShowPaymentPopup();
+      function attemptVideoPlayback() {
+        if (signal.aborted || videoStarted) return;
+        const playPromise = remoteVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            onVideoActuallyPlaying();
+          }).catch(err => {
+            if (signal.aborted) return;
+            // Retry muted if browser blocked unmuted autoplay
+            remoteVideo.muted = true;
+            remoteVideo.play().then(() => {
+              onVideoActuallyPlaying();
+            }).catch(e => {
+              if (!signal.aborted) handleVideoLoadError('Autoplay blocked or stream error.');
+            });
+          });
         }
-      }, 1000);
+      }
+
+      function onVideoActuallyPlaying() {
+        if (videoStarted || signal.aborted) return;
+        videoStarted = true;
+        if (callConnectTimeout) {
+          clearTimeout(callConnectTimeout);
+          callConnectTimeout = null;
+        }
+
+        // Transition: CONNECTING -> CONNECTED!
+        isCallInitiating = false;
+        isCallActive = true;
+
+        // Hide Connecting Overlay
+        if (connOverlay) {
+          connOverlay.style.opacity = '0';
+          setTimeout(() => {
+            if (connOverlay && isCallActive) connOverlay.style.display = 'none';
+          }, 300);
+        }
+
+        // Update Header to CONNECTED with active timer
+        if (timerBadge) {
+          timerBadge.classList.remove('connecting', 'error');
+        }
+        if (timerDot) {
+          timerDot.classList.remove('connecting', 'error');
+        }
+
+        // Start connected timer from exact 00:00
+        callSec = 0;
+        if (timerText) timerText.innerText = '00:00';
+        if (callTimerInterval) clearInterval(callTimerInterval);
+
+        callTimerInterval = setInterval(() => {
+          callSec++;
+          const mins = String(Math.floor(callSec / 60)).padStart(2, '0');
+          const secs = String(callSec % 60).padStart(2, '0');
+          if (timerText) timerText.innerText = `${mins}:${secs}`;
+
+          // 10 SECONDS CUT FOR FREE CALL:
+          if (!isCallPaid && callSec >= 10) {
+            cutCallAndShowPaymentPopup();
+          }
+        }, 1000);
+
+        // Start webcam and comments ONLY after video successfully starts
+        startSelfWebcam();
+        startLiveCommentsStream();
+      }
+
+      function onVideoError(e) {
+        if (signal.aborted || videoStarted) return;
+        handleVideoLoadError('Failed to load video stream.');
+      }
+
+      function handleVideoLoadError(msg) {
+        isCallInitiating = false;
+        isCallActive = false;
+        if (callConnectTimeout) {
+          clearTimeout(callConnectTimeout);
+          callConnectTimeout = null;
+        }
+
+        if (timerBadge) timerBadge.classList.add('error');
+        if (timerDot) timerDot.classList.add('error');
+        if (timerText) timerText.innerText = 'ERROR';
+
+        if (connOverlay) connOverlay.style.display = 'flex';
+        if (connPill) connPill.classList.add('error');
+        if (connDot) connDot.classList.add('error');
+        if (connLabel) connLabel.innerText = 'CONNECTION FAILED';
+        if (connSubtext) connSubtext.innerText = msg || 'Could not connect to model video stream. Please check connection.';
+        if (connRetryBtn) connRetryBtn.style.display = 'inline-block';
+      }
+
+      remoteVideo.addEventListener('canplay', onCanPlayThrough, { signal, once: true });
+      remoteVideo.addEventListener('playing', onVideoActuallyPlaying, { signal });
+      remoteVideo.addEventListener('error', onVideoError, { signal, once: true });
+
+      // Trigger video load
+      remoteVideo.src = videoUrl;
+      remoteVideo.load();
+    }
+
+    // Retry option for failed calls
+    function retryActiveVideoCall() {
+      const connRetryBtn = document.getElementById('connectingRetryBtn');
+      if (connRetryBtn) connRetryBtn.style.display = 'none';
+      if (currentVideoAbortController) currentVideoAbortController.abort();
+      isCallInitiating = false;
+      isCallActive = false;
+      startVideoCall(isCallPaid);
     }
 
     // 10 Seconds Reached -> Automatic Cut & Show Brand New Popup (Pay ₹99)
     function cutCallAndShowPaymentPopup() {
+      isCallActive = false;
+      isCallInitiating = false;
+
+      if (callConnectTimeout) {
+        clearTimeout(callConnectTimeout);
+        callConnectTimeout = null;
+      }
+
+      if (currentVideoAbortController) {
+        currentVideoAbortController.abort();
+        currentVideoAbortController = null;
+      }
+
       try {
         if (callTimerInterval) {
           clearInterval(callTimerInterval);
           callTimerInterval = null;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       try {
         if (typeof commentsInterval !== 'undefined' && commentsInterval) {
           clearInterval(commentsInterval);
           commentsInterval = null;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       try {
         const remoteVideo = document.getElementById('remoteCallVideo');
@@ -1571,11 +1987,11 @@
           remoteVideo.pause();
           remoteVideo.style.filter = 'blur(16px) brightness(0.35)';
         }
-      } catch (e) {}
+      } catch (e) { }
 
       try {
         stopSelfWebcam();
-      } catch (e) {}
+      } catch (e) { }
 
       try {
         // Populate Brand New Modal with model info
@@ -1583,7 +1999,7 @@
         const avatarEl = document.getElementById('newContinueAvatar');
         if (nameEl && currentModel && currentModel.name) nameEl.innerText = currentModel.name;
         if (avatarEl && currentModel && currentModel.img) avatarEl.src = currentModel.img;
-      } catch (e) {}
+      } catch (e) { }
 
       // Show Brand New Modal on top of everything!
       const modal = document.getElementById('newContinueModal');
@@ -1600,34 +2016,53 @@
 
     // End and return to grid
     function endAndCloseCall() {
+      isCallActive = false;
+      isCallInitiating = false;
+
+      if (callConnectTimeout) {
+        clearTimeout(callConnectTimeout);
+        callConnectTimeout = null;
+      }
+
+      if (currentVideoAbortController) {
+        currentVideoAbortController.abort();
+        currentVideoAbortController = null;
+      }
+
       try {
         if (callTimerInterval) {
           clearInterval(callTimerInterval);
           callTimerInterval = null;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       try {
         if (typeof commentsInterval !== 'undefined' && commentsInterval) {
           clearInterval(commentsInterval);
           commentsInterval = null;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       try {
         const remoteVideo = document.getElementById('remoteCallVideo');
         if (remoteVideo) {
           remoteVideo.pause();
-          remoteVideo.src = '';
+          remoteVideo.removeAttribute('src');
+          remoteVideo.load();
         }
-      } catch (e) {}
+      } catch (e) { }
 
       try {
         stopSelfWebcam();
-      } catch (e) {}
+      } catch (e) { }
 
       const screen = document.getElementById('videoCallScreen');
       if (screen) screen.style.display = 'none';
+      const connOverlay = document.getElementById('callConnectingOverlay');
+      if (connOverlay) {
+        connOverlay.style.display = 'none';
+        connOverlay.style.opacity = '1';
+      }
       const newModal = document.getElementById('newContinueModal');
       if (newModal) newModal.style.display = 'none';
       const joinModal = document.getElementById('joinCallModal');
@@ -1856,7 +2291,7 @@
             // Restore saved model if present
             const saved = sessionStorage.getItem('index_php_model');
             if (saved) {
-              try { currentModel = JSON.parse(saved); } catch(e){}
+              try { currentModel = JSON.parse(saved); } catch (e) { }
             }
 
             // Clean query parameters from URL
@@ -1874,25 +2309,25 @@
       }
     });
   </script>
-    <div class="gpt-modal-content">
-      <div class="gpt-modal-header">
-        <span class="gpt-modal-close">×</span>
-        <span id="gpt-modal-title">Question</span>
+  <div class="gpt-modal-content">
+    <div class="gpt-modal-header">
+      <span class="gpt-modal-close">×</span>
+      <span id="gpt-modal-title">Question</span>
+    </div>
+    <div class="gpt-modal-body">
+      <div class="gpt-modal-question-container">
+        <textarea rows="3" id="gpt-modal-input" class="gpt-modal-input"></textarea>
+        <button id="gpt-modal-submit" class="gpt-submit-button">Ask GPT</button>
       </div>
-      <div class="gpt-modal-body">
-        <div class="gpt-modal-question-container">
-          <textarea rows="3" id="gpt-modal-input" class="gpt-modal-input"></textarea>
-          <button id="gpt-modal-submit" class="gpt-submit-button">Ask GPT</button>
-        </div>
-        <div class="gpt-modal-input" id="gpt-input-response"></div>
-        <div class="gpt-modal-input" id="gpt-subscribe">
-          You have reached your daily request limit.
-          Please <a id="gpt-subscribe-link">subscribe</a> or try again tomorrow.
-        </div>
-      </div>
-      <div class="gpt-modal-footer">
+      <div class="gpt-modal-input" id="gpt-input-response"></div>
+      <div class="gpt-modal-input" id="gpt-subscribe">
+        You have reached your daily request limit.
+        Please <a id="gpt-subscribe-link">subscribe</a> or try again tomorrow.
       </div>
     </div>
+    <div class="gpt-modal-footer">
+    </div>
+  </div>
   </div>
   <script>(() => {
       window.addoncropExtensions = window.addoncropExtensions || [];
@@ -4138,6 +4573,7 @@
         background-color: #000000;
       }
     </style>
-  </template></div>
+  </template>
+</div>
 
 </html>

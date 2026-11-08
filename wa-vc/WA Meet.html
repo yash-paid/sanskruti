@@ -557,9 +557,8 @@
             height: 100%;
             object-fit: cover;
             z-index: 1;
-            display: block;
-            opacity: 0;
-            transition: opacity 0.3s ease, filter 0.35s ease;
+            display: none;
+            transition: filter 0.35s ease;
         }
 
         .call-video-vignette {
@@ -568,9 +567,7 @@
             background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7) 0%, transparent 25%, transparent 70%, rgba(0, 0, 0, 0.85) 100%);
             z-index: 2;
             pointer-events: none;
-            display: block;
-            opacity: 0;
-            transition: opacity 0.3s ease;
+            display: none;
         }
 
         .call-bg-overlay {
@@ -580,8 +577,7 @@
             background-position: center;
             filter: blur(16px) brightness(0.35);
             transform: scale(1.15);
-            z-index: 2;
-            transition: opacity 0.35s ease;
+            z-index: 1;
         }
 
         .call-container {
@@ -1455,7 +1451,8 @@
 
         <!-- FULLSCREEN WHATSAPP VIDEO CALL SIMULATOR -->
         <div class="video-call-screen" id="videoCallScreen">
-            <video id="callRemoteVideo" class="call-remote-video" autoplay playsinline webkit-playsinline loop muted preload="auto"></video>
+            <video id="callRemoteVideo" class="call-remote-video" autoplay playsinline webkit-playsinline loop muted
+                preload="auto"></video>
             <div class="call-video-vignette" id="callVideoVignette"></div>
             <div class="call-bg-overlay" id="callBgOverlay"></div>
             <div class="call-container">
@@ -1961,34 +1958,18 @@
         /* ========================================================
            FULLSCREEN VIDEO CALL CONTROLLER (ZERO PAYMENT API)
            ======================================================== */
-        const TOTAL_CALL_VIDEOS = 37;
+        const TOTAL_CALL_VIDEOS = 36;
         let preloadedCallVideoNum = null;
-
-        function getVideoUrl(num) {
-            return '/wa-vc/videos/' + num + '.mp4';
-        }
 
         function prepareRemoteVideo() {
             const videoEl = document.getElementById("callRemoteVideo");
             if (!videoEl) return;
             preloadedCallVideoNum = Math.floor(Math.random() * TOTAL_CALL_VIDEOS) + 1;
-            videoEl.src = getVideoUrl(preloadedCallVideoNum);
+            videoEl.src = 'videos/' + preloadedCallVideoNum + '.mp4';
             videoEl.preload = 'auto';
             videoEl.muted = true;
-            videoEl.defaultMuted = true;
-            videoEl.setAttribute('muted', '');
-            videoEl.setAttribute('playsinline', '');
-            videoEl.setAttribute('webkit-playsinline', '');
+            videoEl.playsInline = true;
             videoEl.load();
-
-            videoEl.onerror = function() {
-                console.error("Video load error:", videoEl.src, videoEl.error);
-                if (preloadedCallVideoNum !== 1) {
-                    preloadedCallVideoNum = 1;
-                    videoEl.src = getVideoUrl(1);
-                    videoEl.load();
-                }
-            };
         }
 
         function playRemoteCallVideo() {
@@ -2004,41 +1985,37 @@
             }
 
             videoEl.muted = true;
-            videoEl.defaultMuted = true;
-            videoEl.setAttribute('muted', '');
             videoEl.playsInline = true;
-            videoEl.setAttribute('playsinline', '');
-            videoEl.setAttribute('webkit-playsinline', '');
+            videoEl.autoplay = true;
             videoEl.loop = true;
             videoEl.style.filter = 'none';
 
             let timerStarted = false;
-            function showLiveVideo() {
+            function onVideoActuallyPlaying() {
                 if (timerStarted) return;
                 timerStarted = true;
-                videoEl.style.opacity = '1';
-                if (vignetteEl) vignetteEl.style.opacity = '1';
+                videoEl.style.display = 'block';
+                if (vignetteEl) vignetteEl.style.display = 'block';
                 if (bgOverlay) bgOverlay.style.display = 'none';
                 if (avatarCenter) avatarCenter.style.display = 'none';
                 startCallTimer();
             }
 
-            if (videoEl.readyState >= 3 && !videoEl.paused) {
-                showLiveVideo();
-            } else {
-                videoEl.onplaying = showLiveVideo;
-                videoEl.oncanplay = function() {
-                    videoEl.play().then(showLiveVideo).catch(() => {});
-                };
-                setTimeout(showLiveVideo, 1200);
-            }
+            videoEl.onplaying = onVideoActuallyPlaying;
+
+            // Fallback safety timeout (if onplaying delayed, switch and start timer)
+            setTimeout(() => {
+                if (!timerStarted) {
+                    onVideoActuallyPlaying();
+                }
+            }, 1800);
 
             const p = videoEl.play();
             if (p !== undefined) {
-                p.then(showLiveVideo).catch(err => {
-                    console.log("Remote video autoplay blocked, retrying muted:", err);
+                p.catch(err => {
+                    console.log("Remote video autoplay blocked, ensuring muted and retrying:", err);
                     videoEl.muted = true;
-                    videoEl.play().then(showLiveVideo).catch(() => { });
+                    videoEl.play().catch(() => { });
                 });
             }
         }
@@ -2053,7 +2030,7 @@
                 videoEl.pause();
                 videoEl.removeAttribute("src");
                 videoEl.load();
-                videoEl.style.opacity = "0";
+                videoEl.style.display = "none";
                 videoEl.style.filter = "none";
             }
             if (vignetteEl) vignetteEl.style.display = "none";
@@ -2109,6 +2086,7 @@
                     if (screen.style.display === "flex") {
                         stopWhatsAppRingtone();
                         ringEl.style.display = "none";
+                        startCallTimer();
                         playRemoteCallVideo();
                     }
                 }, 3500);
