@@ -27,3 +27,4 @@ Desktop.ini
 
 # Backup files
 *.backup_*
+*.bak*

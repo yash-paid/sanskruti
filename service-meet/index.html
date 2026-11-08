@@ -288,7 +288,13 @@
       <h2>Our Premium Services</h2>
       <div class="service-grid">
 
-        <div class="service-card">
+        <div class="service-card popular" data-service-id="service-pic-5">
+          <div class="popular-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span>POPULAR</span>
+          </div>
           <div>
             <h3>5 Sex Pics / Nude Pics</h3>
             <div class="price">₹60</div>
@@ -315,7 +321,7 @@
           </div>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" data-service-id="service-pic-10">
           <div>
             <h3>10 Sex Pics / Nude Pics</h3>
             <div class="price">₹100</div>
@@ -342,7 +348,13 @@
           </div>
         </div>
 
-        <div class="service-card">
+        <div class="service-card popular" data-service-id="service-combo-1">
+          <div class="popular-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span>POPULAR</span>
+          </div>
           <div>
             <h3>5 Sex Pics + 3 Nude Video</h3>
             <div class="price">₹120</div>
@@ -369,7 +381,7 @@
           </div>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" data-service-id="service-vid-5">
           <div>
             <h3>5 Sex Nude Videos</h3>
             <div class="price">₹150</div>
@@ -396,7 +408,7 @@
           </div>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" data-service-id="service-chat-30">
           <div>
             <h3>30 Minutes Sex Chat</h3>
             <div class="price">₹150</div>
@@ -423,7 +435,7 @@
           </div>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" data-service-id="service-chat-60">
           <div>
             <h3>60 Minutes Sex Chat</h3>
             <div class="price">₹250</div>
@@ -450,7 +462,7 @@
           </div>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" data-service-id="service-vc-10">
           <div>
             <h3>10 Minutes Video Call</h3>
             <div class="price">₹199</div>
@@ -477,7 +489,13 @@
           </div>
         </div>
 
-        <div class="service-card">
+        <div class="service-card popular" data-service-id="service-vc-30">
+          <div class="popular-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+            <span>POPULAR</span>
+          </div>
           <div>
             <h3>30 Minutes Video Call</h3>
             <div class="price">₹300</div>
@@ -504,7 +522,7 @@
           </div>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" data-service-id="service-vc-60">
           <div>
             <h3>60 Minutes Video Call</h3>
             <div class="price">₹400</div>
@@ -531,7 +549,7 @@
           </div>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" data-service-id="service-voice-30">
           <div>
             <h3>30 Minutes Voice Call</h3>
             <div class="price">₹200</div>
@@ -558,7 +576,7 @@
           </div>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" data-service-id="service-voice-60">
           <div>
             <h3>60 Minutes Voice Call</h3>
             <div class="price">₹300</div>
@@ -585,7 +603,7 @@
           </div>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" data-service-id="service-sub-7">
           <div>
             <h3>7 Days Subscription of Video Call Regular 30 min call</h3>
             <div class="price">₹750</div>
@@ -613,7 +631,7 @@
           </div>
         </div>
 
-        <div class="service-card">
+        <div class="service-card" data-service-id="service-sub-15">
           <div>
             <h3>15 Days Subscription of Video Call regular 1 hours</h3>
             <div class="price">₹1500</div>
@@ -891,6 +909,7 @@
     let currentServiceTitle = '';
     let currentServicePrice = 0;
     let currentServiceId = '';
+    let currentServiceOfferId = '';
 
     const SERVICE_PRODUCT_MAP = {
       '5 Sex Pics / Nude Pics': 'service-pic-5',
@@ -908,10 +927,11 @@
       '15 Days Subscription of Video Call regular 1 hours': 'service-sub-15'
     };
 
-    function openPaymentModal(title, price) {
+    function openPaymentModal(title, price, offerId = '') {
       currentServiceTitle = title;
       currentServicePrice = parseInt(price, 10) || 0;
       currentServiceId = SERVICE_PRODUCT_MAP[title] || 'service-pic-5';
+      currentServiceOfferId = offerId || (window.activePromoOffer && window.activePromoOffer.targetItemId === currentServiceId ? window.activePromoOffer.offerId : '');
 
       const modal = document.getElementById('paymentModal');
       const modalTitle = document.getElementById('modalTitle');
@@ -960,6 +980,7 @@
           body: JSON.stringify({
             itemType: 'service',
             itemId: currentServiceId,
+            appliedOfferId: currentServiceOfferId || '',
             name: name,
             phone: phone,
             email: email
@@ -1156,6 +1177,8 @@
 
       // Translate all standard text nodes using staticTranslations
       const staticTranslations = {
+        "POPULAR": "लोकप्रिय",
+        "Popular": "लोकप्रिय",
         "About Me": "मेरे बारे में",
         "Our Premium Services": "हमारी प्रीमियम सेवाएँ",
         "Service Proofs": "सर्विस प्रूफ",
@@ -1359,6 +1382,298 @@
 
     });
   </script>
-</body>
+<!-- Small Circular Floating Offer Icon (🎁 / %) -->
+  <div id="floatingOfferBtn" class="floating-offer-btn" onclick="openOfferPopup()" title="Special Offers">
+    <span class="floating-offer-icon">🎁</span>
+    <span class="floating-offer-badge-dot">%</span>
+  </div>
 
+  <!-- Smart Dual-Offer Popup Modal (5-second delay) -->
+  <div id="offerPopupBackdrop" class="offer-popup-backdrop" onclick="handleOfferPopupBackdropClick(event)">
+    <div class="offer-popup-card">
+      <button class="offer-popup-close" onclick="closeOfferPopup()" title="Close Offer" aria-label="Close">✕</button>
+      <div class="offer-popup-tag" id="offerPopupTag">
+        <span>✨</span>
+        <span id="offerPopupTagText">TODAY SPECIAL</span>
+      </div>
+      <h3 class="offer-popup-title" id="offerPopupTitle">TODAY'S SPECIAL OFFER</h3>
+      <div class="offer-popup-date" id="offerPopupDate">
+        <span>📅</span>
+        <span id="offerPopupDateText">Loading Date...</span>
+      </div>
+      <p class="offer-popup-desc" id="offerPopupDesc">Limited-time exclusive promotional discounts selected for you today!</p>
+
+      <!-- Dual-Offer 2-Card Stack (Vertically stacked) -->
+      <div class="offer-dual-grid" id="offerDualGrid">
+        <!-- Offer 1: Always VIP Membership (Gold Border) -->
+        <div class="offer-dual-card offer-card-gold" id="offerCard1">
+          <div class="offer-dual-title" id="offer1Title">Loading Membership Offer...</div>
+          <div class="offer-dual-details-row">
+            <div class="offer-dual-price-box">
+              <span class="offer-old-val" id="offer1OldPrice">₹0</span>
+              <span class="offer-new-val" id="offer1NewPrice">₹0</span>
+            </div>
+            <span class="offer-save-tag" id="offer1SaveTag">SAVE 0%</span>
+          </div>
+          <button class="offer-dual-claim-btn" id="offer1ClaimBtn" onclick="claimOfferByIndex(0)">
+            <span>🎁</span>
+            <span>Claim This Deal</span>
+          </button>
+        </div>
+        <!-- Offer 2: Prioritized Content / Call Product (Pink Border) -->
+        <div class="offer-dual-card offer-card-pink" id="offerCard2">
+          <div class="offer-dual-title" id="offer2Title">Loading Special Offer...</div>
+          <div class="offer-dual-details-row">
+            <div class="offer-dual-price-box">
+              <span class="offer-old-val" id="offer2OldPrice">₹0</span>
+              <span class="offer-new-val" id="offer2NewPrice">₹0</span>
+            </div>
+            <span class="offer-save-tag" id="offer2SaveTag">SAVE 0%</span>
+          </div>
+          <button class="offer-dual-claim-btn" id="offer2ClaimBtn" onclick="claimOfferByIndex(1)">
+            <span>🎁</span>
+            <span>Claim This Deal</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // SMART DUAL-OFFER SYSTEM CLIENT ENGINE
+    // =========================================================================
+    window.activeOfferCampaign = null;
+    window.activeOfferPair = [];
+    let offerPopupTimer = null;
+
+    function getFormattedIndianDate() {
+      try {
+        const formatter = new Intl.DateTimeFormat('en-IN', {
+          timeZone: 'Asia/Kolkata',
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        });
+        return formatter.format(new Date());
+      } catch (e) {
+        return '';
+      }
+    }
+
+    async function initOfferSystem() {
+      try {
+        const res = await fetch('/api/active-offer');
+        const data = await res.json();
+        if (!data.success || !data.hasActiveOffer || !data.campaign || !data.approvedDiscounts) {
+          return;
+        }
+
+        const campaign = data.campaign;
+        window.activeOfferCampaign = campaign;
+        const allDiscounts = data.approvedDiscounts;
+
+        // 1. Session Stability & Selection Algorithm
+        let selectedPair = null;
+        try {
+          const stored = sessionStorage.getItem('sanskruti_offer_pair');
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed && parsed.campaignId === campaign.campaignId && Array.isArray(parsed.pair) && parsed.pair.length === 2) {
+              // Ensure offer 1 is membership and offer 2 is non-membership
+              const isFirstSub = parsed.pair[0].itemId === 'service-sub-7' || parsed.pair[0].itemId === 'service-sub-15';
+              const isSecondNotSub = parsed.pair[1].itemId !== 'service-sub-7' && parsed.pair[1].itemId !== 'service-sub-15';
+              if (isFirstSub && isSecondNotSub) {
+                selectedPair = parsed.pair;
+              }
+            }
+          }
+        } catch (e) {}
+
+        if (!selectedPair) {
+          // Rule 2: FIRST OFFER MUST ALWAYS BE A MEMBERSHIP (Never two memberships together)
+          const membershipPool = allDiscounts.filter(d => d.itemId === 'service-sub-7' || d.itemId === 'service-sub-15');
+          const firstOffer = membershipPool[Math.floor(Math.random() * membershipPool.length)] || allDiscounts.find(d => d.itemId === 'service-sub-7');
+
+          // Rule 3: SECOND OFFER (Weighted: High priority for Pics/Combos/Videos/Video Calls, lower priority for Chat/Voice)
+          const weights = {
+            'service-pic-5': 4,
+            'service-pic-10': 4,
+            'service-combo-1': 4,
+            'service-vid-5': 4,
+            'service-vc-10': 4,
+            'service-vc-30': 4,
+            'service-vc-60': 4,
+            'service-chat-30': 1,
+            'service-chat-60': 1,
+            'service-voice-30': 1,
+            'service-voice-60': 1
+          };
+
+          const secondCandidates = allDiscounts.filter(d => weights[d.itemId] !== undefined);
+          const totalWeight = secondCandidates.reduce((sum, d) => sum + (weights[d.itemId] || 1), 0);
+          let rnd = Math.random() * totalWeight;
+          let secondOffer = secondCandidates[0];
+
+          for (const cand of secondCandidates) {
+            const w = weights[cand.itemId] || 1;
+            if (rnd < w) {
+              secondOffer = cand;
+              break;
+            }
+            rnd -= w;
+          }
+
+          selectedPair = [firstOffer, secondOffer];
+          try {
+            sessionStorage.setItem('sanskruti_offer_pair', JSON.stringify({
+              campaignId: campaign.campaignId,
+              pair: selectedPair
+            }));
+          } catch (e) {}
+        }
+
+        window.activeOfferPair = selectedPair;
+
+        // 2. Setup Popup Header, Festival/Normal Title & Current Date
+        const popupTagText = document.getElementById('offerPopupTagText');
+        const popupTitle = document.getElementById('offerPopupTitle');
+        const popupDateText = document.getElementById('offerPopupDateText');
+        const popupDesc = document.getElementById('offerPopupDesc');
+
+        const resolvedTitle = campaign.popupTitle || (campaign.type === 'festival' ? (campaign.badgeText + ' OFFER') : "TODAY'S SPECIAL OFFER");
+        const formattedDateStr = data.formattedDate || campaign.formattedDate || getFormattedIndianDate();
+
+        if (popupTagText) popupTagText.textContent = campaign.badgeText;
+        if (popupTitle) popupTitle.textContent = resolvedTitle;
+        if (popupDateText) popupDateText.textContent = formattedDateStr;
+        if (popupDesc) popupDesc.textContent = campaign.bannerMessage;
+
+        // 3. Populate Dual-Offer Cards in Popup
+        const item1 = selectedPair[0];
+        const item2 = selectedPair[1];
+
+        if (item1) {
+          const t1 = document.getElementById('offer1Title');
+          const old1 = document.getElementById('offer1OldPrice');
+          const new1 = document.getElementById('offer1NewPrice');
+          const save1 = document.getElementById('offer1SaveTag');
+          if (t1) t1.textContent = item1.title;
+          if (old1) old1.textContent = '₹' + item1.originalPrice;
+          if (new1) new1.textContent = '₹' + item1.discountedPrice;
+          if (save1) save1.textContent = 'SAVE ' + item1.discountPercentage + '% (₹' + item1.savingsAmount + ' OFF)';
+        }
+
+        if (item2) {
+          const t2 = document.getElementById('offer2Title');
+          const old2 = document.getElementById('offer2OldPrice');
+          const new2 = document.getElementById('offer2NewPrice');
+          const save2 = document.getElementById('offer2SaveTag');
+          if (t2) t2.textContent = item2.title;
+          if (old2) old2.textContent = '₹' + item2.originalPrice;
+          if (new2) new2.textContent = '₹' + item2.discountedPrice;
+          if (save2) save2.textContent = 'SAVE ' + item2.discountPercentage + '% (₹' + item2.savingsAmount + ' OFF)';
+        }
+
+        // 4. Activate Floating Circular Button
+        const floatBtn = document.getElementById('floatingOfferBtn');
+        if (floatBtn) {
+          floatBtn.style.display = 'flex';
+        }
+
+        // 5. Synchronize the corresponding TWO product cards ONLY
+        for (const item of selectedPair) {
+          const card = document.querySelector('.service-card[data-service-id="' + item.itemId + '"]');
+          if (card) {
+            card.classList.add('active-offer');
+
+            // Inject Offer Badge if not present
+            if (!card.querySelector('.festive-offer-badge')) {
+              const badgeEl = document.createElement('div');
+              badgeEl.className = 'festive-offer-badge';
+              badgeEl.innerHTML = '<span>✨</span> <span>' + campaign.badgeText + '</span>';
+              card.insertBefore(badgeEl, targetCardChild(card));
+            }
+
+            // Update Price Block with struck-through original + discounted highlight
+            const priceDiv = card.querySelector('.price, .price-offer-container');
+            if (priceDiv) {
+              priceDiv.className = 'price-offer-container';
+              priceDiv.innerHTML = '<span class="original-price-strike">₹' + item.originalPrice + '</span>' +
+                '<span class="discounted-price-highlight">₹' + item.discountedPrice + '</span>' +
+                '<span class="discount-pill-tag">' + item.discountPercentage + '% OFF</span>';
+            }
+
+            // Update Pay Button with exact offerId
+            const payBtn = card.querySelector('.pay-btn');
+            if (payBtn) {
+              const offerId = campaign.campaignId + '_' + item.itemId;
+              payBtn.setAttribute('onclick', "openPaymentModal('" + item.title + "', '" + item.discountedPrice + "', '" + offerId + "')");
+            }
+          }
+        }
+
+        // 6. Trigger Popup after 5 SECONDS (5000ms)
+        offerPopupTimer = setTimeout(function () {
+          openOfferPopup();
+        }, 5000);
+
+      } catch (err) {
+        console.warn('Could not initialize offer system:', err);
+      }
+    }
+
+    function targetCardChild(card) {
+      // Place badge appropriately relative to popular badge if exists
+      return card.firstChild;
+    }
+
+    function openOfferPopup() {
+      const backdrop = document.getElementById('offerPopupBackdrop');
+      if (backdrop) {
+        backdrop.classList.add('active');
+      }
+    }
+
+    function closeOfferPopup() {
+      const backdrop = document.getElementById('offerPopupBackdrop');
+      if (backdrop) {
+        backdrop.classList.remove('active');
+      }
+    }
+
+    function handleOfferPopupBackdropClick(e) {
+      if (e.target && e.target.id === 'offerPopupBackdrop') {
+        closeOfferPopup();
+      }
+    }
+
+    function claimOfferByIndex(idx) {
+      closeOfferPopup();
+      if (!window.activeOfferPair || !window.activeOfferPair[idx] || !window.activeOfferCampaign) return;
+      const item = window.activeOfferPair[idx];
+      const campaign = window.activeOfferCampaign;
+      const offerId = campaign.campaignId + '_' + item.itemId;
+
+      // Smoothly scroll to the corresponding product card
+      const targetCard = document.querySelector('.service-card[data-service-id="' + item.itemId + '"]');
+      if (targetCard) {
+        targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      // Open checkout modal with discounted price & verified offerId
+      setTimeout(function () {
+        openPaymentModal(item.title, item.discountedPrice, offerId);
+      }, 400);
+    }
+
+    // Call initOfferSystem
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initOfferSystem);
+    } else {
+      initOfferSystem();
+    }
+  </script>
+</body>
 </html>

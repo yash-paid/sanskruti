@@ -1,4 +1,5 @@
 // Canonical Server-Side Product Catalog & Order Validation for Sanskruti eBooks
+const { verifyOffer } = require('./_offers');
 
 const BOOKS = {
   'mind-1': {
@@ -178,7 +179,8 @@ const SERVICES = {
  * Server-side order calculation and verification.
  * Prevents client-side manipulation of price, quantity, or discount.
  */
-function validateAndCalculateOrder({ itemType, itemId, cartItems = [], couponCode = '' }) {
+function validateAndCalculateOrder({ itemType, itemId, cartItems = [], couponCode = '', appliedOfferId = '' }) {
+  let appliedOffer = null;
   let subtotal = 0;
   let itemsPurchased = [];
   let productInfoText = '';
@@ -233,14 +235,32 @@ function validateAndCalculateOrder({ itemType, itemId, cartItems = [], couponCod
     if (!service) {
       throw new Error(`Invalid service selection: ${itemId}`);
     }
-    subtotal = service.price;
-    itemsPurchased = [{
-      id: service.id,
-      title: service.title,
-      price: service.price,
-      category: service.category
-    }];
-    productInfoText = service.title;
+    if (itemType === 'service' && appliedOfferId) {
+      const verified = verifyOffer(appliedOfferId, itemId);
+      if (!verified.valid) {
+        throw new Error(verified.reason || 'This promotional offer has expired or is invalid.');
+      }
+      appliedOffer = verified.offer;
+      subtotal = appliedOffer.discountedPrice;
+      itemsPurchased = [{
+        id: service.id,
+        title: service.title,
+        price: appliedOffer.discountedPrice,
+        originalPrice: service.price,
+        category: service.category,
+        offerId: appliedOffer.offerId
+      }];
+      productInfoText = `${service.title} (${appliedOffer.badgeText})`;
+    } else {
+      subtotal = service.price;
+      itemsPurchased = [{
+        id: service.id,
+        title: service.title,
+        price: service.price,
+        category: service.category
+      }];
+      productInfoText = service.title;
+    }
     productCategory = service.category;
   } else {
     throw new Error(`Unknown item type: ${itemType}`);
@@ -262,6 +282,7 @@ function validateAndCalculateOrder({ itemType, itemId, cartItems = [], couponCod
     subtotal,
     discountMultiplier: effectiveMultiplier,
     appliedCoupon: (isEbook && VALID_COUPONS[cleanCoupon]) ? cleanCoupon : null,
+    appliedOffer,
     finalAmount,
     amountFormatted: finalAmount.toFixed(2),
     itemsPurchased,

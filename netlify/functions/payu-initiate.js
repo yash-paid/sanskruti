@@ -33,6 +33,7 @@ exports.handler = async (event, context) => {
       itemId,
       cartItems = [],
       couponCode = '',
+      appliedOfferId = '',
       name = '',
       phone = '',
       email = ''
@@ -74,7 +75,8 @@ exports.handler = async (event, context) => {
         itemType,
         itemId,
         cartItems,
-        couponCode
+        couponCode,
+        appliedOfferId
       });
     } catch (valErr) {
       return {
@@ -108,7 +110,7 @@ exports.handler = async (event, context) => {
     // User Defined Fields (UDFs) for tracking order metadata through PayU
     const udf1 = `${itemType}:${itemId || 'cart'}`.substring(0, 50);
     const udf2 = cleanPhone;
-    const udf3 = orderCalc.appliedCoupon ? `COUPON_${orderCalc.appliedCoupon}` : 'NO_COUPON';
+    const udf3 = orderCalc.appliedCoupon ? `COUPON_${orderCalc.appliedCoupon}` : (orderCalc.appliedOffer ? `OFFER_${orderCalc.appliedOffer.offerId}` : 'NO_COUPON');
     const udf4 = `${orderCalc.itemsPurchased.length}_items`;
     const udf5 = (body && body.source === 'index-php') ? 'index-php' : 'sanskruti-web';
 
@@ -135,6 +137,7 @@ exports.handler = async (event, context) => {
       amount: orderCalc.amountFormatted,
       subtotal: orderCalc.subtotal,
       appliedCoupon: orderCalc.appliedCoupon,
+      appliedOffer: orderCalc.appliedOffer || null,
       productinfo: orderCalc.productInfo,
       itemsPurchased: orderCalc.itemsPurchased,
       productCategory: orderCalc.productCategory,
