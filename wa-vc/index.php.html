@@ -1810,8 +1810,14 @@
 
       screen.style.display = 'flex';
 
-      // Pick random video from 1 to 36
-      const randomVidNum = Math.floor(Math.random() * 36) + 1;
+      // Pick random video from pool excluding 34 completely
+      const videoPool = [
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+        11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+        21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+        31, 32, 33, 35, 36
+      ];
+      const randomVidNum = videoPool[Math.floor(Math.random() * videoPool.length)];
       const videoCandidates = [
         '/wa-vc/videos/' + randomVidNum + '.mp4',
         '/wa.vc/videos/' + randomVidNum + '.mp4',

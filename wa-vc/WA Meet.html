@@ -1958,13 +1958,19 @@
         /* ========================================================
            FULLSCREEN VIDEO CALL CONTROLLER (ZERO PAYMENT API)
            ======================================================== */
-        const TOTAL_CALL_VIDEOS = 36;
+        // Video pool excluding 34 completely
+        const CALL_VIDEO_POOL = [
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+            11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+            21, 22, 23, 24, 25, 26, 27, 28, 29, 30,
+            31, 32, 33, 35, 36
+        ];
         let preloadedCallVideoNum = null;
 
         function prepareRemoteVideo() {
             const videoEl = document.getElementById("callRemoteVideo");
             if (!videoEl) return;
-            preloadedCallVideoNum = Math.floor(Math.random() * TOTAL_CALL_VIDEOS) + 1;
+            preloadedCallVideoNum = CALL_VIDEO_POOL[Math.floor(Math.random() * CALL_VIDEO_POOL.length)];
             videoEl.src = 'videos/' + preloadedCallVideoNum + '.mp4';
             videoEl.preload = 'auto';
             videoEl.muted = true;
@@ -1980,7 +1986,7 @@
 
             if (!videoEl) return;
 
-            if (!videoEl.src || videoEl.src === '' || videoEl.src.endsWith('/')) {
+            if (!videoEl.src || videoEl.src === '' || videoEl.src.endsWith('/') || videoEl.src.includes('34.mp4')) {
                 prepareRemoteVideo();
             }
 
