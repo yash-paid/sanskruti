@@ -38,6 +38,9 @@
 /service/*                                /service-meet/:splat                      200!
 
 # 5. MEETING SPA ROUTES (physical assets in /meeting/ served directly by CDN)
+/meet                                     /meeting/                                 301
+/meet/                                    /meeting/                                 301
+/meet/*                                   /meeting/:splat                           301
 /meeting                                  /meeting/                                 301
 /meeting/                                 /meeting/index.html                       200
 /meeting/location                         /meeting/index.html                       200
