@@ -72,7 +72,8 @@
 # 5. Existing Main Website Clean URLs
 # =========================================================
 /payment-status                 /payment-status.html              200
-/about                          /about.html                       200
+/about                          /                                 301
+/about.html                     /                                 301
 /contact                        /contact.html                     200
 /privacy-policy                 /privacy-policy.html              200
 /terms                          /terms-and-conditions.html        200
