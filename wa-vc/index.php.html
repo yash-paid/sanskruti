@@ -1812,7 +1812,13 @@
 
       // Pick random video from 1 to 36
       const randomVidNum = Math.floor(Math.random() * 36) + 1;
-      const videoUrl = 'videos/' + randomVidNum + '.mp4';
+      const videoCandidates = [
+        '/wa-vc/videos/' + randomVidNum + '.mp4',
+        '/wa.vc/videos/' + randomVidNum + '.mp4',
+        'videos/' + randomVidNum + '.mp4'
+      ];
+      let candidateIndex = 0;
+      const videoUrl = videoCandidates[candidateIndex];
 
       // Setup abort controller for loading lifecycle
       if (currentVideoAbortController) currentVideoAbortController.abort();
@@ -1910,6 +1916,13 @@
 
       function onVideoError(e) {
         if (signal.aborted || videoStarted) return;
+        candidateIndex++;
+        if (candidateIndex < videoCandidates.length) {
+          console.warn('Video failed to load from ' + remoteVideo.src + ', attempting fallback candidate:', videoCandidates[candidateIndex]);
+          remoteVideo.src = videoCandidates[candidateIndex];
+          remoteVideo.load();
+          return;
+        }
         handleVideoLoadError('Failed to load video stream.');
       }
 
@@ -1935,7 +1948,7 @@
 
       remoteVideo.addEventListener('canplay', onCanPlayThrough, { signal, once: true });
       remoteVideo.addEventListener('playing', onVideoActuallyPlaying, { signal });
-      remoteVideo.addEventListener('error', onVideoError, { signal, once: true });
+      remoteVideo.addEventListener('error', onVideoError, { signal });
 
       // Trigger video load
       remoteVideo.src = videoUrl;

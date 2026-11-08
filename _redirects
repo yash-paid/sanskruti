@@ -78,12 +78,31 @@
 
 # 7. WA.VC DIRECT ROOT ALIASES (for bookmarked / typed / linked URLs)
 /WA%20Meet.html                           /wa-vc/WA%20Meet.html                     200!
+/WA Meet.html                             /wa-vc/WA%20Meet.html                     200!
 /wa-meet.html                             /wa-vc/WA%20Meet.html                     200!
 /wa-meet                                  /wa-vc/WA%20Meet.html                     200!
 /live.html                                /wa-vc/live.html                          200!
 /live                                     /wa-vc/live.html                          200!
 /index.php.html                           /wa-vc/index.php.html                     200!
 /index.php                                /wa-vc/index.php.html                     200!
+
+# 7a. WA.VC ROOT ASSETS (required when accessed via root aliases e.g. /index.php, /live, /WA Meet.html)
+/videos/*                                 /wa-vc/videos/:splat                      200!
+/photos/*                                 /wa-vc/photos/:splat                      200!
+/photos%202/*                             /wa-vc/photos%202/:splat                  200!
+/photos 2/*                               /wa-vc/photos%202/:splat                  200!
+/videos%202/*                             /wa-vc/videos%202/:splat                  200!
+/videos 2/*                               /wa-vc/videos%202/:splat                  200!
+/photo%20and%20video%202/*                /wa-vc/photo%20and%20video%202/:splat     200!
+/photo and video 2/*                      /wa-vc/photo%20and%20video%202/:splat     200!
+/index.php_files/*                        /wa-vc/index.php_files/:splat             200!
+/WA%20Meet_files/*                        /wa-vc/WA%20Meet_files/:splat             200!
+/WA Meet_files/*                          /wa-vc/WA%20Meet_files/:splat             200!
+/Dating%20Live%20UI_files/*               /wa-vc/Dating%20Live%20UI_files/:splat     200!
+/Dating Live UI_files/*                   /wa-vc/Dating%20Live%20UI_files/:splat     200!
+/catalogs-all.json                        /wa-vc/catalogs-all.json                  200!
+/catalogs-photos.json                     /wa-vc/catalogs-photos.json               200!
+/catalogs-videos.json                     /wa-vc/catalogs-videos.json               200!
 
 # 8. GLOBAL FALLBACK -> SERVICE WEBSITE
 # No ! flag: physical files (style.css, js.js, root images, etc.) are never shadowed.
