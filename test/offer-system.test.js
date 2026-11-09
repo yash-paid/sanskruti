@@ -4,6 +4,7 @@ const {
   getKolkataTime,
   formatKolkataDateString,
   getDayOfYear,
+  getDailyOfferPair,
   getActiveCampaign,
   getActiveOfferPayload,
   getActiveOffer,
@@ -196,6 +197,97 @@ it('should apply 50% discount on eBooks when SANSKRUTI50 coupon is used', () => 
   assert.strictEqual(order.subtotal, 99);
   assert.strictEqual(order.appliedCoupon, 'SANSKRUTI50');
   assert.strictEqual(order.finalAmount, 50);
+});
+
+// Group 9: Daily-Fixed Deterministic Offer Pair (Zero Refresh Randomness)
+console.log('\n9. Daily-Fixed Deterministic Offer Pair (Zero Refresh Randomness):');
+it('should return exactly 2 items where first is membership and second is non-membership', () => {
+  const pair = getDailyOfferPair(new Date('2026-11-09T12:00:00+05:30'));
+  assert.strictEqual(pair.length, 2);
+  const isFirstSub = pair[0].itemId === 'service-sub-7' || pair[0].itemId === 'service-sub-15';
+  const isSecondNotSub = pair[1].itemId !== 'service-sub-7' && pair[1].itemId !== 'service-sub-15';
+  assert.strictEqual(isFirstSub, true, 'First offer must be a membership');
+  assert.strictEqual(isSecondNotSub, true, 'Second offer must not be a membership');
+});
+
+it('should produce identical results 1000/1000 times on the same date (zero randomness on refresh)', () => {
+  const fixedDate = new Date('2026-11-09T14:30:00+05:30');
+  const basePair = getDailyOfferPair(fixedDate);
+
+  for (let i = 0; i < 1000; i++) {
+    const freshPair = getDailyOfferPair(fixedDate);
+    assert.strictEqual(freshPair[0].itemId, basePair[0].itemId, 'First offer changed on iteration ' + i);
+    assert.strictEqual(freshPair[1].itemId, basePair[1].itemId, 'Second offer changed on iteration ' + i);
+  }
+});
+
+it('should include dailyOfferPair in getActiveOfferPayload API response', () => {
+  const payload = getActiveOfferPayload(new Date('2026-11-09T14:30:00+05:30'));
+  assert.strictEqual(payload.success, true);
+  assert(Array.isArray(payload.dailyOfferPair));
+  assert.strictEqual(payload.dailyOfferPair.length, 2);
+  assert.strictEqual(payload.dailyOfferPair[0].itemId, 'service-sub-7');
+  assert.strictEqual(payload.dailyOfferPair[1].itemId, 'service-vid-5');
+});
+
+it('should prioritize photo/video highest (>60%), video call second (>20%), and chat/voice lowest (<15%)', () => {
+  let photoVideoCount = 0;
+  let videoCallCount = 0;
+  let chatVoiceCount = 0;
+  const cycleDays = 210; // 10 complete rotation cycles
+
+  for (let i = 0; i < cycleDays; i++) {
+    const testDate = new Date(Date.UTC(2026, 0, 1 + i, 12, 0, 0));
+    const pair = getDailyOfferPair(testDate);
+    const secondId = pair[1].itemId;
+
+    if (secondId.includes('vid') || secondId.includes('pic') || secondId.includes('combo')) {
+      photoVideoCount++;
+    } else if (secondId.includes('vc')) {
+      videoCallCount++;
+    } else {
+      chatVoiceCount++;
+    }
+  }
+
+  const pvRatio = photoVideoCount / cycleDays;
+  const vcRatio = videoCallCount / cycleDays;
+  const cvRatio = chatVoiceCount / cycleDays;
+
+  assert(pvRatio > 0.60, `Photo/Video ratio should be > 60%, got ${(pvRatio * 100).toFixed(1)}%`);
+  assert(vcRatio > 0.20, `Video call ratio should be > 20%, got ${(vcRatio * 100).toFixed(1)}%`);
+  assert(cvRatio < 0.15, `Chat/Voice ratio should be < 15%, got ${(cvRatio * 100).toFixed(1)}%`);
+  assert(pvRatio > vcRatio, 'Photo/Video priority must be higher than Video Call');
+  assert(vcRatio > cvRatio, 'Video Call priority must be higher than Chat/Voice');
+});
+
+it('should seamlessly transition titles between festival days and normal days automatically', () => {
+  // 1. Diwali day
+  const diwali = getActiveCampaign(new Date('2026-11-09T12:00:00+05:30'));
+  assert.strictEqual(diwali.type, 'festival');
+  assert.strictEqual(diwali.popupTitle, 'DIWALI SPECIAL OFFER');
+  assert.strictEqual(diwali.badgeText, 'DIWALI SPECIAL');
+
+  // 2. Normal day (post-Diwali)
+  const normal = getActiveCampaign(new Date('2026-11-20T12:00:00+05:30'));
+  assert.strictEqual(normal.type, 'daily_promo');
+  assert.strictEqual(normal.popupTitle, "TODAY'S SPECIAL OFFER");
+  assert.strictEqual(normal.badgeText, 'TODAY SPECIAL');
+
+  // 3. Upcoming occasion: Christmas
+  const christmas = getActiveCampaign(new Date('2026-12-25T12:00:00+05:30'));
+  assert.strictEqual(christmas.type, 'festival');
+  assert.strictEqual(christmas.popupTitle, 'CHRISTMAS SPECIAL OFFER');
+
+  // 4. Upcoming occasion: New Year
+  const newYear = getActiveCampaign(new Date('2027-01-01T12:00:00+05:30'));
+  assert.strictEqual(newYear.type, 'festival');
+  assert.strictEqual(newYear.popupTitle, 'NEW YEAR SPECIAL OFFER');
+
+  // 5. Upcoming occasion: Valentine
+  const valentine = getActiveCampaign(new Date('2027-02-14T12:00:00+05:30'));
+  assert.strictEqual(valentine.type, 'festival');
+  assert.strictEqual(valentine.popupTitle, 'VALENTINE SPECIAL OFFER');
 });
 
 console.log(`\n======================================================`);

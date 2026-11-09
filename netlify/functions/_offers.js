@@ -87,6 +87,14 @@ function deriveFestivalPopupTitle(fest) {
   return `${base} SPECIAL OFFER`;
 }
 
+function deriveFestivalBannerMessage(fest) {
+  if (fest.id === 'diwali_festival') return 'Diwali Mahadhamaal: Exclusive Fun Deals for You! 🔥';
+  const festName = (fest.name || fest.badgeText || 'Special')
+    .replace(/ Celebration| Special| Festival| Week| Carnival/gi, '')
+    .trim();
+  return `${festName} Mahadhamaal: Exclusive Fun Deals for You! 🔥`;
+}
+
 /**
  * Dynamic fallback rules for recurring fixed-date/algorithmic occasions (e.g., beyond 2028)
  */
@@ -226,7 +234,7 @@ function getActiveCampaign(customTime) {
           popupTitle: deriveFestivalPopupTitle(fest),
           formattedDate: formattedDate,
           badgeText: fest.badgeText,
-          bannerMessage: fest.bannerMessage,
+          bannerMessage: deriveFestivalBannerMessage(fest),
           expiresAt: `${endStr}T23:59:59+05:30`,
           timezone: 'Asia/Kolkata'
         };
@@ -252,10 +260,71 @@ function getActiveCampaign(customTime) {
     popupTitle: "TODAY'S SPECIAL OFFER",
     formattedDate: formattedDate,
     badgeText: 'TODAY SPECIAL',
-    bannerMessage: "Exclusive Today's Special Deals on Sanskruti Premium Services!",
+    bannerMessage: "Today's Special: Exclusive Fun Deals for You! 🔥",
     expiresAt: `${dateStr}T23:59:59+05:30`,
     timezone: 'Asia/Kolkata'
   };
+}
+
+// Second offer deterministic rotation list (Priority: 1st Photo & Video, 2nd Video Call, 3rd Chat & Voice)
+const SECOND_OFFER_ROTATION = [
+  // 1. Photo & Video (Highest Priority)
+  'service-vid-5',      // 5 Sex Nude Videos
+  'service-combo-1',    // 5 Photos + 3 Videos Combo
+  // 2. Video Call (Second Priority)
+  'service-vc-30',      // 30 Minutes Video Call
+  // 1. Photo & Video (Highest Priority)
+  'service-pic-10',     // 10 Sex Pics / Nude Pics
+  'service-vid-5',      // 5 Sex Nude Videos
+  // 2. Video Call (Second Priority)
+  'service-vc-10',      // 10 Minutes Video Call
+  // 1. Photo & Video (Highest Priority)
+  'service-combo-1',    // 5 Photos + 3 Videos Combo
+  'service-pic-5',      // 5 Sex Pics
+  // 2. Video Call (Second Priority)
+  'service-vc-60',      // 60 Minutes Video Call
+  // 1. Photo & Video (Highest Priority)
+  'service-vid-5',      // 5 Sex Nude Videos
+  'service-combo-1',    // 5 Photos + 3 Videos Combo
+  // 2. Video Call (Second Priority)
+  'service-vc-30',      // 30 Minutes Video Call
+  // 1. Photo & Video (Highest Priority)
+  'service-pic-10',     // 10 Sex Pics / Nude Pics
+  // 3. Chat (Lowest Priority)
+  'service-chat-30',    // 30 Minutes Chat Session
+  // 1. Photo & Video (Highest Priority)
+  'service-vid-5',      // 5 Sex Nude Videos
+  'service-combo-1',    // 5 Photos + 3 Videos Combo
+  // 2. Video Call (Second Priority)
+  'service-vc-10',      // 10 Minutes Video Call
+  // 1. Photo & Video (Highest Priority)
+  'service-pic-5',      // 5 Sex Pics
+  // 3. Voice (Lowest Priority)
+  'service-voice-30',   // 30 Minutes Voice Call
+  // 1. Photo & Video (Highest Priority)
+  'service-vid-5',      // 5 Sex Nude Videos
+  'service-combo-1'     // 5 Photos + 3 Videos Combo
+];
+
+/**
+ * Returns a deterministic, daily-fixed pair of offers for Asia/Kolkata date
+ * First offer: Always a membership (alternates between 7-day and 15-day)
+ * Second offer: High-priority product rotating deterministically per day
+ * Guarantees zero randomness: all visitors on the same date see identical offers
+ */
+function getDailyOfferPair(dateObj) {
+  const kolkataDate = getKolkataTime(dateObj);
+  const dayOfYear = getDayOfYear(kolkataDate);
+
+  // Rule 2: First offer is always a membership (7-day or 15-day)
+  const membershipId = (dayOfYear % 2 === 0) ? 'service-sub-15' : 'service-sub-7';
+  // Rule 3: Second offer rotates deterministically through high-priority items
+  const secondOfferId = SECOND_OFFER_ROTATION[dayOfYear % SECOND_OFFER_ROTATION.length];
+
+  const firstOffer = APPROVED_DISCOUNTS[membershipId];
+  const secondOffer = APPROVED_DISCOUNTS[secondOfferId];
+
+  return [firstOffer, secondOffer];
 }
 
 /**
@@ -265,6 +334,7 @@ function getActiveOfferPayload(customTime) {
   const kolkataDate = getKolkataTime(customTime);
   const campaign = getActiveCampaign(kolkataDate);
   const discountsList = Object.values(APPROVED_DISCOUNTS);
+  const dailyOfferPair = getDailyOfferPair(kolkataDate);
 
   // Backward compatible default single offer mapping
   const defaultSub = APPROVED_DISCOUNTS['service-sub-7'] || discountsList[0];
@@ -290,6 +360,7 @@ function getActiveOfferPayload(customTime) {
     formattedDate: campaign.formattedDate,
     hasActiveOffer: true,
     campaign,
+    dailyOfferPair,
     approvedDiscounts: discountsList,
     offer: legacyOffer
   };
@@ -365,6 +436,7 @@ module.exports = {
   formatKolkataDateString,
   getIndianFormattedDate,
   getDayOfYear,
+  getDailyOfferPair,
   getActiveCampaign,
   getActiveOfferPayload,
   getActiveOffer,

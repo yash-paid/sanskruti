@@ -1443,64 +1443,26 @@
         window.activeOfferCampaign = campaign;
         const allDiscounts = data.approvedDiscounts;
 
-        // 1. Session Stability & Selection Algorithm
-        let selectedPair = null;
-        try {
-          const stored = sessionStorage.getItem('sanskruti_offer_pair');
-          if (stored) {
-            const parsed = JSON.parse(stored);
-            if (parsed && parsed.campaignId === campaign.campaignId && Array.isArray(parsed.pair) && parsed.pair.length === 2) {
-              // Ensure offer 1 is membership and offer 2 is non-membership
-              const isFirstSub = parsed.pair[0].itemId === 'service-sub-7' || parsed.pair[0].itemId === 'service-sub-15';
-              const isSecondNotSub = parsed.pair[1].itemId !== 'service-sub-7' && parsed.pair[1].itemId !== 'service-sub-15';
-              if (isFirstSub && isSecondNotSub) {
-                selectedPair = parsed.pair;
-              }
-            }
-          }
-        } catch (e) {}
-
-        if (!selectedPair) {
-          // Rule 2: FIRST OFFER MUST ALWAYS BE A MEMBERSHIP (Never two memberships together)
-          const membershipPool = allDiscounts.filter(d => d.itemId === 'service-sub-7' || d.itemId === 'service-sub-15');
-          const firstOffer = membershipPool[Math.floor(Math.random() * membershipPool.length)] || allDiscounts.find(d => d.itemId === 'service-sub-7');
-
-          // Rule 3: SECOND OFFER (Weighted: High priority for Pics/Combos/Videos/Video Calls, lower priority for Chat/Voice)
-          const weights = {
-            'service-pic-5': 4,
-            'service-pic-10': 4,
-            'service-combo-1': 4,
-            'service-vid-5': 4,
-            'service-vc-10': 4,
-            'service-vc-30': 4,
-            'service-vc-60': 4,
-            'service-chat-30': 1,
-            'service-chat-60': 1,
-            'service-voice-30': 1,
-            'service-voice-60': 1
-          };
-
-          const secondCandidates = allDiscounts.filter(d => weights[d.itemId] !== undefined);
-          const totalWeight = secondCandidates.reduce((sum, d) => sum + (weights[d.itemId] || 1), 0);
-          let rnd = Math.random() * totalWeight;
-          let secondOffer = secondCandidates[0];
-
-          for (const cand of secondCandidates) {
-            const w = weights[cand.itemId] || 1;
-            if (rnd < w) {
-              secondOffer = cand;
-              break;
-            }
-            rnd -= w;
-          }
-
+        // 1. Daily Fixed Selection (Exactly 1 deterministic pair for the entire day — ZERO randomness on refresh)
+        let selectedPair = data.dailyOfferPair;
+        if (!selectedPair || !Array.isArray(selectedPair) || selectedPair.length !== 2) {
+          // Client deterministic fallback using Indian day of the year (never Math.random)
+          const now = data.serverTime ? new Date(data.serverTime) : new Date();
+          const startOfYear = new Date(now.getFullYear(), 0, 1);
+          const dayOfYear = Math.floor((now - startOfYear) / 86400000) + 1;
+          const membershipId = (dayOfYear % 2 === 0) ? 'service-sub-15' : 'service-sub-7';
+          const secondRotation = [
+            'service-vid-5', 'service-combo-1', 'service-vc-30', 'service-pic-10',
+            'service-vid-5', 'service-vc-10', 'service-combo-1', 'service-pic-5',
+            'service-vc-60', 'service-vid-5', 'service-combo-1', 'service-vc-30',
+            'service-pic-10', 'service-chat-30', 'service-vid-5', 'service-combo-1',
+            'service-vc-10', 'service-pic-5', 'service-voice-30', 'service-vid-5',
+            'service-combo-1'
+          ];
+          const secondId = secondRotation[dayOfYear % secondRotation.length];
+          const firstOffer = allDiscounts.find(d => d.itemId === membershipId) || allDiscounts.find(d => d.itemId === 'service-sub-7');
+          const secondOffer = allDiscounts.find(d => d.itemId === secondId) || allDiscounts.find(d => d.itemId === 'service-vid-5');
           selectedPair = [firstOffer, secondOffer];
-          try {
-            sessionStorage.setItem('sanskruti_offer_pair', JSON.stringify({
-              campaignId: campaign.campaignId,
-              pair: selectedPair
-            }));
-          } catch (e) {}
         }
 
         window.activeOfferPair = selectedPair;
