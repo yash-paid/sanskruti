@@ -78,6 +78,13 @@ exports.handler = async (event, context) => {
     } else if (targetCategory === 'meeting') {
       const base = `${config.siteUrl}/payment-status.html`;
       return `${base}?status=${encodeURIComponent(status)}&type=meeting&txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&amount=${encodeURIComponent(amount)}&mihpayid=${encodeURIComponent(mihpayid)}&msg=${encodeURIComponent(errorMsg)}`;
+    } else if (targetCategory === 'connect') {
+      const base = `${config.siteUrl}/connect/`;
+      if (status === 'success') {
+        return `${base}?status=success&txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&amount=${encodeURIComponent(amount)}&mihpayid=${encodeURIComponent(mihpayid)}#home`;
+      } else {
+        return `${base}?status=${encodeURIComponent(status)}&txnid=${encodeURIComponent(txnid)}&msg=${encodeURIComponent(errorMsg)}#home`;
+      }
     } else {
       // Default: eBook order (Preserves 100% backward compatibility)
       const base = `${config.siteUrl}/payment-status.html`;

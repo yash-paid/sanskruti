@@ -1,0 +1,19 @@
+========================================================================
+CONNECT - DEFAULT PROFILE PHOTOS / AVATARS FOLDER
+========================================================================
+
+Aap is folder mein customers ke liye default profile photos dal sakte hain.
+
+Format Supported:
+- .jpg, .jpeg, .png, .webp
+
+Example Names:
+- 1.webp, 2.jpg, 3.jpg, avatar1.jpg, avatar2.jpg, etc.
+
+Jab bhi customer sign up ya log in karega, uske samne Profile Setup screen
+aayegi jisme wo:
+1. Is folder ke kisi bhi default photo ko 1-click mein select kar sakta hai.
+2. Ya fir "Choose from Gallery / Device" button dabakar apne mobile ya computer
+   ki gallery se apni pasandida photo laga sakta hai.
+========================================================================
+

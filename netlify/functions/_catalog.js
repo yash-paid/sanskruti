@@ -172,7 +172,14 @@ const SERVICES = {
   'wavc-vvip-129':    { id: 'wavc-vvip-129',    title: 'WA Meet VVIP Room Access',            price: 129,  category: 'wavc' },
 
   // NearMe Meeting Advance (/meeting/)
-  'meeting-advance':  { id: 'meeting-advance',  title: 'NearMe Meeting Advance Booking Fee',  price: 350,  category: 'meeting' }
+  'meeting-advance':  { id: 'meeting-advance',  title: 'NearMe Meeting Advance Booking Fee',  price: 350,  category: 'meeting' },
+
+  // CONNECT Coin Recharge Packages (/connect/)
+  'connect-pack-19':   { id: 'connect-pack-19',   title: 'CONNECT 50 Coins Starter Pack',           price: 19,   coins: 50,     category: 'connect' },
+  'connect-pack-49':   { id: 'connect-pack-49',   title: 'CONNECT 160 Coins Pack',                   price: 49,   coins: 160,    category: 'connect' },
+  'connect-pack-99':   { id: 'connect-pack-99',   title: 'CONNECT 400 Coins Pack (+40 Bonus Coins)', price: 99,   coins: 440,    category: 'connect' },
+  'connect-pack-149':  { id: 'connect-pack-149',  title: 'CONNECT 880 Coins Pack (+90 Bonus Coins)', price: 149,  coins: 880,    category: 'connect' },
+  'connect-pack-199':  { id: 'connect-pack-199',  title: 'CONNECT 1250 Coins Pack (+250 Bonus)',     price: 199,  coins: 1250,   category: 'connect' }
 };
 
 /**
@@ -230,7 +237,7 @@ function validateAndCalculateOrder({ itemType, itemId, cartItems = [], couponCod
     itemsPurchased = validatedBooks;
     productInfoText = `Sanskruti Cart (${validatedBooks.length} eBooks)`;
     productCategory = 'ebook';
-  } else if (itemType === 'service' || itemType === 'wavc' || itemType === 'meeting') {
+  } else if (itemType === 'service' || itemType === 'wavc' || itemType === 'meeting' || itemType === 'connect') {
     const service = SERVICES[itemId];
     if (!service) {
       throw new Error(`Invalid service selection: ${itemId}`);

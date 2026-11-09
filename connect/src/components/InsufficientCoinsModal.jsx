@@ -1,0 +1,272 @@
+import React, { useState } from 'react';
+import { X, Wallet, ArrowRight } from 'lucide-react';
+import { CoinStackGraphic } from './CoinGraphic';
+
+// Graphic matching the reference image: gold coins stack + sparkles + pink exclamation badge
+function CoinWarningIllustration() {
+  return (
+    <div className="insufficient-illustration-wrap">
+      <svg
+        width="130"
+        height="76"
+        viewBox="0 0 130 76"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="insufficient-coins-svg"
+      >
+        <defs>
+          <linearGradient id="ic-gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFF4B8" />
+            <stop offset="30%" stopColor="#FFD54F" />
+            <stop offset="70%" stopColor="#FFA000" />
+            <stop offset="100%" stopColor="#FF6F00" />
+          </linearGradient>
+          <linearGradient id="ic-gold-edge" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#FFA000" />
+            <stop offset="100%" stopColor="#C43E00" />
+          </linearGradient>
+          <linearGradient id="ic-gold-top" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFF9C4" />
+            <stop offset="50%" stopColor="#FFD54F" />
+            <stop offset="100%" stopColor="#FFB300" />
+          </linearGradient>
+          <linearGradient id="ic-alert-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#ff4099" />
+            <stop offset="50%" stopColor="#ff006e" />
+            <stop offset="100%" stopColor="#c50050" />
+          </linearGradient>
+          <filter id="ic-alert-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+
+        {/* ── Left Sparkle ── */}
+        <path
+          d="M32 16 Q32 23 25 23 Q32 23 32 30 Q32 23 39 23 Q32 23 32 16 Z"
+          fill="#FFD700"
+          opacity="0.9"
+        />
+
+        {/* ── Right Sparkle ── */}
+        <path
+          d="M98 12 Q98 18 92 18 Q98 18 98 24 Q98 18 104 18 Q98 18 98 12 Z"
+          fill="#FFD700"
+          opacity="0.9"
+        />
+
+        {/* ── Gold Coin Stack ── */}
+        {/* Coin 1 Bottom */}
+        <ellipse cx="56" cy="58" rx="28" ry="10" fill="url(#ic-gold-edge)" />
+        <ellipse cx="56" cy="54" rx="28" ry="10" fill="url(#ic-gold-grad)" />
+
+        {/* Coin 2 Mid */}
+        <ellipse cx="56" cy="48" rx="28" ry="10" fill="url(#ic-gold-edge)" />
+        <ellipse cx="56" cy="44" rx="28" ry="10" fill="url(#ic-gold-grad)" />
+
+        {/* Coin 3 Top Standing Angle */}
+        <g transform="translate(64, 18) rotate(16)">
+          <ellipse cx="18" cy="18" rx="19" ry="21" fill="url(#ic-gold-edge)" />
+          <ellipse cx="19" cy="17" rx="17" ry="19" fill="url(#ic-gold-top)" stroke="#FFFDE7" strokeWidth="1.2" />
+          <path
+            d="M19 12 L21 16 L25 17 L22 20 L23 24 L19 21 L15 24 L16 20 L13 17 L17 16 Z"
+            fill="#FFA000"
+            opacity="0.75"
+          />
+        </g>
+
+        {/* Coin 4 Front Left */}
+        <ellipse cx="50" cy="38" rx="26" ry="9.5" fill="url(#ic-gold-edge)" />
+        <ellipse cx="50" cy="34" rx="26" ry="9.5" fill="url(#ic-gold-grad)" stroke="#FFF9C4" strokeWidth="1" />
+
+        {/* ── Exclamation Mark Badge on Front Right ── */}
+        <g filter="url(#ic-alert-glow)">
+          <circle cx="86" cy="44" r="15" fill="url(#ic-alert-grad)" stroke="#ffffff" strokeWidth="2.5" />
+          {/* Exclamation Bar */}
+          <line x1="86" y1="35.5" x2="86" y2="43.5" stroke="#ffffff" strokeWidth="3.2" strokeLinecap="round" />
+          {/* Exclamation Dot */}
+          <circle cx="86" cy="49" r="1.8" fill="#ffffff" />
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+export default function InsufficientCoinsModal({
+  coins = 0,
+  expert,
+  userProfile,
+  onClose,
+  onProceedPay,
+  onToast,
+}) {
+  // Exactly the 3 packages specified in the prompt and reference image:
+  const PACKAGES = [
+    {
+      id: 'pack-19',
+      coins: 50,
+      originalCoins: null,
+      price: 19,
+      badge: '⚡ Starter',
+      badgeClass: 'starter',
+      extraText: null,
+    },
+    {
+      id: 'pack-49',
+      coins: 160,
+      originalCoins: null,
+      price: 49,
+      badge: null,
+      badgeClass: null,
+      extraText: null,
+    },
+    {
+      id: 'pack-99',
+      coins: 400,
+      originalCoins: 360,
+      price: 99,
+      badge: '👑 Most Popular',
+      badgeClass: 'popular',
+      extraText: '40 Extra Coins',
+    },
+  ];
+
+  // Default selection is ₹99 (Most Popular)
+  const [selectedPackId, setSelectedPackId] = useState('pack-99');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const selectedPack = PACKAGES.find((p) => p.id === selectedPackId) || PACKAGES[2];
+
+  const handleSelect = (pkg) => {
+    setSelectedPackId(pkg.id);
+  };
+
+  const handleCheckout = async () => {
+    setIsSubmitting(true);
+    try {
+      await onProceedPay?.(selectedPack);
+    } catch (err) {
+      onToast?.(err.message || 'Payment initiation failed.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="insufficient-coins-overlay" onClick={onClose} role="dialog" aria-modal="true">
+      <div className="insufficient-coins-sheet" onClick={(e) => e.stopPropagation()}>
+        {/* Drag Pill Handle */}
+        <div className="sheet-drag-pill" aria-hidden="true" />
+
+        {/* Close (X) Button */}
+        <button className="sheet-close-btn" onClick={onClose} aria-label="Close">
+          <X size={18} color="#ffffff" strokeWidth={2.4} />
+        </button>
+
+        {/* ── Coin Warning Illustration ── */}
+        <CoinWarningIllustration />
+
+        {/* ── Heading & Subtitle ── */}
+        <h2 className="insufficient-title">
+          You don't have enough <span className="pink-highlight">Coins</span>!
+        </h2>
+        <p className="insufficient-subtitle">
+          Recharge your wallet to make a call.
+        </p>
+
+        {/* ── Dynamic Balance Pill ── */}
+        <div className="insufficient-balance-pill">
+          <span className="balance-coin-emoji">🪙</span>
+          <span className="balance-text">
+            Your Balance: <strong className="balance-val">{coins} Coins</strong>
+          </span>
+        </div>
+
+        {/* ── Section Title Divider ── */}
+        <div className="sheet-section-divider">
+          <div className="divider-line left" />
+          <div className="divider-label">
+            <span className="divider-icon">⚡</span>
+            <span>Choose a Recharge Pack</span>
+          </div>
+          <div className="divider-line right" />
+        </div>
+
+        {/* ── 3 Recharge Packages (No Horizontal Scrolling) ── */}
+        <div className="sheet-packs-grid">
+          {PACKAGES.map((pkg) => {
+            const isSelected = selectedPackId === pkg.id;
+
+            return (
+              <div
+                key={pkg.id}
+                className={`sheet-pack-card ${isSelected ? 'pack-selected' : ''}`}
+                onClick={() => handleSelect(pkg)}
+              >
+                {/* Floating Top Badge */}
+                {pkg.badge && (
+                  <div className={`sheet-floating-badge ${pkg.badgeClass}`}>
+                    {pkg.badge}
+                  </div>
+                )}
+
+                {/* Extra Coins Banner (Lavender/Pink) */}
+                {pkg.extraText ? (
+                  <div className="sheet-pack-extra-banner">{pkg.extraText}</div>
+                ) : (
+                  <div className="sheet-pack-extra-banner empty" />
+                )}
+
+                {/* Coin Visual */}
+                <div className="sheet-pack-coin-wrap">
+                  <CoinStackGraphic size={42} />
+                </div>
+
+                {/* Coins Display */}
+                <div className="sheet-pack-coins">
+                  {pkg.originalCoins ? (
+                    <div className="sheet-coins-dual">
+                      <span className="sheet-coins-orig">{pkg.originalCoins}</span>
+                      <span className="sheet-coins-current">{pkg.coins}</span>
+                    </div>
+                  ) : (
+                    <span className="sheet-coins-single">{pkg.coins} Coins</span>
+                  )}
+                </div>
+
+                {/* Price Pill */}
+                <button
+                  type="button"
+                  className={`sheet-price-pill ${isSelected ? 'pill-active' : ''}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSelect(pkg);
+                  }}
+                >
+                  ₹{pkg.price}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── Main CTA: Recharge & Proceed to Pay ── */}
+        <button
+          type="button"
+          className="sheet-cta-btn"
+          onClick={handleCheckout}
+          disabled={isSubmitting}
+        >
+          <div className="cta-wallet-icon-wrap">
+            <Wallet size={19} color="#fff" strokeWidth={2.2} />
+          </div>
+          <span className="cta-btn-text">
+            {isSubmitting ? 'Connecting Payment...' : 'Recharge & Proceed to Pay'}
+          </span>
+          <ArrowRight size={19} color="#fff" strokeWidth={2.4} className="cta-arrow" />
+        </button>
+      </div>
+    </div>
+  );
+}
+

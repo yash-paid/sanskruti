@@ -1,0 +1,50 @@
+====================================================================
+CONNECT APP - 30 GIRLS PROFILE PHOTOS UPLOAD FOLDER
+====================================================================
+
+Bhai, aap apni 30 photos is folder me daal sakte hain:
+Folder Path:
+d:\Projects\Sanskruti - Ebook\connect\upload-profiles-here\
+
+Photo naming options:
+--------------------
+Option A (Simple numbers 1 to 30):
+  1.jpg  -> Simran (Top Expert 1)
+  2.jpg  -> Uma (Top Expert 2)
+  3.jpg  -> Alina
+  4.jpg  -> Neha
+  5.jpg  -> Riya
+  6.jpg  -> Priya
+  7.jpg  -> Aarohi
+  8.jpg  -> Nikita
+  9.jpg  -> Palak
+  10.jpg -> Ritika
+  11.jpg -> Rambha
+  12.jpg -> Kaju
+  13.jpg -> Ananya
+  14.jpg -> Kavya
+  15.jpg -> Megha
+  16.jpg -> Pooja
+  17.jpg -> Shruti
+  18.jpg -> Divya
+  19.jpg -> Ishita
+  20.jpg -> Naina
+  21.jpg -> Tanya
+  22.jpg -> Roshni
+  23.jpg -> Swati
+  24.jpg -> Meera
+  25.jpg -> Anjali
+  26.jpg -> Sana
+  27.jpg -> Aisha
+  28.jpg -> Aditi
+  29.jpg -> Tara
+  30.jpg -> Diya
+
+Option B (Direct names):
+  simran.jpg, uma.jpg, alina.jpg, neha.jpg, riya.jpg, etc.
+
+Jaise hi aap photos is folder me daal dein, chat me bata dena:
+"Photos daal di hain"
+Aur main turant unko web app me live sync kar dunga!
+====================================================================
+
