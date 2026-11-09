@@ -1,7 +1,10 @@
 import React from 'react';
 import { Video, Phone, ShieldCheck } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function FeatureBadges({ onSelectFeature }) {
+  const { t } = useLanguage();
+
   return (
     <div className="card-bottom-features" role="region" aria-label="Key Features">
       {/* 1. Video Call */}
@@ -13,7 +16,7 @@ export default function FeatureBadges({ onSelectFeature }) {
         <div className="feature-icon-wrapper">
           <Video size={24} fill="currentColor" strokeWidth={1.5} />
         </div>
-        <span className="feature-label">Video Call</span>
+        <span className="feature-label">{t('video_call', 'Video Call')}</span>
       </div>
 
       <div className="feature-divider" aria-hidden="true" />
@@ -27,7 +30,7 @@ export default function FeatureBadges({ onSelectFeature }) {
         <div className="feature-icon-wrapper">
           <Phone size={22} fill="currentColor" strokeWidth={1.5} />
         </div>
-        <span className="feature-label">Voice Call</span>
+        <span className="feature-label">{t('nav_call', 'Voice Call')}</span>
       </div>
 
       <div className="feature-divider" aria-hidden="true" />
@@ -41,7 +44,7 @@ export default function FeatureBadges({ onSelectFeature }) {
         <div className="feature-icon-wrapper">
           <ShieldCheck size={24} strokeWidth={2.2} />
         </div>
-        <span className="feature-label">Safe &amp; Private</span>
+        <span className="feature-label">{t('badge_private', 'Safe & Private')}</span>
       </div>
     </div>
   );

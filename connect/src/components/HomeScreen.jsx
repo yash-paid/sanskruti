@@ -54,10 +54,11 @@ function ExpertImage({ src, alt, name, className }) {
 
 /* ─── Coin Badge ─────────────────────────────────────────── */
 function CoinBadge({ price }) {
+  const { t } = useLanguage();
   return (
     <span className="coin-badge">
       <span className="coin-emoji">🪙</span>
-      {price} Coins / Min
+      {price} {t('coins_per_min', 'Coins / Min')}
     </span>
   );
 }

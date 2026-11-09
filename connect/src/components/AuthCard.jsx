@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Lock, Eye, EyeOff, ArrowRight, Zap } from 'lucide-react';
 import FeatureBadges from './FeatureBadges';
 import { GoogleIcon } from './LoginRequiredModal';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function AuthCard({
   initialMode = 'login',
@@ -10,6 +11,7 @@ export default function AuthCard({
   onGoogleLogin,
   onGuestLogin,
 }) {
+  const { t } = useLanguage();
   const [mode, setMode] = useState(initialMode); // 'login' | 'signup'
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -30,11 +32,11 @@ export default function AuthCard({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!formData.identifier.trim()) {
-      onToast('Please enter your Email or Mobile Number');
+      onToast(t('id_placeholder', 'Please enter your Email or Mobile Number'));
       return;
     }
     if (!formData.password) {
-      onToast('Please enter your password');
+      onToast(t('password_placeholder', 'Please enter your password'));
       return;
     }
     // Demo: immediately proceed
@@ -67,7 +69,7 @@ export default function AuthCard({
             className={`toggle-pill-btn ${mode === 'login' ? 'active' : ''}`}
             onClick={() => setMode('login')}
           >
-            Log In
+            {t('login_tab', 'Log In')}
           </button>
           <button
             type="button"
@@ -76,15 +78,15 @@ export default function AuthCard({
             className={`toggle-pill-btn ${mode === 'signup' ? 'active' : ''}`}
             onClick={() => setMode('signup')}
           >
-            Sign Up
+            {t('signup_tab', 'Sign Up')}
           </button>
         </div>
 
         {/* Card Subtitle */}
         <p className="card-subtitle">
           {mode === 'login'
-            ? 'Acess your acount and start connecting'
-            : 'Create your account and start connecting'}
+            ? t('auth_sub_login', 'Access your account to start video calling')
+            : t('auth_sub_signup', 'Create your account to start video calling')}
         </p>
 
         {/* Auth Form */}
@@ -100,7 +102,7 @@ export default function AuthCard({
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Full Name"
+                placeholder={t('name_label', 'Full Name')}
                 className="auth-input"
                 autoComplete="name"
               />
@@ -117,7 +119,7 @@ export default function AuthCard({
               name="identifier"
               value={formData.identifier}
               onChange={handleChange}
-              placeholder="Email or Mobile Number"
+              placeholder={t('id_label', 'Email or Mobile Number')}
               className="auth-input"
               autoComplete="username"
             />
@@ -133,7 +135,7 @@ export default function AuthCard({
               name="password"
               value={formData.password}
               onChange={handleChange}
-              placeholder="Password"
+              placeholder={t('password_label', 'Password')}
               className="auth-input"
               autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
             />
@@ -149,7 +151,7 @@ export default function AuthCard({
 
           {/* Primary Action Button */}
           <button type="submit" className="btn-primary-action">
-            <span>{mode === 'login' ? 'Log In' : 'Sign Up'}</span>
+            <span>{mode === 'login' ? t('login_tab', 'Log In') : t('signup_tab', 'Sign Up')}</span>
             <ArrowRight size={20} className="btn-action-arrow" />
           </button>
         </form>
@@ -157,7 +159,9 @@ export default function AuthCard({
         {/* Quick Log In Divider */}
         <div className="quick-login-divider">
           <div className="divider-line" />
-          <span className="divider-text">Quick Log In</span>
+          <span className="divider-text">
+            {mode === 'login' ? t('quick_login', 'Quick Log In') : t('quick_signup', 'Quick Sign Up')}
+          </span>
           <div className="divider-line" />
         </div>
 
@@ -168,7 +172,7 @@ export default function AuthCard({
           onClick={handleGoogleClick}
         >
           <GoogleIcon size={20} />
-          <span>{mode === 'login' ? 'Sign in with Google' : 'Sign up with Google'}</span>
+          <span>{mode === 'login' ? t('google_signin', 'Sign in with Google') : t('google_signup', 'Sign up with Google')}</span>
         </button>
 
         {/* Continue as Guest Button */}
@@ -178,7 +182,7 @@ export default function AuthCard({
           onClick={handleGuestLogin}
         >
           <Zap size={18} fill="currentColor" className="guest-bolt-icon" />
-          <span>Continue as Guest</span>
+          <span>{t('continue_guest', 'Continue as Guest')}</span>
         </button>
 
         {/* Bottom Feature Badges */}

@@ -321,24 +321,24 @@ export default function VipScreen({
               <div className="v-benefit-icon coin-bg">
                 <Gift size={20} color="#eab308" />
               </div>
-              <h4 className="v-benefit-title">10% First-Recharge Bonus</h4>
-              <p className="v-benefit-desc">Extra 10% bonus coins automatically added on every eligible recharge.</p>
+              <h4 className="v-benefit-title">{t('benefit_1_title', '10% First-Recharge Bonus')}</h4>
+              <p className="v-benefit-desc">{t('benefit_1_desc', 'Extra 10% bonus coins automatically added on every eligible recharge.')}</p>
             </div>
 
             <div className="vip-benefit-card">
               <div className="v-benefit-icon tag-bg">
                 <Clock size={20} color="#a855f7" />
               </div>
-              <h4 className="v-benefit-title">Weekly Offers & Deals</h4>
-              <p className="v-benefit-desc">Exclusive discounted coin packages refreshed every Monday.</p>
+              <h4 className="v-benefit-title">{t('benefit_2_title', 'Weekly Offers & Deals')}</h4>
+              <p className="v-benefit-desc">{t('benefit_2_desc', 'Exclusive discounted coin packages refreshed every Monday.')}</p>
             </div>
 
             <div className="vip-benefit-card">
               <div className="v-benefit-icon shield-bg">
                 <ShieldCheck size={20} color="#22c55e" />
               </div>
-              <h4 className="v-benefit-title">100 Birthday Bonus Coins</h4>
-              <p className="v-benefit-desc">Free 100 coin celebration gift plus special festival mega perks.</p>
+              <h4 className="v-benefit-title">{t('benefit_3_title', '100 Birthday Bonus Coins')}</h4>
+              <p className="v-benefit-desc">{t('benefit_3_desc', 'Free 100 coin celebration gift plus special festival mega perks.')}</p>
             </div>
           </div>
         </div>
@@ -350,11 +350,11 @@ export default function VipScreen({
             <table className="vip-compare-table">
               <thead>
                 <tr>
-                  <th>Feature</th>
-                  <th>Free</th>
-                  <th>Silver</th>
-                  <th>Gold</th>
-                  <th>Diamond</th>
+                  <th>{t('comp_col_feature', 'Feature')}</th>
+                  <th>{t('comp_col_free', 'Free')}</th>
+                  <th>{t('plan_silver', 'Silver')}</th>
+                  <th>{t('plan_gold', 'Gold')}</th>
+                  <th>{t('plan_diamond', 'Diamond')}</th>
                 </tr>
               </thead>
               <tbody>

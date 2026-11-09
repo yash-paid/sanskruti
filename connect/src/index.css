@@ -4955,20 +4955,23 @@ html, body {
   align-items: center;
   gap: 8px;
   padding: 6px 2px 8px 2px;
-  overflow-x: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  overflow: hidden !important;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
 }
 
-.set-default-avatars-scroll::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
+.set-default-avatars-scroll::-webkit-scrollbar,
+.set-default-avatars-scroll *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 .set-default-avatar-chip {
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
+  max-width: 18%;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.18);
   flex-shrink: 0;

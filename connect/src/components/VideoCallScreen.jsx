@@ -362,12 +362,12 @@ export default function VideoCallScreen({
   };
 
   const gifts = [
-    { name: 'Rose', emoji: '🌹', cost: 10 },
-    { name: 'Chocolate', emoji: '🍫', cost: 25 },
-    { name: 'Teddy', emoji: '🧸', cost: 50 },
-    { name: 'Diamond', emoji: '💎', cost: 100 },
-    { name: 'Crown', emoji: '👑', cost: 250 },
-    { name: 'Sports Car', emoji: '🏎️', cost: 500 },
+    { key: 'gift_rose', name: t('gift_rose', 'Rose'), emoji: '🌹', cost: 10 },
+    { key: 'gift_chocolate', name: t('gift_chocolate', 'Chocolate'), emoji: '🍫', cost: 25 },
+    { key: 'gift_teddy', name: t('gift_teddy', 'Teddy'), emoji: '🧸', cost: 50 },
+    { key: 'gift_diamond', name: t('gift_diamond', 'Diamond'), emoji: '💎', cost: 100 },
+    { key: 'gift_crown', name: t('gift_crown', 'Crown'), emoji: '👑', cost: 250 },
+    { key: 'gift_car', name: t('gift_car', 'Sports Car'), emoji: '🏎️', cost: 500 },
   ];
 
   /* ══════════════════════════════════════════════════════════════
@@ -637,8 +637,8 @@ export default function VideoCallScreen({
               <div className="gift-modal-card" onClick={(e) => e.stopPropagation()}>
                 <div className="gift-modal-header">
                   <div className="gift-header-text">
-                    <span className="gift-modal-title">Send a Gift to {expert.name}</span>
-                    <span className="gift-balance-sub">🪙 Your Balance: <strong>{coins} Coins</strong></span>
+                    <span className="gift-modal-title">{t('send_gift_to', 'Send a Gift to')} {expert.name}</span>
+                    <span className="gift-balance-sub">🪙 {t('your_balance_label', 'Your Balance:')} <strong>{coins} {t('coins', 'Coins')}</strong></span>
                   </div>
                   <button
                     type="button"
@@ -652,7 +652,7 @@ export default function VideoCallScreen({
                 <div className="gift-items-grid">
                   {gifts.map((g) => (
                     <div
-                      key={g.name}
+                      key={g.key || g.name}
                       className="gift-card-item"
                       onClick={() => handleSendGift(g)}
                     >
@@ -671,7 +671,7 @@ export default function VideoCallScreen({
                   }}
                 >
                   <Wallet size={16} />
-                  <span>Recharge Coins to Send Bigger Gifts →</span>
+                  <span>{t('gift_recharge_btn', 'Recharge Coins to Send Bigger Gifts →')}</span>
                 </button>
               </div>
             </div>

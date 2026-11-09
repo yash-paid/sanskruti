@@ -209,13 +209,15 @@ export default function WalletScreen({
                 {/* Floating Badge (e.g. Most Popular / Value Pack) */}
                 {pkg.badge && (
                   <div className={`floating-pack-badge ${pkg.badgeType}`}>
-                    {pkg.badge}
+                    {pkg.badge === 'Most Popular' ? t('most_popular_badge', 'Most Popular') : pkg.badge}
                   </div>
                 )}
 
                 {/* Lavender / Pink Extra Coins Header Banner */}
                 {pkg.extraText ? (
-                  <div className="pack-header-banner">{pkg.extraText}</div>
+                  <div className="pack-header-banner">
+                    {pkg.extraText.replace('Extra Coins', t('extra_coins', 'Extra Coins'))}
+                  </div>
                 ) : (
                   <div className="pack-header-banner empty" />
                 )}
@@ -233,7 +235,7 @@ export default function WalletScreen({
                       <span className="pack-current-coins">{pkg.coins}</span>
                     </>
                   ) : (
-                    <span className="pack-single-coins">{pkg.coins} Coins</span>
+                    <span className="pack-single-coins">{pkg.coins} {t('coins', 'Coins')}</span>
                   )}
                 </div>
 

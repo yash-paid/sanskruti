@@ -52,12 +52,10 @@ export default function LoginRequiredModal({
 
         {/* Title & Subtitle */}
         <h2 className="login-req-title">
-          {t('login_required_title', 'Login Required!')}
+          {t('login_req_title', 'Log In Required')}
         </h2>
         <p className="login-req-subtitle">
-          {actionType === 'recharge'
-            ? t('login_req_sub_recharge', 'Please sign in or create an account to recharge coins & unlock features.')
-            : t('login_req_sub_call', 'Please sign in or create an account to make live video calls with experts.')}
+          {t('login_req_subtitle', 'Please log in or create an account to start calling and recharge coins.')}
         </p>
 
         {/* Value Highlights */}
@@ -66,19 +64,19 @@ export default function LoginRequiredModal({
             <div className="req-feat-icon call">
               <Phone size={15} color="#00e5ff" />
             </div>
-            <span>{t('feat_video_calls', '1-on-1 Private Live Video Calls')}</span>
+            <span>{t('login_req_f1', 'HD 1-on-1 Video & Voice Calling')}</span>
           </div>
           <div className="login-req-feature-item">
             <div className="req-feat-icon wallet">
               <Wallet size={15} color="#FFD700" />
             </div>
-            <span>{t('feat_secure_wallet', 'Secure Wallet & Coin Balance')}</span>
+            <span>{t('login_req_f2', '100% Private & End-to-End Encrypted')}</span>
           </div>
           <div className="login-req-feature-item">
             <div className="req-feat-icon star">
               <Star size={15} color="#ff2a8d" />
             </div>
-            <span>{t('feat_fav_experts', 'Save & Connect with Top Experts')}</span>
+            <span>{t('login_req_f3', 'Instant Coin Wallet & VIP Benefits')}</span>
           </div>
         </div>
 
@@ -91,13 +89,13 @@ export default function LoginRequiredModal({
           }}
         >
           <GoogleIcon size={20} />
-          <span>{t('continue_with_google', 'Continue with Google')}</span>
+          <span>{t('continue_google', 'Continue with Google')}</span>
         </button>
 
         {/* Divider */}
         <div className="login-req-divider">
           <div className="req-div-line" />
-          <span className="req-div-text">{t('or_continue_with', 'OR')}</span>
+          <span className="req-div-text">{t('or', 'OR')}</span>
           <div className="req-div-line" />
         </div>
 
@@ -107,19 +105,19 @@ export default function LoginRequiredModal({
           className="btn-primary-action req-signup-btn"
           onClick={() => onGoToAuth?.('signup')}
         >
-          <span>{t('sign_up_action', 'Sign Up with Mobile / Email')}</span>
+          <span>{t('create_account', 'Create New Account')}</span>
           <ArrowRight size={19} className="btn-action-arrow" />
         </button>
 
         {/* Existing User Login Link */}
         <div className="login-req-footer">
-          <span>{t('already_have_account', 'Already have an account?')} </span>
+          <span>{t('already_account', 'Already have an account?')} </span>
           <button
             type="button"
             className="login-req-switch-btn"
             onClick={() => onGoToAuth?.('login')}
           >
-            {t('btn_login', 'Log In')}
+            {t('login_link', 'Log In')}
           </button>
         </div>
       </div>

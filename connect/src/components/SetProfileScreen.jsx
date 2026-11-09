@@ -2,8 +2,10 @@ import React, { useState, useRef } from 'react';
 import { Camera, Calendar, User, Check, Upload, Sparkles, ArrowRight } from 'lucide-react';
 import { DEFAULT_AVATARS } from '../data/defaultAvatars';
 import heartLogoImg from '../../assets/images/heart-logo-transparent.png';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function SetProfileScreen({ initialProfile, onConfirm, onToast }) {
+  const { t } = useLanguage();
   const [name, setName] = useState(initialProfile?.name || '');
   const [avatar, setAvatar] = useState(initialProfile?.avatar || DEFAULT_AVATARS[0].url);
   const [dob, setDob] = useState(initialProfile?.dob || '2000-01-01');
@@ -42,7 +44,7 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim()) {
-      onToast?.('⚠️ Please enter your Name');
+      onToast?.(t('enter_name_placeholder', 'Please enter your Name'));
       return;
     }
     if (!dob) {
@@ -75,7 +77,7 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
           <img src={heartLogoImg} alt="CONNECT" className="set-profile-logo" />
           <div className="set-profile-brand-text">
             <span className="set-profile-brand-name">CONNECT</span>
-            <span className="set-profile-brand-tagline">Live Call • Real Experts</span>
+            <span className="set-profile-brand-tagline">{t('brand_sub', 'Live Call • Real Experts')}</span>
           </div>
         </div>
       </header>
@@ -86,18 +88,18 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
           <div className="set-profile-intro">
             <div className="set-profile-badge">
               <Sparkles size={13} color="#FFD700" />
-              <span>STEP 2 OF 2</span>
+              <span>{t('step_2_of_2', 'STEP 2 OF 2')}</span>
             </div>
-            <h1 className="set-profile-title">Set Up Your Profile</h1>
+            <h1 className="set-profile-title">{t('setup_profile_title', 'Set Up Your Profile')}</h1>
             <p className="set-profile-desc">
-              Tell us your name, photo, and birthday to complete your profile.
+              {t('setup_profile_desc', 'Tell us your name, photo, and birthday to complete your profile.')}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="set-profile-form">
             {/* ── 1. Profile Photo Picker ── */}
             <div className="set-profile-avatar-section">
-              <label className="set-profile-label">Profile Photo</label>
+              <label className="set-profile-label">{t('profile_photo', 'Profile Photo')}</label>
               
               <div className="set-avatar-center-wrap">
                 <div
@@ -132,13 +134,13 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <Upload size={14} />
-                  <span>Choose from Gallery</span>
+                  <span>{t('choose_gallery', 'Choose from Gallery')}</span>
                 </button>
               </div>
 
               {/* Default Avatars Picker Carousel */}
               <div className="set-default-avatars-wrap">
-                <span className="set-default-avatars-label">Or choose a default avatar:</span>
+                <span className="set-default-avatars-label">{t('or_choose_default', 'Or choose a default avatar:')}</span>
                 <div className="set-default-avatars-scroll">
                   {DEFAULT_AVATARS.map((av) => {
                     const isSelected = avatar === av.url;
@@ -172,7 +174,7 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
             {/* ── 2. Full Name Input ── */}
             <div className="set-profile-field">
               <label className="set-profile-label" htmlFor="user-fullname">
-                Your Name
+                {t('your_name', 'Your Name')}
               </label>
               <div className="set-input-box">
                 <User size={18} className="set-input-icon" />
@@ -180,7 +182,7 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
                   id="user-fullname"
                   type="text"
                   className="set-text-input"
-                  placeholder="Enter your name (e.g. Rahul Sharma)"
+                  placeholder={t('enter_name_placeholder', 'Enter your name (e.g. Rahul Sharma)')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   maxLength={40}
@@ -193,7 +195,7 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
             {/* ── 3. Date of Birth Input ── */}
             <div className="set-profile-field">
               <label className="set-profile-label" htmlFor="user-dob">
-                Date of Birth
+                {t('date_of_birth', 'Date of Birth')}
               </label>
               <div className="set-input-box">
                 <Calendar size={18} className="set-input-icon" />
@@ -211,7 +213,7 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
 
             {/* ── Confirm Button ── */}
             <button type="submit" className="set-profile-confirm-btn">
-              <span>Confirm &amp; Continue</span>
+              <span>{t('confirm_continue', 'Confirm & Continue')}</span>
               <ArrowRight size={18} />
             </button>
           </form>

@@ -208,7 +208,7 @@ export default function ProfileScreen({
                 <span className="vip-exclusive-pill">EXCLUSIVE</span>
               </div>
               <p className="vip-banner-subtitle">
-                Priority calls, 10% bonus coins &amp; weekly deals
+                {t('vip_hero_desc', 'Priority calls, 10% bonus coins & weekly deals')}
               </p>
             </div>
           </div>

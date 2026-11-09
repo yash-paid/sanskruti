@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Wallet, ArrowRight } from 'lucide-react';
 import { CoinStackGraphic } from './CoinGraphic';
+import { useLanguage } from '../context/LanguageContext';
 
 // Graphic matching the reference image: gold coins stack + sparkles + pink exclamation badge
 function CoinWarningIllustration() {
@@ -100,6 +101,8 @@ export default function InsufficientCoinsModal({
   onProceedPay,
   onToast,
 }) {
+  const { t } = useLanguage();
+
   // Exactly the 3 packages specified in the prompt and reference image:
   const PACKAGES = [
     {
@@ -107,7 +110,7 @@ export default function InsufficientCoinsModal({
       coins: 50,
       originalCoins: null,
       price: 19,
-      badge: '⚡ Starter',
+      badge: t('starter_badge', '⚡ Starter'),
       badgeClass: 'starter',
       extraText: null,
     },
@@ -125,9 +128,9 @@ export default function InsufficientCoinsModal({
       coins: 400,
       originalCoins: 360,
       price: 99,
-      badge: '👑 Most Popular',
+      badge: t('most_popular_badge', '👑 Most Popular'),
       badgeClass: 'popular',
-      extraText: '40 Extra Coins',
+      extraText: `40 ${t('extra_coins', 'Extra Coins')}`,
     },
   ];
 
@@ -168,17 +171,19 @@ export default function InsufficientCoinsModal({
 
         {/* ── Heading & Subtitle ── */}
         <h2 className="insufficient-title">
-          You don't have enough <span className="pink-highlight">Coins</span>!
+          {t('insufficient_title_prefix', "You don't have enough")}{' '}
+          <span className="pink-highlight">{t('insufficient_title_coins', 'Coins')}</span>!
         </h2>
         <p className="insufficient-subtitle">
-          Recharge your wallet to make a call.
+          {t('insufficient_subtitle', 'Recharge your wallet to make a call.')}
         </p>
 
         {/* ── Dynamic Balance Pill ── */}
         <div className="insufficient-balance-pill">
           <span className="balance-coin-emoji">🪙</span>
           <span className="balance-text">
-            Your Balance: <strong className="balance-val">{coins} Coins</strong>
+            {t('your_balance_label', 'Your Balance:')}{' '}
+            <strong className="balance-val">{coins} {t('coins', 'Coins')}</strong>
           </span>
         </div>
 
@@ -187,7 +192,7 @@ export default function InsufficientCoinsModal({
           <div className="divider-line left" />
           <div className="divider-label">
             <span className="divider-icon">⚡</span>
-            <span>Choose a Recharge Pack</span>
+            <span>{t('choose_recharge_pack', 'Choose a Recharge Pack')}</span>
           </div>
           <div className="divider-line right" />
         </div>
@@ -230,7 +235,7 @@ export default function InsufficientCoinsModal({
                       <span className="sheet-coins-current">{pkg.coins}</span>
                     </div>
                   ) : (
-                    <span className="sheet-coins-single">{pkg.coins} Coins</span>
+                    <span className="sheet-coins-single">{pkg.coins} {t('coins', 'Coins')}</span>
                   )}
                 </div>
 
@@ -261,7 +266,7 @@ export default function InsufficientCoinsModal({
             <Wallet size={19} color="#fff" strokeWidth={2.2} />
           </div>
           <span className="cta-btn-text">
-            {isSubmitting ? 'Connecting Payment...' : 'Recharge & Proceed to Pay'}
+            {isSubmitting ? 'Connecting Payment...' : t('recharge_proceed_pay', 'Recharge & Proceed to Pay')}
           </span>
           <ArrowRight size={19} color="#fff" strokeWidth={2.4} className="cta-arrow" />
         </button>

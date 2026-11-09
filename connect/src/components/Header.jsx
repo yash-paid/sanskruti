@@ -1,8 +1,11 @@
 import React from 'react';
 import heartLogo from '../../assets/images/heart-logo-transparent.png';
 import modelPortrait from '../../assets/images/model-blended.png';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Header() {
+  const { t } = useLanguage();
+
   return (
     <header className="hero-section">
       <div className="hero-branding">
@@ -20,8 +23,8 @@ export default function Header() {
 
         {/* Subtitles */}
         <div className="hero-subtitle-container">
-          <span className="hero-subtitle-line1">Live Video &amp; Voice</span>
-          <span className="hero-subtitle-line2">Connection</span>
+          <span className="hero-subtitle-line1">{t('hero_subtitle_line1', 'Live Video & Voice')}</span>
+          <span className="hero-subtitle-line2">{t('hero_subtitle_line2', 'Connection')}</span>
           <div className="hero-accent-bar" aria-hidden="true" />
         </div>
       </div>
