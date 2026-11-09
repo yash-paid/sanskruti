@@ -29,8 +29,13 @@ Desktop.ini
 *.backup_*
 *.bak*
 
-# Video files (Exclude all videos as requested)
-*.mp4
+# Raw / redundant video folders excluded
+connect/upload-videos-here/
+service-meet/
+wa-vc/
+connect/dist/assets/videos/
+
+# General video files
 *.mov
 *.avi
 *.mkv
@@ -38,10 +43,7 @@ Desktop.ini
 *.flv
 *.wmv
 *.m4v
-connect/upload-videos-here/
-connect/public/assets/videos/
-connect/dist/assets/videos/
-service-meet/5 photos plus 3 videos/
-service-meet/5 videos/
-wa-vc/
+
+# Track connect app web videos
+!connect/public/assets/videos/*.mp4
 
