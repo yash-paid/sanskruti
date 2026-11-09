@@ -11,9 +11,20 @@
 /                                         /index.html                               200
 /index.html                               /index.html                               200
 
-# 2a. CONNECT authentication experience (isolated from eBook and payment routes)
-/connect                                  /connect/                                 301
-/connect/                                 /connect/index.html                       200!
+# ==============================================================================
+# SUBDOMAIN: connect.sanskrutiservice.in -> CONNECT Production App
+# ==============================================================================
+https://connect.sanskrutiservice.in/assets/*          /connect/dist/assets/:splat          200!
+https://connect.sanskrutiservice.in/default-avatars/*  /connect/dist/default-avatars/:splat  200!
+https://connect.sanskrutiservice.in/*                 /connect/dist/index.html             200!
+https://connect.sanskrutiservice.in                   /connect/dist/index.html             200!
+
+# CONNECT Path on main domain: sanskrutiservice.in/connect
+/connect/assets/*                                     /connect/dist/assets/:splat          200!
+/connect/default-avatars/*                            /connect/dist/default-avatars/:splat 200!
+/connect/*                                            /connect/dist/index.html             200!
+/connect                                              /connect/dist/index.html             200!
+/connect/                                             /connect/dist/index.html             200!
 
 # 3. EBOOK LEGAL & UTILITY PAGES
 /payment-status.html                      /payment-status.html                      200
