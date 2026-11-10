@@ -718,8 +718,8 @@ export default function VideoCallScreen({
           giftName: gift.name,
           giftEmoji: gift.emoji,
           cost: gift.cost,
-          expertId: expert?.id,
-          expertName: expert?.name,
+          expertId: expert?.id || 'expert',
+          expertName: expert?.name || 'Expert',
         })
       : true;
 
@@ -729,7 +729,6 @@ export default function VideoCallScreen({
       onToast?.(`🎁 Sent ${gift.name} (${gift.emoji}) to ${expert?.name || 'Expert'}! (-${gift.cost} Coins)`);
     } else {
       setShowGiftModal(false);
-      onToast?.(`⚠️ Insufficient coins! Please recharge to send ${gift.name}.`);
       if (onOpenRecharge) {
         onOpenRecharge();
       }

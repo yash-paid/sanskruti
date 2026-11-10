@@ -332,7 +332,11 @@ export default function App() {
         // Revert optimistic update since backend rejected transaction
         coinsRef.current = previousBalance;
         setCoins(previousBalance);
-        showToast('⚠️ Insufficient Coins! Please recharge to continue.');
+        if (err.code === 'wallet/insufficient-balance' || err.message?.toLowerCase().includes('insufficient')) {
+          showToast(`⚠️ Insufficient Coins! You need ${amount} coins (Balance: ${previousBalance}). Please recharge.`);
+        } else {
+          showToast(`⚠️ Transaction failed: ${err.message || 'Please check your connection'}`);
+        }
         return false;
       }
     }

@@ -121,6 +121,9 @@ const initFirebaseAdmin = () => {
       if (!adminFirestore && !customFirestoreInjected && hasServiceAccountCredentials) {
         try {
           adminFirestore = getFirestore(adminApp);
+          try {
+            adminFirestore.settings({ ignoreUndefinedProperties: true });
+          } catch (_) {}
         } catch (e) {
           console.warn('getFirestore warning:', e.message);
         }

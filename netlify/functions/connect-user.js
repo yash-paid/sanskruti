@@ -156,6 +156,9 @@ const initFirebaseAdmin = () => {
       if (!adminFirestore && !customFirestoreInjected && hasServiceAccountCredentials) {
         try {
           adminFirestore = getFirestore(adminApp);
+          try {
+            adminFirestore.settings({ ignoreUndefinedProperties: true });
+          } catch (_) {}
         } catch (e) {
           console.warn('getFirestore warning in connect-user:', e.message);
         }
@@ -192,6 +195,18 @@ const loadStore = () => {
   } catch (e) {}
 
   return {};
+};
+
+/**
+ * Strip undefined values to prevent Firestore Document write errors
+ */
+const sanitizeMetadata = (obj) => {
+  if (!obj || typeof obj !== 'object') return {};
+  try {
+    return JSON.parse(JSON.stringify(obj, (k, v) => (v === undefined ? null : v)));
+  } catch (e) {
+    return {};
+  }
 };
 
 /**
@@ -1172,6 +1187,7 @@ exports.handler = async (event, context) => {
         const newBalance = currentCoins - amount;
         const txnId = idempotencyKey || `TXN-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
+        const sanitizedMetadata = sanitizeMetadata(body.metadata);
         const ledgerEntry = {
           id: txnId,
           uid: effectiveUid,
@@ -1186,23 +1202,24 @@ exports.handler = async (event, context) => {
           date: getKolkataFormattedDateTime(),
           timestamp: new Date().toISOString(),
           idempotencyKey: idempotencyKey || txnId,
-          metadata: body.metadata || {},
+          metadata: sanitizedMetadata,
         };
 
         const hasSubcoll = typeof userDocRef.collection === 'function';
+        const legacyLedger = Array.isArray(userData.ledger) ? userData.ledger : [];
         const rootUpdates = {
           'wallet.coins': newBalance,
           'wallet.updatedAt': new Date().toISOString(),
+          ledger: [ledgerEntry, ...legacyLedger].slice(0, 100),
           updatedAt: new Date().toISOString(),
         };
 
-        // Atomic write: wallet balance on root document + immutable record in subcollection (or fallback array)
+        // Atomic dual-write: wallet balance & latest in root document + immutable record in subcollection
         if (hasSubcoll) {
           const ledgerDocRef = userDocRef.collection('ledger').doc(txnId);
           transaction.update(userDocRef, rootUpdates);
           transaction.set(ledgerDocRef, ledgerEntry);
         } else {
-          rootUpdates.ledger = [ledgerEntry, ...ledger].slice(0, 100);
           transaction.update(userDocRef, rootUpdates);
         }
 
@@ -1292,22 +1309,36 @@ exports.handler = async (event, context) => {
 
       // Query subcollection with timestamp desc and docId desc tie-breaker if collection is supported
       if (typeof userDocRef.collection === 'function') {
-        let query = userDocRef.collection('ledger')
-          .orderBy('timestamp', 'desc')
-          .orderBy('__name__', 'desc')
-          .limit(limit + 1);
-
-        if (cursorObj) {
-          query = query.startAfter(cursorObj.t, cursorObj.id);
+        try {
+          let query = userDocRef.collection('ledger')
+            .orderBy('timestamp', 'desc')
+            .orderBy('__name__', 'desc')
+            .limit(limit + 1);
+          if (cursorObj) {
+            query = query.startAfter(cursorObj.t, cursorObj.id);
+          }
+          const querySnap = await query.get();
+          docs = querySnap.docs ? querySnap.docs.map((d) => d.data()) : [];
+        } catch (subErr) {
+          console.warn('Subcollection query warning (trying resilient fallback):', subErr.message);
+          try {
+            const simpleSnap = await userDocRef.collection('ledger').limit(100).get();
+            if (simpleSnap && simpleSnap.docs && simpleSnap.docs.length > 0) {
+              const allTxns = simpleSnap.docs.map((d) => d.data());
+              allTxns.sort((a, b) => new Date(b.timestamp || b.date || 0) - new Date(a.timestamp || a.date || 0));
+              docs = allTxns.slice(0, limit + 1);
+            }
+          } catch (simpleErr) {
+            console.warn('Simple subcollection fetch warning:', simpleErr.message);
+          }
         }
-
-        const querySnap = await query.get();
-        docs = querySnap.docs ? querySnap.docs.map((d) => d.data()) : [];
       }
 
-      // Fallback if subcollection is empty/unsupported but legacy array has entries
-      if (docs.length === 0 && !cursorObj && Array.isArray(user.data?.ledger) && user.data.ledger.length > 0 && migrationStatus !== 'completed') {
-        docs = user.data.ledger.slice(0, limit + 1);
+      // Fallback: If subcollection returned 0 docs or failed, check user's root document ledger array
+      if (docs.length === 0 && !cursorObj && Array.isArray(user.data?.ledger) && user.data.ledger.length > 0) {
+        docs = [...user.data.ledger];
+        docs.sort((a, b) => new Date(b.timestamp || b.date || 0) - new Date(a.timestamp || a.date || 0));
+        docs = docs.slice(0, limit + 1);
       }
 
       if (docs.length > limit) {
@@ -1633,6 +1664,7 @@ exports.handler = async (event, context) => {
         };
 
         const hasSubcoll = typeof userDocRef.collection === 'function';
+        const legacyLedger = Array.isArray(userData.ledger) ? userData.ledger : [];
         const rootUpdates = {
           'wallet.coins': newBalance,
           'wallet.updatedAt': new Date().toISOString(),
@@ -1640,17 +1672,16 @@ exports.handler = async (event, context) => {
             state: updatedState,
             claims: updatedClaims,
           },
+          ledger: [ledgerEntry, ...legacyLedger].slice(0, 100),
           updatedAt: new Date().toISOString(),
         };
 
-        // Atomic write: wallet and rewards state on root document + immutable record in subcollection
+        // Dual-write: wallet, reward state, & latest ledger array on root document + immutable record in subcollection
         if (hasSubcoll) {
           const ledgerDocRef = userDocRef.collection('ledger').doc(txnId);
           transaction.update(userDocRef, rootUpdates);
           transaction.set(ledgerDocRef, ledgerEntry);
         } else {
-          const legacyLedger = Array.isArray(userData.ledger) ? userData.ledger : [];
-          rootUpdates.ledger = [ledgerEntry, ...legacyLedger].slice(0, 100);
           transaction.update(userDocRef, rootUpdates);
         }
 
@@ -1791,21 +1822,21 @@ exports.handler = async (event, context) => {
         };
 
         const hasSubcoll = typeof userDocRef.collection === 'function';
+        const legacyLedger = Array.isArray(userData.ledger) ? userData.ledger : [];
         const rootUpdates = {
           'wallet.coins': newBalance,
           'wallet.updatedAt': new Date().toISOString(),
           'vip.claims': updatedClaims,
+          ledger: [ledgerEntry, ...legacyLedger].slice(0, 100),
           updatedAt: new Date().toISOString(),
         };
 
-        // Atomic write: wallet and VIP claims on root document + immutable record in subcollection
+        // Dual-write: wallet, VIP claims & latest in ledger array on root document + immutable record in subcollection
         if (hasSubcoll) {
           const ledgerDocRef = userDocRef.collection('ledger').doc(txnId);
           transaction.update(userDocRef, rootUpdates);
           transaction.set(ledgerDocRef, ledgerEntry);
         } else {
-          const legacyLedger = Array.isArray(userData.ledger) ? userData.ledger : [];
-          rootUpdates.ledger = [ledgerEntry, ...legacyLedger].slice(0, 100);
           transaction.update(userDocRef, rootUpdates);
         }
 
@@ -1973,22 +2004,22 @@ exports.handler = async (event, context) => {
         };
 
         const hasSubcoll = typeof userDocRef.collection === 'function';
+        const legacyLedger = Array.isArray(freshUserData.ledger) ? freshUserData.ledger : [];
         const rootUpdates = {
           'wallet.coins': newBalance,
           'wallet.updatedAt': new Date().toISOString(),
           'promoProtection.failedAttempts': 0,
           'promoProtection.lockedUntilMs': null,
+          ledger: [ledgerEntry, ...legacyLedger].slice(0, 100),
           updatedAt: new Date().toISOString(),
         };
 
-        // Atomic write: wallet on root document + immutable record in subcollection + reset failed attempts
+        // Dual-write: wallet & latest ledger array on root document + immutable record in subcollection
         if (hasSubcoll) {
           const ledgerDocRef = userDocRef.collection('ledger').doc(txnId);
           transaction.update(userDocRef, rootUpdates);
           transaction.set(ledgerDocRef, ledgerEntry);
         } else {
-          const legacyLedger = Array.isArray(freshUserData.ledger) ? freshUserData.ledger : [];
-          rootUpdates.ledger = [ledgerEntry, ...legacyLedger].slice(0, 100);
           transaction.update(userDocRef, rootUpdates);
         }
 

@@ -373,6 +373,7 @@ exports.handler = async (event, context) => {
               'profile.vipPlanId': freshOrder.planId,
               'profile.vipExpiry': entitlement.expiryDate,
               'profile.vipExpiryMs': entitlement.expiryDateMs,
+              ledger: [ledgerEntry, ...existingLedger].slice(0, 100),
               updatedAt: new Date().toISOString(),
             });
 
@@ -433,6 +434,7 @@ exports.handler = async (event, context) => {
               'wallet.coins': newBalance,
               'wallet.updatedAt': new Date().toISOString(),
               purchasedPacks: updatedPacks,
+              ledger: [ledgerEntry, ...existingLedger].slice(0, 100),
               updatedAt: new Date().toISOString(),
             });
 
