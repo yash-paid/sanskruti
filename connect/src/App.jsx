@@ -1038,7 +1038,14 @@ export default function App() {
             coins={coins}
             userProfile={userProfile}
             uid={currentUid}
-            onRewardClaimed={(awarded) => handleAddCoins(awarded)}
+            onRewardClaimed={(awarded, newBalance) => {
+              if (typeof newBalance === 'number') {
+                setCoins(newBalance);
+                coinsRef.current = newBalance;
+              } else {
+                handleAddCoins(awarded);
+              }
+            }}
             onUpdateProfile={async (updated) => {
               setUserProfile(updated);
               if (currentUid) {

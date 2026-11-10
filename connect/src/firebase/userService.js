@@ -174,14 +174,15 @@ export const recordUserCall = async (uid, callData) => {
 };
 
 /**
- * Redeem promo code (e.g. YASH -> 50 Coins)
+ * Redeem promo code (e.g. YASH -> 500 Coins)
  */
-export const redeemPromoCode = async (uid, code) => {
+export const redeemPromoCode = async (uid, code, clientBalance) => {
   if (!uid) throw new Error('Authentication required');
   return await apiCall('redeem_code', {
     uid,
     method: 'POST',
-    body: { code },
+    body: { code, clientBalance },
+    query: { code },
   });
 };
 

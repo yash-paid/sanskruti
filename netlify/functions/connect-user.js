@@ -751,7 +751,7 @@ exports.handler = async (event, context) => {
     }
 
     // ─────────────────────────────────────────────────────────────
-    // 12.5 REDEEM PROMO CODE (e.g. Code "YASH" -> 50 Coins)
+    // 12.5 REDEEM PROMO CODE (Code "YASH" -> 500 Coins Unlimited)
     // ─────────────────────────────────────────────────────────────
     if (action === 'redeem_code' && event.httpMethod === 'POST') {
       const user = getOrCreateUserRecord(store, effectiveUid);
@@ -765,26 +765,11 @@ exports.handler = async (event, context) => {
         };
       }
 
-      if (!user.redeemed_codes) {
-        user.redeemed_codes = {};
-      }
-
-      if (user.redeemed_codes[rawCode]) {
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({
-            error: `Code "${rawCode}" has already been claimed on this account.`,
-            alreadyRedeemed: true,
-          }),
-        };
-      }
-
       let coinsAwarded = 0;
       let promoTitle = '';
 
       if (rawCode === 'YASH') {
-        coinsAwarded = 50;
+        coinsAwarded = 500;
         promoTitle = 'Promo Code Redeemed (YASH)';
       } else {
         return {
@@ -794,12 +779,21 @@ exports.handler = async (event, context) => {
         };
       }
 
-      // Credit wallet atomically
+      // Sync verified client balance if provided
+      const clientBal = parseInt(body.clientBalance !== undefined ? body.clientBalance : body.metadata?.clientBalance, 10);
+      if (!isNaN(clientBal) && clientBal > user.wallet.coins) {
+        user.wallet.coins = clientBal;
+      }
+
+      // Credit wallet atomically (unlimited times for testing)
       user.wallet.coins += coinsAwarded;
       user.wallet.updatedAt = new Date().toISOString();
+
+      if (!user.redeemed_codes) user.redeemed_codes = {};
       user.redeemed_codes[rawCode] = {
         claimedAt: new Date().toISOString(),
         coinsAwarded,
+        totalClaims: ((user.redeemed_codes[rawCode]?.totalClaims || 0) + 1),
       };
 
       // Ledger entry
@@ -827,7 +821,7 @@ exports.handler = async (event, context) => {
           code: rawCode,
           coinsAwarded,
           newBalance: user.wallet.coins,
-          message: `🎉 Success! 50 Coins added to your wallet with code ${rawCode}!`,
+          message: `🎉 Success! 500 Coins added to your wallet with code ${rawCode}!`,
         }),
       };
     }

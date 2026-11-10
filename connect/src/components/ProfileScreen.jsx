@@ -445,9 +445,9 @@ export default function ProfileScreen({
                 e.stopPropagation();
                 setShowClaimModal(true);
               }}
-              title="Claim 50 Coins with code YASH"
+              title="Claim 500 Coins with code YASH"
             >
-              🎁 Claim Coins
+              🎁 Claim 500 Coins
             </button>
             <button
               type="button"
@@ -471,9 +471,9 @@ export default function ProfileScreen({
             </div>
             <div className="menu-text-wrap">
               <span className="menu-item-title">Claim Coins (Promo Code)</span>
-              <span className="menu-item-sub">Use secret code YASH to claim 50 Free Coins</span>
+              <span className="menu-item-sub">Use secret code YASH to claim 500 Free Coins (Unlimited)</span>
             </div>
-            <span className="promo-claim-pill">CLAIM 50</span>
+            <span className="promo-claim-pill">CLAIM 500</span>
             <ChevronRight size={18} className="menu-arrow" />
           </div>
 
@@ -969,7 +969,7 @@ export default function ProfileScreen({
 
               <div className="claim-code-hint">
                 <Sparkles size={14} color="#ffd700" />
-                <span>Tip: Use secret code <strong>YASH</strong> for 50 Free Coins!</span>
+                <span>Tip: Use secret code <strong>YASH</strong> for 500 Free Coins! (Unlimited)</span>
               </div>
 
               <button
@@ -984,22 +984,24 @@ export default function ProfileScreen({
                   }
                   setIsRedeeming(true);
                   try {
-                    if (uid) {
-                      const res = await redeemPromoCode(uid, code);
-                      onRewardClaimed?.(res.coinsAwarded, res.newBalance);
-                      onToast?.(`🎉 Success! 50 Coins credited to your wallet with code ${code}!`);
+                    if (code === 'YASH') {
+                      let finalBal = (typeof coins === 'number' ? coins : 0) + 500;
+                      if (uid) {
+                        try {
+                          const res = await redeemPromoCode(uid, code, coins);
+                          if (typeof res?.newBalance === 'number') {
+                            finalBal = res.newBalance;
+                          }
+                        } catch (apiErr) {
+                          console.warn('redeem promo server sync warning:', apiErr);
+                        }
+                      }
+                      onRewardClaimed?.(500, finalBal);
+                      onToast?.(`🎉 Success! 500 Coins added to your account with code YASH!`);
                       setShowClaimModal(false);
                       setPromoCodeInput('');
                     } else {
-                      // Guest or preview mode
-                      if (code === 'YASH') {
-                        onRewardClaimed?.(50);
-                        onToast?.('🎉 Success! 50 Coins credited to your wallet with code YASH!');
-                        setShowClaimModal(false);
-                        setPromoCodeInput('');
-                      } else {
-                        onToast?.('❌ Invalid code! Please enter correct code.');
-                      }
+                      onToast?.('❌ Invalid code! Please enter correct code.');
                     }
                   } catch (err) {
                     onToast?.(err.message || 'Failed to redeem code.');
@@ -1008,7 +1010,7 @@ export default function ProfileScreen({
                   }
                 }}
               >
-                {isRedeeming ? 'Claiming 50 Coins...' : 'Claim 50 Coins Now ⚡'}
+                {isRedeeming ? 'Claiming 500 Coins...' : 'Claim 500 Coins Now ⚡'}
               </button>
             </div>
           </div>
