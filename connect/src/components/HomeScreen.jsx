@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Menu,
   Bell,
@@ -17,6 +17,8 @@ import VideoCallScreen from './VideoCallScreen';
 import InsufficientCoinsModal from './InsufficientCoinsModal';
 import LoginRequiredModal from './LoginRequiredModal';
 import DailyRewardModal from './DailyRewardModal';
+import DemoIncomingCallModal from './DemoIncomingCallModal';
+import DemoPostCallModal from './DemoPostCallModal';
 import heartLogoImg from '../../assets/images/heart-logo-transparent.png';
 import { useLanguage } from '../context/LanguageContext';
 import { recordUserCall } from '../firebase/userService';
@@ -284,6 +286,157 @@ export default function HomeScreen({
   const [notification, setNotification] = useState(false);
   const [showTransactions, setShowTransactions] = useState(false);
   const [showDailyReward, setShowDailyReward] = useState(false);
+
+  // ── CONNECT Demo Incoming Call Experience ──
+  const [incomingDemoCall, setIncomingDemoCall] = useState(null);
+  const [activeDemoCall, setActiveDemoCall] = useState(null);
+  const [demoPostCall, setDemoPostCall] = useState(null);
+
+  const callingExpertRef = useRef(callingExpert);
+  callingExpertRef.current = callingExpert || activeDemoCall;
+
+  const insufficientModalRef = useRef(insufficientModal);
+  insufficientModalRef.current = insufficientModal;
+
+  const showDailyRewardRef = useRef(showDailyReward);
+  showDailyRewardRef.current = showDailyReward;
+
+  const showTransactionsRef = useRef(showTransactions);
+  showTransactionsRef.current = showTransactions;
+
+  const demoTimerRef = useRef(null);
+
+  // Featured Demo Callers: Uma (video 2.mp4) & Simran (video 1.mp4)
+  const DEMO_CALLERS = [
+    {
+      id: 'uma',
+      name: 'Uma',
+      age: 24,
+      rating: 4.8,
+      price: 65,
+      photo: '/assets/profiles/7.jpg',
+      videoUrl: '/assets/videos/2.mp4',
+      verified: true,
+      top: true,
+    },
+    {
+      id: 'simran',
+      name: 'Simran',
+      age: 25,
+      rating: 4.9,
+      price: 65,
+      photo: '/assets/profiles/1.jpg',
+      videoUrl: '/assets/videos/1.mp4',
+      verified: true,
+      top: true,
+    },
+  ];
+
+  const getDemoSession = () => {
+    try {
+      const key = `connect_demo_session_${uid || 'guest'}`;
+      const saved = sessionStorage.getItem(key);
+      if (!saved) return { callCount: 0, lastEndedAt: null };
+      const parsed = JSON.parse(saved);
+      return {
+        callCount: Number(parsed.callCount) || 0,
+        lastEndedAt: parsed.lastEndedAt ? Number(parsed.lastEndedAt) : null,
+      };
+    } catch (e) {
+      return { callCount: 0, lastEndedAt: null };
+    }
+  };
+
+  const saveDemoSession = (callCount, lastEndedAt) => {
+    try {
+      const key = `connect_demo_session_${uid || 'guest'}`;
+      sessionStorage.setItem(key, JSON.stringify({ callCount, lastEndedAt }));
+    } catch (e) {}
+  };
+
+  const scheduleNextDemo = (count, lastEnd) => {
+    if (demoTimerRef.current) clearTimeout(demoTimerRef.current);
+    if (count >= 3) return; // Strict maximum: 3 demo calls per session
+
+    let delayMs = 10000; // First call: 10s after entering Home
+    if (count === 1) {
+      // Second call: 2 minutes (120,000 ms) after first demo call ends
+      const elapsed = lastEnd ? Date.now() - lastEnd : 120000;
+      delayMs = Math.max(3000, 120000 - elapsed);
+    } else if (count === 2) {
+      // Third call: 5 minutes (300,000 ms) after second demo call ends
+      const elapsed = lastEnd ? Date.now() - lastEnd : 300000;
+      delayMs = Math.max(3000, 300000 - elapsed);
+    }
+
+    demoTimerRef.current = setTimeout(() => {
+      // Guard: Do not pop up over active real video call or modals
+      if (
+        callingExpertRef.current ||
+        insufficientModalRef.current ||
+        showDailyRewardRef.current ||
+        showTransactionsRef.current
+      ) {
+        // Retry in 5 seconds
+        scheduleNextDemo(count, lastEnd);
+        return;
+      }
+      const chosen = DEMO_CALLERS[Math.floor(Math.random() * DEMO_CALLERS.length)];
+      setIncomingDemoCall(chosen);
+    }, delayMs);
+  };
+
+  // Schedule demo calls whenever Home screen is active
+  useEffect(() => {
+    const session = getDemoSession();
+    if (session.callCount < 3) {
+      scheduleNextDemo(session.callCount, session.lastEndedAt);
+    }
+    return () => {
+      if (demoTimerRef.current) clearTimeout(demoTimerRef.current);
+    };
+  }, [uid]);
+
+  const handleDeclineDemo = () => {
+    setIncomingDemoCall(null);
+    const session = getDemoSession();
+    const nextCount = session.callCount + 1;
+    const now = Date.now();
+    saveDemoSession(nextCount, now);
+    if (nextCount < 3) {
+      scheduleNextDemo(nextCount, now);
+    }
+  };
+
+  const handleAcceptDemo = () => {
+    const caller = incomingDemoCall;
+    setIncomingDemoCall(null);
+    setActiveDemoCall(caller);
+  };
+
+  const handleEndDemoCall = (caller) => {
+    setActiveDemoCall(null);
+    const session = getDemoSession();
+    const nextCount = session.callCount + 1;
+    const now = Date.now();
+    saveDemoSession(nextCount, now);
+    // Show post-call wallet & recharge / call-back modal
+    setDemoPostCall(caller);
+  };
+
+  const handleCloseDemoPostCall = () => {
+    setDemoPostCall(null);
+    const session = getDemoSession();
+    if (session.callCount < 3) {
+      scheduleNextDemo(session.callCount, session.lastEndedAt);
+    }
+  };
+
+  const handleStartRealCallFromDemo = (caller) => {
+    setDemoPostCall(null);
+    // Standard real call trigger: checks guest -> login modal, insufficient coins -> recharge modal, sufficient -> real video call
+    handleCall(caller);
+  };
 
   useEffect(() => {
     setActiveNav(initialTab);
@@ -686,6 +839,54 @@ export default function HomeScreen({
             setLoginReqAction(null);
             onGoogleLogin?.();
           }}
+        />
+      )}
+
+      {/* ── CONNECT Demo Incoming Call Experience ── */}
+      {incomingDemoCall && (
+        <DemoIncomingCallModal
+          caller={incomingDemoCall}
+          onAccept={handleAcceptDemo}
+          onDecline={handleDeclineDemo}
+        />
+      )}
+
+      {/* ── Active Video Call Screen for Incoming Call (100% Identical to Real Call) ── */}
+      {activeDemoCall && (
+        <VideoCallScreen
+          expert={activeDemoCall}
+          uid={uid}
+          coins={coins}
+          isDemo={true}
+          onEndCall={() => {
+            const caller = activeDemoCall;
+            handleEndDemoCall(caller);
+          }}
+          onToast={onToast}
+          onDeductCoins={onDeductCoins}
+          onAddCoins={onAddCoins}
+          onInsufficientCoins={() => {
+            const caller = activeDemoCall;
+            handleEndDemoCall(caller);
+            setPendingCallExpert(caller);
+            setInsufficientModal(true);
+          }}
+          onOpenRecharge={() => {
+            const caller = activeDemoCall;
+            handleEndDemoCall(caller);
+            setPendingCallExpert(caller);
+            setInsufficientModal(true);
+          }}
+        />
+      )}
+
+      {/* ── Demo Post-Call Explore / Recharge Modal ── */}
+      {demoPostCall && (
+        <DemoPostCallModal
+          caller={demoPostCall}
+          coins={coins}
+          onStartRealCall={handleStartRealCallFromDemo}
+          onClose={handleCloseDemoPostCall}
         />
       )}
     </div>

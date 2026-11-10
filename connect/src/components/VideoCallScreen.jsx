@@ -142,6 +142,7 @@ export default function VideoCallScreen({
   onAddCoins,
   onInsufficientCoins,
   onOpenRecharge,
+  isDemo = false,
 }) {
   const { t } = useLanguage();
   // Call States: 'connecting' | 'active' | 'error'
@@ -227,6 +228,20 @@ export default function VideoCallScreen({
   useEffect(() => {
     if (callState !== 'connecting') return;
 
+    if (isDemo) {
+      const fastConnect = setTimeout(() => {
+        if (expertVideoRef.current) {
+          expertVideoRef.current
+            .play()
+            .then(() => setCallState('active'))
+            .catch(() => setCallState('active'));
+        } else {
+          setCallState('active');
+        }
+      }, 350);
+      return () => clearTimeout(fastConnect);
+    }
+
     const t1 = setTimeout(() => {
       setConnectingStage('Connecting to Expert...');
     }, 1200);
@@ -239,7 +254,7 @@ export default function VideoCallScreen({
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [callState]);
+  }, [callState, isDemo]);
 
   /* ── 2. Handle Expert Video Ready & Resume Playback ── */
   const applyResumePosition = () => {
@@ -330,6 +345,7 @@ export default function VideoCallScreen({
   /* ── 3. Active Call Duration Timer & Per-Minute Coin Deduction ── */
   // A. Deduct Minute 1 immediately in the starting 1 second when call starts
   useEffect(() => {
+    if (isDemo) return; // Zero coin deduction for demo calls
     if (!hasDeductedFirstMinuteRef.current) {
       hasDeductedFirstMinuteRef.current = true;
       (async () => {
@@ -365,7 +381,7 @@ export default function VideoCallScreen({
         }
       })();
     }
-  }, []);
+  }, [isDemo]);
 
   // B. Deduct subsequent minutes every 60 seconds (at 60s, 120s, 180s, etc.)
   useEffect(() => {
@@ -373,8 +389,18 @@ export default function VideoCallScreen({
       durationTimerRef.current = setInterval(() => {
         setCallDuration((prev) => {
           const nextSec = prev + 1;
-          // Every 60 seconds of conversation, deduct coins for the next minute
-          if (nextSec > 0 && nextSec % 60 === 0) {
+
+          // In demo call: automatically end call at 10 seconds!
+          if (isDemo && nextSec >= 10) {
+            if (durationTimerRef.current) clearInterval(durationTimerRef.current);
+            setTimeout(() => {
+              handleEnd();
+            }, 0);
+            return 10;
+          }
+
+          // Every 60 seconds of conversation, deduct coins for the next minute (normal call only)
+          if (!isDemo && nextSec > 0 && nextSec % 60 === 0) {
             const nextMin = Math.floor(nextSec / 60) + 1;
             (async () => {
               const numericCoins = Number(coinsRef.current ?? coins) || 0;
@@ -420,7 +446,7 @@ export default function VideoCallScreen({
     return () => {
       if (durationTimerRef.current) clearInterval(durationTimerRef.current);
     };
-  }, [callState, callRate, onDeductCoins, onInsufficientCoins, onEndCall, onToast, expert]);
+  }, [callState, callRate, onDeductCoins, onInsufficientCoins, onEndCall, onToast, expert, isDemo]);
 
   /* ── 4. User Camera & Mic (PiP) Setup ── */
   const setupUserCamera = async (isFront = isFrontCamera) => {
