@@ -121,13 +121,19 @@ export const COIN_PACKAGES = [
   },
 ];
 
-// ── One-Time Purchase Tracking Helpers ──
+// ── One-Time Introductory Purchase Packs ──
+// Only ₹19 (pack-19), ₹49 (pack-49), and ₹99 (pack-99) disappear after purchase.
+// All subsequent packs (₹149, ₹199, ₹499, ₹999, etc.) remain permanently available.
+export const ONE_TIME_PURCHASE_PACK_IDS = ['pack-19', 'pack-49', 'pack-99'];
+
 export const getPurchasedPackIds = () => {
   try {
     const saved = localStorage.getItem('connect_purchased_packs');
     if (!saved) return [];
     const parsed = JSON.parse(saved);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    // Strictly restrict to only the 3 one-time packs
+    return parsed.filter((id) => ONE_TIME_PURCHASE_PACK_IDS.includes(id));
   } catch (e) {
     return [];
   }
@@ -137,6 +143,10 @@ export const markPackAsPurchased = (packId) => {
   if (!packId) return;
   try {
     const cleanId = String(packId).replace(/^connect-/, '');
+    // Only pack-19, pack-49, and pack-99 disappear after purchase!
+    if (!ONE_TIME_PURCHASE_PACK_IDS.includes(cleanId)) {
+      return;
+    }
     const existing = getPurchasedPackIds();
     if (!existing.includes(cleanId)) {
       existing.push(cleanId);
