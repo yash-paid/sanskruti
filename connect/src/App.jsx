@@ -874,8 +874,17 @@ export default function App() {
               }
               const data = await res.json();
               if (data.success && data.verified) {
-                const item = (data.items && data.items[0]) || {};
-                const itemId = String(item.id || '');
+                let pendingPack = null;
+                let pendingUid = '';
+                try {
+                  pendingPack = JSON.parse(localStorage.getItem('connect_pending_recharge_pack') || 'null');
+                  pendingUid = localStorage.getItem('connect_pending_recharge_uid') || '';
+                } catch (e) {}
+
+                const items = data.items || data.order?.items || [];
+                const item = items[0] || pendingPack || {};
+                const itemId = String(item.id || pendingPack?.id || '');
+                const orderAmount = Number(data.order?.amount || item.price || pendingPack?.price) || 0;
                 const isVipPurchase = itemId.includes('vip') || itemId.startsWith('connect-vip-');
 
                 if (isVipPurchase) {
@@ -887,7 +896,7 @@ export default function App() {
                     else planId = 'gold';
                   }
 
-                  const activeUid = currentUid || localStorage.getItem('connect_last_auth_uid') || '';
+                  const activeUid = currentUid || pendingUid || localStorage.getItem('connect_last_auth_uid') || auth.currentUser?.uid || getStoredPhoneUser()?.uid || '';
                   if (activeUid) {
                     try {
                       const res = await activateUserVip(activeUid, planId);
@@ -916,38 +925,80 @@ export default function App() {
                   // Coin Pack Recharge
                   const COIN_MAP = {
                     'connect-pack-19': 50,
-                    'connect-pack-49': 160,
-                    'connect-pack-99': 440,
-                    'connect-pack-149': 880,
-                    'connect-pack-199': 1250,
-                    'connect-pack-499': 2400,
-                    'connect-pack-999': 5000,
-                    'connect-pack-1999': 11000,
-                    'connect-pack-4999': 30000,
-                    'connect-pack-9999': 66000,
-                    'connect-pack-14999': 100000,
-                    'connect-pack-29999': 200000,
                     'pack-19': 50,
+                    'connect-pack-49': 160,
                     'pack-49': 160,
+                    'connect-pack-99': 440,
                     'pack-99': 440,
+                    'connect-pack-149': 880,
                     'pack-149': 880,
+                    'connect-pack-199': 1250,
                     'pack-199': 1250,
+                    'connect-pack-499': 2400,
                     'pack-499': 2400,
+                    'connect-pack-999': 5000,
                     'pack-999': 5000,
+                    'connect-pack-1999': 11000,
                     'pack-1999': 11000,
+                    'connect-pack-4999': 30000,
                     'pack-4999': 30000,
+                    'connect-pack-9999': 66000,
                     'pack-9999': 66000,
+                    'connect-pack-14999': 100000,
                     'pack-14999': 100000,
+                    'connect-pack-29999': 200000,
                     'pack-29999': 200000,
                   };
-                  const coinsToAdd = item.coins || COIN_MAP[item.id] || COIN_MAP[itemId] || 440;
-                  if (item.id) {
-                    markPackAsPurchased(item.id);
+                  let coinsToAdd = item.coins || pendingPack?.coins || COIN_MAP[item.id] || COIN_MAP[itemId];
+                  if (!coinsToAdd) {
+                    if (orderAmount === 19 || itemId.includes('19')) coinsToAdd = 50;
+                    else if (orderAmount === 49 || itemId.includes('49')) coinsToAdd = 160;
+                    else if (orderAmount === 99 || itemId.includes('99')) coinsToAdd = 440;
+                    else if (orderAmount === 149 || itemId.includes('149')) coinsToAdd = 880;
+                    else if (orderAmount === 199 || itemId.includes('199')) coinsToAdd = 1250;
+                    else if (orderAmount === 499 || itemId.includes('499')) coinsToAdd = 2400;
+                    else if (orderAmount === 999 || itemId.includes('999')) coinsToAdd = 5000;
+                    else if (orderAmount === 1999 || itemId.includes('1999')) coinsToAdd = 11000;
+                    else if (orderAmount === 4999 || itemId.includes('4999')) coinsToAdd = 30000;
+                    else if (orderAmount === 9999 || itemId.includes('9999')) coinsToAdd = 66000;
+                    else if (orderAmount === 14999 || itemId.includes('14999')) coinsToAdd = 100000;
+                    else if (orderAmount === 29999 || itemId.includes('29999')) coinsToAdd = 200000;
+                    else coinsToAdd = 50;
                   }
-                  handleAddCoins(coinsToAdd);
+
+                  if (item.id || pendingPack?.id) {
+                    markPackAsPurchased(item.id || pendingPack?.id);
+                  }
+
+                  const activeUid = currentUid || pendingUid || localStorage.getItem('connect_last_auth_uid') || auth.currentUser?.uid || getStoredPhoneUser()?.uid || '';
+                  if (activeUid) {
+                    try {
+                      const transactRes = await transactUserCoins(activeUid, {
+                        amount: coinsToAdd,
+                        isCredit: true,
+                        type: 'purchase',
+                        title: `Coins Recharged - ${coinsToAdd} Coins (₹${orderAmount || 19})`,
+                        metadata: { txnid, amount: orderAmount },
+                      });
+                      if (typeof transactRes?.newBalance === 'number') {
+                        setCoins(transactRes.newBalance);
+                        coinsRef.current = transactRes.newBalance;
+                      } else {
+                        handleAddCoins(coinsToAdd, `Coins Recharged (${coinsToAdd} Coins)`);
+                      }
+                    } catch (transactErr) {
+                      console.warn('transactUserCoins error after payment:', transactErr);
+                      handleAddCoins(coinsToAdd, `Coins Recharged (${coinsToAdd} Coins)`);
+                    }
+                  } else {
+                    handleAddCoins(coinsToAdd, `Coins Recharged (${coinsToAdd} Coins)`);
+                  }
+
                   showToast(`🎉 Verified payment! Added ${coinsToAdd} Coins.`);
 
                   try {
+                    localStorage.removeItem('connect_pending_recharge_pack');
+                    localStorage.removeItem('connect_pending_recharge_uid');
                     const pendingExpert = localStorage.getItem('connect_pending_call_expert');
                     if (pendingExpert) {
                       const expertObj = JSON.parse(pendingExpert);
@@ -979,6 +1030,11 @@ export default function App() {
         localStorage.setItem('connect_pending_call_expert', JSON.stringify(pendingExpert));
       } else {
         localStorage.removeItem('connect_pending_call_expert');
+      }
+      localStorage.setItem('connect_pending_recharge_pack', JSON.stringify(pack));
+      const activeUid = currentUid || auth.currentUser?.uid || getStoredPhoneUser()?.uid || '';
+      if (activeUid) {
+        localStorage.setItem('connect_pending_recharge_uid', activeUid);
       }
     } catch (e) {}
 

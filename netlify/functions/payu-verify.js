@@ -1,7 +1,7 @@
 // Netlify Function: Verify Order Status & Authenticate eBook Delivery
 const { getPayUConfig } = require('./_payu-config');
 const { verifyDeliveryToken, getOrder } = require('./_order-store');
-const { BOOKS } = require('./_catalog');
+const { BOOKS, SERVICES } = require('./_catalog');
 
 exports.handler = async (event, context) => {
   if (event.httpMethod !== 'GET') {
@@ -57,7 +57,9 @@ exports.handler = async (event, context) => {
         id: item.id,
         title: item.title,
         price: item.price,
-        category: item.category || category
+        category: item.category || category,
+        coins: item.coins !== undefined ? item.coins : (SERVICES[item.id] ? SERVICES[item.id].coins : 0),
+        planId: item.planId || (SERVICES[item.id] ? SERVICES[item.id].planId : null),
       }));
     }
 
@@ -70,6 +72,7 @@ exports.handler = async (event, context) => {
       body: JSON.stringify({
         success: true,
         verified: true,
+        items: itemsWithDownloads,
         order: {
           txnid: order.txnid,
           status: order.status,
