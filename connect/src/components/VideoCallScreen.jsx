@@ -353,7 +353,7 @@ export default function VideoCallScreen({
 
         if (success) {
           onToast?.(`🪙 Deducted ${callRate} Coins (Minute 1 started)`);
-        } else {
+        } else if (coinsRef.current < callRate) {
           onToast?.('⚠️ Insufficient coins to continue call!');
           if (onInsufficientCoins) {
             onInsufficientCoins();
@@ -396,7 +396,7 @@ export default function VideoCallScreen({
 
               if (success) {
                 onToast?.(`🪙 Deducted ${callRate} Coins (Minute ${nextMin} started)`);
-              } else {
+              } else if (coinsRef.current < callRate) {
                 // Out of coins! End call and immediately open recharge modal
                 onToast?.('Call ended: Coin balance exhausted!');
                 if (onInsufficientCoins) {

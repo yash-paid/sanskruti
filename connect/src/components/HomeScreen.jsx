@@ -580,6 +580,12 @@ export default function HomeScreen({
           onDeductCoins={onDeductCoins}
           onAddCoins={onAddCoins}
           onInsufficientCoins={() => {
+            // Guard: If user has sufficient coins (>= call rate), NEVER interrupt the call
+            const rate = callingExpert?.price || 30;
+            if (coins >= rate) {
+              console.warn('Blocked opening insufficient modal because balance is sufficient:', coins);
+              return;
+            }
             const exp = callingExpert;
             setCallingExpert(null);
             setPendingCallExpert(exp);

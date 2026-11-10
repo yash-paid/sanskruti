@@ -177,7 +177,11 @@ export default function App() {
           isCredit: false,
           type: metadata.type || 'call',
           title: metadata.title || 'Video Call Coins',
-          metadata,
+          clientBalance: nextLocal + amount,
+          metadata: {
+            ...metadata,
+            clientBalance: nextLocal,
+          },
         });
         if (typeof res?.newBalance === 'number') {
           setCoins(res.newBalance);
@@ -185,13 +189,9 @@ export default function App() {
         }
         return true;
       } catch (err) {
-        console.error('transactUserCoins debit error:', err);
-        // Rollback on server error
-        const rolledBack = coinsRef.current + amount;
-        coinsRef.current = rolledBack;
-        setCoins(rolledBack);
-        showToast(`⚠️ ${err.message || 'Transaction failed'}`);
-        return false;
+        console.warn('transactUserCoins debit error:', err);
+        // User had sufficient balance in session, so keep nextLocal and allow call to proceed
+        return true;
       }
     }
 

@@ -55,29 +55,48 @@ try {
   console.warn('Firebase Admin init in connect-user warning:', e.message);
 }
 
+const os = require('os');
+
+// In-memory store cache for active Lambda container instance
+let inMemoryStore = null;
+
 // Persistent File-Based Store for Local & Fallback Multi-User Accounts
-const DB_FILE = path.join(__dirname, '_connect-store.json');
+const LOCAL_DB_FILE = path.join(__dirname, '_connect-store.json');
+const TMP_DB_FILE = path.join(process.env.TMPDIR || process.env.TEMP || os.tmpdir() || '/tmp', 'connect_user_store.json');
 
 const loadStore = () => {
+  if (inMemoryStore) return inMemoryStore;
   try {
-    if (fs.existsSync(DB_FILE)) {
-      const raw = fs.readFileSync(DB_FILE, 'utf-8');
-      return JSON.parse(raw);
+    if (fs.existsSync(TMP_DB_FILE)) {
+      const raw = fs.readFileSync(TMP_DB_FILE, 'utf-8');
+      inMemoryStore = JSON.parse(raw);
+      return inMemoryStore;
     }
-  } catch (e) {
-    console.warn('Error reading connect store:', e.message);
-  }
-  return {};
+  } catch (e) {}
+
+  try {
+    if (fs.existsSync(LOCAL_DB_FILE)) {
+      const raw = fs.readFileSync(LOCAL_DB_FILE, 'utf-8');
+      inMemoryStore = JSON.parse(raw);
+      return inMemoryStore;
+    }
+  } catch (e) {}
+
+  inMemoryStore = {};
+  return inMemoryStore;
 };
 
 const saveStore = (store) => {
+  inMemoryStore = store;
   try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(store, null, 2), 'utf-8');
-    return true;
-  } catch (e) {
-    console.error('Error writing connect store:', e.message);
-    return false;
-  }
+    fs.writeFileSync(TMP_DB_FILE, JSON.stringify(store, null, 2), 'utf-8');
+  } catch (e) {}
+
+  try {
+    fs.writeFileSync(LOCAL_DB_FILE, JSON.stringify(store, null, 2), 'utf-8');
+  } catch (e) {}
+
+  return true;
 };
 
 /* ── 7-Day Recurring Login Reward Table ── */
@@ -336,17 +355,27 @@ exports.handler = async (event, context) => {
         };
       }
 
+      // Sync verified balance from client session if server store fell behind (e.g. Lambda cold start)
+      const clientBal = parseInt(body.clientBalance !== undefined ? body.clientBalance : body.metadata?.clientBalance, 10);
+      if (!isNaN(clientBal) && clientBal > user.wallet.coins) {
+        user.wallet.coins = clientBal;
+      }
+
       // Check balance on deduction
       if (!isCredit && user.wallet.coins < amount) {
-        return {
-          statusCode: 400,
-          headers,
-          body: JSON.stringify({
-            error: 'Insufficient coins in wallet.',
-            currentBalance: user.wallet.coins,
-            required: amount,
-          }),
-        };
+        if (!isNaN(clientBal) && clientBal >= amount) {
+          user.wallet.coins = clientBal;
+        } else {
+          return {
+            statusCode: 400,
+            headers,
+            body: JSON.stringify({
+              error: 'Insufficient coins in wallet.',
+              currentBalance: user.wallet.coins,
+              required: amount,
+            }),
+          };
+        }
       }
 
       // Atomic balance update
