@@ -61,10 +61,20 @@ export default function DailyRewardModal({
       }, 1500);
     } catch (err) {
       console.warn('Claim error:', err);
-      if (err.message === 'ALREADY_CLAIMED_TODAY') {
+      const isAlreadyClaimed =
+        err.code === 'ALREADY_CLAIMED_TODAY' ||
+        err.message === 'ALREADY_CLAIMED_TODAY' ||
+        (err.message && err.message.toLowerCase().includes('already been claimed'));
+
+      if (isAlreadyClaimed) {
         onToast?.('⚠️ You have already claimed your daily reward for today!');
+      } else if (err.code === 'auth/missing-token' || err.status === 401) {
+        onToast?.('⚠️ Session expired. Please log in again to claim your reward.');
       } else {
-        onToast?.('❌ Could not claim reward. Please check your connection.');
+        const errorText = err.message && !err.message.startsWith('Request failed')
+          ? err.message
+          : 'Could not claim reward. Please check your connection.';
+        onToast?.(`❌ ${errorText}`);
       }
       await loadStatus();
     } finally {

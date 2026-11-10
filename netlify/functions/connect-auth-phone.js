@@ -370,6 +370,55 @@ exports.handler = async (event, context) => {
           };
 
           transaction.set(docRef, userRecord);
+
+          // Atomically initialize users/{uid} document with the chosen name
+          const userDocRef = currentDb.collection('users').doc(uid);
+          transaction.set(userDocRef, {
+            profile: {
+              uid,
+              userId: 'CN-' + phoneDigits.slice(-6).toUpperCase(),
+              name: userRecord.name,
+              username: userRecord.username,
+              phone: normalizedPhone,
+              email: '',
+              avatar: '/default-avatars/1.png',
+              dob: '2000-01-01',
+              isProfileComplete: false,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            },
+            wallet: { coins: 0, updatedAt: new Date().toISOString() },
+            favourites: [],
+            purchasedPacks: [],
+            ledger: [],
+            daily_rewards: {
+              state: {
+                currentStreak: 0,
+                lastClaimDate: null,
+                cycleCount: 0,
+                lastAwardedCoins: 0,
+                updatedAt: new Date().toISOString(),
+              },
+              claims: {},
+            },
+            vip: {
+              entitlement: {
+                planId: null,
+                planName: null,
+                status: 'none',
+                active: false,
+                dailyBonusCoins: 0,
+                expiryDate: null,
+                activatedAt: null,
+              },
+              claims: {},
+            },
+            calls: [],
+            payments: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+
           return { conflict: false, userRecord };
         });
 

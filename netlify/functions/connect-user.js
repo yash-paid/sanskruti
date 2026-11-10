@@ -1531,15 +1531,12 @@ exports.handler = async (event, context) => {
       const yesterday = getYesterdayKolkataDateString();
       const userDocRef = currentDb.collection('users').doc(effectiveUid);
 
+      // Ensure user document exists in Firestore BEFORE starting the transaction
+      await getOrCreateFirestoreUser(currentDb, effectiveUid, decodedToken);
+
       const claimResult = await currentDb.runTransaction(async (transaction) => {
         const snap = await transaction.get(userDocRef);
-        let userData;
-        if (!snap.exists) {
-          const created = await getOrCreateFirestoreUser(currentDb, effectiveUid, decodedToken);
-          userData = created.data;
-        } else {
-          userData = snap.data();
-        }
+        const userData = snap.exists ? snap.data() : {};
 
         if (userData.daily_rewards?.claims?.[today] || userData.daily_rewards?.state?.lastClaimDate === today) {
           return { alreadyClaimed: true };
@@ -1597,17 +1594,27 @@ exports.handler = async (event, context) => {
           timestamp: new Date().toISOString(),
         };
 
-        const ledgerDocRef = userDocRef.collection('ledger').doc(txnId);
-
-        // Atomic write: wallet and rewards state on root document + immutable record in subcollection
-        transaction.update(userDocRef, {
+        const hasSubcoll = typeof userDocRef.collection === 'function';
+        const rootUpdates = {
           'wallet.coins': newBalance,
           'wallet.updatedAt': new Date().toISOString(),
-          'daily_rewards.state': updatedState,
-          'daily_rewards.claims': updatedClaims,
+          daily_rewards: {
+            state: updatedState,
+            claims: updatedClaims,
+          },
           updatedAt: new Date().toISOString(),
-        });
-        transaction.set(ledgerDocRef, ledgerEntry);
+        };
+
+        // Atomic write: wallet and rewards state on root document + immutable record in subcollection
+        if (hasSubcoll) {
+          const ledgerDocRef = userDocRef.collection('ledger').doc(txnId);
+          transaction.update(userDocRef, rootUpdates);
+          transaction.set(ledgerDocRef, ledgerEntry);
+        } else {
+          const legacyLedger = Array.isArray(userData.ledger) ? userData.ledger : [];
+          rootUpdates.ledger = [ledgerEntry, ...legacyLedger].slice(0, 100);
+          transaction.update(userDocRef, rootUpdates);
+        }
 
         return {
           alreadyClaimed: false,
@@ -1686,15 +1693,12 @@ exports.handler = async (event, context) => {
       const today = getKolkataDateString();
       const userDocRef = currentDb.collection('users').doc(effectiveUid);
 
+      // Ensure user document exists in Firestore BEFORE starting the transaction
+      await getOrCreateFirestoreUser(currentDb, effectiveUid, decodedToken);
+
       const vipResult = await currentDb.runTransaction(async (transaction) => {
         const snap = await transaction.get(userDocRef);
-        let userData;
-        if (!snap.exists) {
-          const created = await getOrCreateFirestoreUser(currentDb, effectiveUid, decodedToken);
-          userData = created.data;
-        } else {
-          userData = snap.data();
-        }
+        const userData = snap.exists ? snap.data() : {};
 
         const vip = userData.vip?.entitlement;
         if (!vip || !vip.active || vip.status !== 'active') {
@@ -1748,16 +1752,24 @@ exports.handler = async (event, context) => {
           timestamp: new Date().toISOString(),
         };
 
-        const ledgerDocRef = userDocRef.collection('ledger').doc(txnId);
-
-        // Atomic write: wallet and VIP claims on root document + immutable record in subcollection
-        transaction.update(userDocRef, {
+        const hasSubcoll = typeof userDocRef.collection === 'function';
+        const rootUpdates = {
           'wallet.coins': newBalance,
           'wallet.updatedAt': new Date().toISOString(),
           'vip.claims': updatedClaims,
           updatedAt: new Date().toISOString(),
-        });
-        transaction.set(ledgerDocRef, ledgerEntry);
+        };
+
+        // Atomic write: wallet and VIP claims on root document + immutable record in subcollection
+        if (hasSubcoll) {
+          const ledgerDocRef = userDocRef.collection('ledger').doc(txnId);
+          transaction.update(userDocRef, rootUpdates);
+          transaction.set(ledgerDocRef, ledgerEntry);
+        } else {
+          const legacyLedger = Array.isArray(userData.ledger) ? userData.ledger : [];
+          rootUpdates.ledger = [ledgerEntry, ...legacyLedger].slice(0, 100);
+          transaction.update(userDocRef, rootUpdates);
+        }
 
         return { success: true, bonusAmount, newBalance, planName: vip.planName };
       });
@@ -1895,15 +1907,12 @@ exports.handler = async (event, context) => {
         };
       }
 
+      // Ensure user document exists in Firestore BEFORE starting the transaction
+      await getOrCreateFirestoreUser(currentDb, effectiveUid, decodedToken);
+
       const redeemResult = await currentDb.runTransaction(async (transaction) => {
         const snap = await transaction.get(userDocRef);
-        let freshUserData;
-        if (!snap.exists) {
-          const created = await getOrCreateFirestoreUser(currentDb, effectiveUid, decodedToken);
-          freshUserData = created.data;
-        } else {
-          freshUserData = snap.data();
-        }
+        const freshUserData = snap.exists ? snap.data() : {};
 
         const currentCoins = freshUserData.wallet?.coins || 0;
         const newBalance = currentCoins + coinsAwarded;
@@ -1925,17 +1934,25 @@ exports.handler = async (event, context) => {
           metadata: { code: rawCode },
         };
 
-        const ledgerDocRef = userDocRef.collection('ledger').doc(txnId);
-
-        // Atomic write: wallet on root document + immutable record in subcollection + reset failed attempts
-        transaction.update(userDocRef, {
+        const hasSubcoll = typeof userDocRef.collection === 'function';
+        const rootUpdates = {
           'wallet.coins': newBalance,
           'wallet.updatedAt': new Date().toISOString(),
           'promoProtection.failedAttempts': 0,
           'promoProtection.lockedUntilMs': null,
           updatedAt: new Date().toISOString(),
-        });
-        transaction.set(ledgerDocRef, ledgerEntry);
+        };
+
+        // Atomic write: wallet on root document + immutable record in subcollection + reset failed attempts
+        if (hasSubcoll) {
+          const ledgerDocRef = userDocRef.collection('ledger').doc(txnId);
+          transaction.update(userDocRef, rootUpdates);
+          transaction.set(ledgerDocRef, ledgerEntry);
+        } else {
+          const legacyLedger = Array.isArray(freshUserData.ledger) ? freshUserData.ledger : [];
+          rootUpdates.ledger = [ledgerEntry, ...legacyLedger].slice(0, 100);
+          transaction.update(userDocRef, rootUpdates);
+        }
 
         return { newBalance, txnId };
       });

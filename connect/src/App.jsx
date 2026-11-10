@@ -561,16 +561,25 @@ export default function App() {
       const isAnon = fallbackData.isGuest || Boolean(auth.currentUser?.isAnonymous);
       const skipSetup = alreadyDone || isAnon;
 
+      const resolvedName = (fallbackData.name && fallbackData.name !== 'CONNECT User')
+        ? fallbackData.name
+        : (serverProfile?.name && serverProfile.name !== 'CONNECT User')
+        ? serverProfile.name
+        : (fallbackData.name || serverProfile?.name || 'CONNECT User');
+
       if (serverProfile) {
         const fullProfile = {
           ...serverProfile,
+          name: resolvedName,
           isProfileComplete: skipSetup || Boolean(serverProfile.isProfileComplete),
         };
         setUserProfile(fullProfile);
         try {
           localStorage.setItem('connect_user_profile', JSON.stringify(fullProfile));
           localStorage.setItem('connect_user_session', JSON.stringify(fullProfile));
+          localStorage.setItem('connect_home_tab', 'call');
         } catch (e) {}
+        setInitialHomeTab('call');
 
         // Open setup-profile if user has never completed initial profile setup
         if (!skipSetup) {
@@ -599,7 +608,10 @@ export default function App() {
     const alreadyDone = isProfileSetupDone(uid, null);
     const isAnon = fallbackData.isGuest || Boolean(auth.currentUser?.isAnonymous);
     const skipSetup = alreadyDone || isAnon;
-    const displayName = fallbackData.name || 'CONNECT User';
+    const displayName = (fallbackData.name && fallbackData.name !== 'CONNECT User')
+      ? fallbackData.name
+      : (fallbackData.name || 'CONNECT User');
+
     const newProfile = {
       uid,
       userId: 'CN-' + uid.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase(),
@@ -621,7 +633,9 @@ export default function App() {
     try {
       localStorage.setItem('connect_user_profile', JSON.stringify(newProfile));
       localStorage.setItem('connect_user_session', JSON.stringify(newProfile));
+      localStorage.setItem('connect_home_tab', 'call');
     } catch (e) {}
+    setInitialHomeTab('call');
 
     // Open setup-profile if user has never completed initial profile setup
     if (!skipSetup) {
@@ -923,12 +937,14 @@ export default function App() {
         localStorage.setItem('connect_user_profile', JSON.stringify(finalProfile));
         localStorage.setItem('connect_user_session', JSON.stringify(finalProfile));
         localStorage.setItem('connect_current_page', 'home');
+        localStorage.setItem('connect_home_tab', 'call');
         window.history.replaceState({ page: 'home' }, '', getUrlForPage('home'));
         await saveUserProfile(uid, finalProfile);
       } catch (e) {
         console.warn('saveUserProfile error:', e);
       }
     }
+    setInitialHomeTab('call');
     showToast(`🎉 Profile saved! Welcome, ${updatedProfile.name}!`);
     goToPage('home');
   };

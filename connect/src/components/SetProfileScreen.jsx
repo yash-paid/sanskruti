@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Camera, Calendar, User, Check, Upload, Sparkles, ArrowRight } from 'lucide-react';
 import { DEFAULT_AVATARS } from '../data/defaultAvatars';
 import heartLogoImg from '../../assets/images/heart-logo-transparent.png';
@@ -7,7 +7,19 @@ import { calculateAge, getMaxDobFor18Plus, isAtLeast18 } from '../utils/dateUtil
 
 export default function SetProfileScreen({ initialProfile, onConfirm, onToast }) {
   const { t } = useLanguage();
-  const [name, setName] = useState(initialProfile?.name || '');
+  const getInitialName = () => {
+    const raw = initialProfile?.name;
+    if (raw && raw !== 'CONNECT User') return raw;
+    return '';
+  };
+  const [name, setName] = useState(getInitialName);
+
+  useEffect(() => {
+    if (initialProfile?.name && initialProfile.name !== 'CONNECT User') {
+      setName((prev) => (prev ? prev : initialProfile.name));
+    }
+  }, [initialProfile?.name]);
+
   const [avatar, setAvatar] = useState(initialProfile?.avatar || DEFAULT_AVATARS[0].url);
   const [dob, setDob] = useState(initialProfile?.dob || '2000-01-01');
   const fileInputRef = useRef(null);

@@ -30,6 +30,16 @@ export const getFirebaseIdToken = async () => {
     } catch (e) {}
   }
 
+  // Small retry loop in case auth state is settling
+  for (let i = 0; i < 4; i++) {
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    if (auth?.currentUser) {
+      try {
+        return await auth.currentUser.getIdToken();
+      } catch (e) {}
+    }
+  }
+
   return null;
 };
 
