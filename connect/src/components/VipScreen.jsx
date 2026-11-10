@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ChevronLeft,
   Crown,
@@ -18,6 +18,12 @@ import {
 } from 'lucide-react';
 import heartLogoImg from '../../assets/images/heart-logo-transparent.png';
 import { useLanguage } from '../context/LanguageContext';
+import { getKolkataDateString } from '../firebase/rewardService';
+import {
+  fetchUserVipEntitlement,
+  claimUserVipBonus,
+  activateUserVip,
+} from '../firebase/userService';
 
 const VIP_PLANS = [
   {
@@ -99,20 +105,52 @@ const COMPARISON_FEATURES = [
 
 export default function VipScreen({
   coins = 0,
+  uid,
   onBack,
   onNavigateTab,
   onOpenWallet,
+  onAddCoins,
   onToast,
 }) {
   const { t } = useLanguage();
   const [selectedPlanId, setSelectedPlanId] = useState('gold');
-  const [activeVip, setActiveVip] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('connect_vip_status') || 'null');
-    } catch (e) {
-      return null;
+  const [claimingVipBonus, setClaimingVipBonus] = useState(false);
+  const [vipBonusClaimedToday, setVipBonusClaimedToday] = useState(false);
+
+  const [activeVip, setActiveVip] = useState(null);
+  const [isLoadingVip, setIsLoadingVip] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (uid) {
+      setIsLoadingVip(true);
+      fetchUserVipEntitlement(uid)
+        .then((res) => {
+          if (isMounted) {
+            if (res?.entitlement && res.entitlement.active) {
+              setActiveVip(res.entitlement);
+            } else {
+              setActiveVip(null);
+            }
+            setVipBonusClaimedToday(Boolean(res?.vipBonusClaimedToday));
+            setIsLoadingVip(false);
+          }
+        })
+        .catch((err) => {
+          console.warn('Error fetching user VIP entitlement:', err);
+          if (isMounted) {
+            setActiveVip(null);
+            setIsLoadingVip(false);
+          }
+        });
+    } else {
+      setActiveVip(null);
+      setIsLoadingVip(false);
     }
-  });
+    return () => {
+      isMounted = false;
+    };
+  }, [uid]);
 
   const selectedPlan = VIP_PLANS.find((p) => p.id === selectedPlanId) || VIP_PLANS[1];
 
@@ -121,25 +159,40 @@ export default function VipScreen({
     onToast?.(`Selected ${plan.name} (₹${plan.price} / ${plan.durationText})`);
   };
 
-  const handleSubscribe = () => {
-    const expiry = new Date();
-    expiry.setDate(expiry.getDate() + selectedPlan.days);
-    const vipData = {
-      planId: selectedPlan.id,
-      planName: selectedPlan.name,
-      expiryDate: expiry.toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      }),
-      active: true,
-    };
-    setActiveVip(vipData);
+  const handleSubscribe = async () => {
+    if (!uid) {
+      onToast?.('Please log in to upgrade to VIP.');
+      return;
+    }
     try {
-      localStorage.setItem('connect_vip_status', JSON.stringify(vipData));
-    } catch (e) {}
+      const res = await activateUserVip(uid, selectedPlan.id);
+      setActiveVip(res.entitlement);
+      onToast?.(`🎉 Congratulations! You are now a ${selectedPlan.name} Member!`);
+    } catch (err) {
+      onToast?.(`❌ Activation failed: ${err.message}`);
+    }
+  };
 
-    onToast?.(`🎉 Congratulations! You are now a ${selectedPlan.name} Member!`);
+  const handleClaimVipBonus = async () => {
+    if (!activeVip || vipBonusClaimedToday || claimingVipBonus) return;
+    if (!uid) return;
+
+    setClaimingVipBonus(true);
+    try {
+      const res = await claimUserVipBonus(uid);
+      onAddCoins?.(res.bonusAmount);
+      setVipBonusClaimedToday(true);
+      onToast?.(`👑 Claimed ${activeVip.planName} Daily Bonus: +${res.bonusAmount} Coins!`);
+    } catch (serverErr) {
+      if (serverErr.code === 'VIP_BONUS_ALREADY_CLAIMED_TODAY' || serverErr.message?.includes('already claimed')) {
+        setVipBonusClaimedToday(true);
+        onToast?.("⚠️ Today's VIP daily bonus already claimed!");
+      } else {
+        onToast?.(`❌ ${serverErr.message || 'Failed to claim bonus.'}`);
+      }
+    } finally {
+      setClaimingVipBonus(false);
+    }
   };
 
   return (
@@ -209,6 +262,31 @@ export default function VipScreen({
                 ? `Valid until ${activeVip.expiryDate} • Priority Visibility & Bonus Coins Active`
                 : t('vip_hero_desc', 'Get highlighted call requests, 10% bonus coins, exclusive recharge deals & weekly VIP gifts.')}
             </p>
+
+            {activeVip && (
+              <div className="vip-daily-bonus-action-row" style={{ marginTop: 12 }}>
+                {vipBonusClaimedToday ? (
+                  <div className="vip-bonus-claimed-pill">
+                    <Check size={14} color="#4ade80" />
+                    <span>Today's VIP Bonus (+{activeVip.dailyBonusCoins || 500} Coins) Claimed</span>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    className="vip-collect-daily-bonus-btn"
+                    onClick={handleClaimVipBonus}
+                    disabled={claimingVipBonus}
+                  >
+                    <Sparkles size={16} color="#FFD700" />
+                    <span>
+                      {claimingVipBonus
+                        ? 'Claiming...'
+                        : `Collect VIP Daily Bonus (+${activeVip.dailyBonusCoins || 500} Coins)`}
+                    </span>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

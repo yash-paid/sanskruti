@@ -15,15 +15,131 @@ import {
   MoreHorizontal,
   RotateCcw,
   AlertCircle,
+  Wallet,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
+/* ── Live Stream Gift Animation Overlay Component ── */
+function GiftAnimationOverlay({ gift, expertName, onComplete }) {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onComplete?.();
+    }, 2800);
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+
+  if (!gift) return null;
+
+  return (
+    <div className={`gift-anim-stage ${gift.key}`} aria-hidden="true">
+      {/* 1. Ambient Glow Backdrop */}
+      <div className="gift-anim-ambient-glow" />
+
+      {/* 2. Top Banner */}
+      <div className="gift-sender-banner">
+        <span className="banner-sparkle">✨</span>
+        <span className="banner-text">
+          Sent <strong>{gift.name}</strong> to {expertName}!
+        </span>
+        <span className="banner-cost-tag">🪙 {gift.cost}</span>
+        <span className="banner-sparkle">✨</span>
+      </div>
+
+      {/* 3. Hero Centerpiece (Scale + Radiant Rays) */}
+      <div className="gift-hero-wrap">
+        <div className="gift-hero-emoji">{gift.emoji}</div>
+        <div className="gift-hero-rays" />
+      </div>
+
+      {/* 4. Particle Shower / Unique Animations */}
+      {gift.key === 'gift_rose' && (
+        <div className="gift-particles-container">
+          {[...Array(16)].map((_, i) => (
+            <span
+              key={i}
+              className={`p-item rose-petal`}
+              style={{ left: `${6 + i * 5.8}%`, animationDelay: `${(i % 6) * 0.12}s` }}
+            >
+              {i % 3 === 0 ? '🌹' : i % 3 === 1 ? '🌸' : '✨'}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {gift.key === 'gift_chocolate' && (
+        <div className="gift-particles-container">
+          {[...Array(14)].map((_, i) => (
+            <span
+              key={i}
+              className={`p-item choc-item`}
+              style={{ left: `${8 + i * 6.5}%`, animationDelay: `${(i % 5) * 0.14}s` }}
+            >
+              {i % 2 === 0 ? '🍫' : '💖'}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {gift.key === 'gift_teddy' && (
+        <div className="gift-particles-container">
+          {[...Array(12)].map((_, i) => (
+            <span
+              key={i}
+              className="p-item teddy-item"
+              style={{ left: `${10 + i * 7}%`, animationDelay: `${(i % 4) * 0.15}s` }}
+            >
+              {i % 2 === 0 ? '🧸' : '💕'}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {gift.key === 'gift_diamond' && (
+        <div className="gift-particles-container">
+          {[...Array(18)].map((_, i) => (
+            <span
+              key={i}
+              className="p-item diamond-item"
+              style={{ left: `${5 + i * 5.2}%`, animationDelay: `${(i % 6) * 0.1}s` }}
+            >
+              {i % 3 === 0 ? '💎' : i % 3 === 1 ? '✨' : '⭐'}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {gift.key === 'gift_crown' && (
+        <div className="gift-particles-container">
+          {[...Array(16)].map((_, i) => (
+            <span
+              key={i}
+              className="p-item crown-item"
+              style={{ left: `${7 + i * 5.8}%`, animationDelay: `${(i % 5) * 0.12}s` }}
+            >
+              {i % 2 === 0 ? '👑' : '🎆'}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {gift.key === 'gift_car' && (
+        <div className="gift-car-track">
+          <div className="speed-lines" />
+          <div className="flying-supercar">🏎️💨</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function VideoCallScreen({
   expert,
+  uid,
   coins = 0,
   onEndCall,
   onToast,
   onDeductCoins,
+  onAddCoins,
   onInsufficientCoins,
   onOpenRecharge,
 }) {
@@ -34,7 +150,7 @@ export default function VideoCallScreen({
   const [callDuration, setCallDuration] = useState(0);
 
   // Per-minute coin rate
-  const callRate = expert?.price || 25;
+  const callRate = expert?.price || 30;
   const hasDeductedFirstMinuteRef = useRef(false);
 
   // Call Control Toggles
@@ -48,11 +164,15 @@ export default function VideoCallScreen({
   const [activeGiftAnim, setActiveGiftAnim] = useState(null);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [hasCamera, setHasCamera] = useState(false);
+  const [cameraLoading, setCameraLoading] = useState(true);
 
   // Media Refs
   const expertVideoRef = useRef(null);
   const userCamVideoRef = useRef(null);
   const mediaStreamRef = useRef(null);
+  const availableCamerasRef = useRef([]);
+  const activeCameraIndexRef = useRef(0);
   const durationTimerRef = useRef(null);
   const hasSeekedRef = useRef(false);
   const lastSavedTimeRef = useRef(0);
@@ -60,27 +180,34 @@ export default function VideoCallScreen({
   // Video source for expert (maps to 1.mp4 ... 23.mp4)
   const videoSrc = expert?.videoUrl || (expert?.index ? `/assets/videos/${expert.index}.mp4` : '/assets/videos/1.mp4');
 
-  /* ── 0. Video Progress Memory (Resume from Last Position) ── */
+  /* ── 0. Video Progress Memory (Per-Account & Per-Expert Resume) ── */
+  const getStorageKey = () => (uid ? `connect_video_progress_${uid}` : 'connect_video_progress');
+
   const getSavedPlaybackPosition = (expertId) => {
     if (!expertId) return 0;
     try {
-      const saved = JSON.parse(localStorage.getItem('connect_video_progress') || '{}');
-      return typeof saved[expertId] === 'number' ? saved[expertId] : 0;
+      const key = getStorageKey();
+      const saved = JSON.parse(localStorage.getItem(key) || '{}');
+      const pos = saved[expertId];
+      return typeof pos === 'number' && pos > 0 ? pos : 0;
     } catch (e) {
       return 0;
     }
   };
 
-  const savePlaybackPosition = () => {
+  const savePlaybackPosition = (overrideTime) => {
     if (!expert?.id) return;
-    const curTime = expertVideoRef.current?.currentTime || lastSavedTimeRef.current || 0;
-    const dur = expertVideoRef.current?.duration || 0;
-    // If video reached near the very end (last 2 seconds), reset so next call starts fresh
-    const timeToSave = (dur > 0 && curTime >= dur - 2) ? 0 : curTime;
+    const curTime = typeof overrideTime === 'number'
+      ? overrideTime
+      : expertVideoRef.current?.currentTime || lastSavedTimeRef.current || 0;
+    if (curTime <= 0) return;
+
     try {
-      const saved = JSON.parse(localStorage.getItem('connect_video_progress') || '{}');
-      saved[expert.id] = timeToSave;
-      localStorage.setItem('connect_video_progress', JSON.stringify(saved));
+      const key = getStorageKey();
+      const saved = JSON.parse(localStorage.getItem(key) || '{}');
+      saved[expert.id] = curTime;
+      localStorage.setItem(key, JSON.stringify(saved));
+      lastSavedTimeRef.current = curTime;
     } catch (e) {}
   };
 
@@ -88,7 +215,7 @@ export default function VideoCallScreen({
     return () => {
       savePlaybackPosition();
     };
-  }, []);
+  }, [expert?.id, uid]);
 
   /* ── 1. Progressive Connection Stages ── */
   useEffect(() => {
@@ -109,38 +236,36 @@ export default function VideoCallScreen({
   }, [callState]);
 
   /* ── 2. Handle Expert Video Ready & Resume Playback ── */
-  const handleLoadedMetadata = () => {
-    if (!hasSeekedRef.current && expertVideoRef.current && expert?.id) {
-      const savedTime = getSavedPlaybackPosition(expert.id);
-      const dur = expertVideoRef.current.duration || 0;
-      if (savedTime > 0 && (dur === 0 || savedTime < dur - 2)) {
-        try {
-          expertVideoRef.current.currentTime = savedTime;
-        } catch (e) {}
+  const applyResumePosition = () => {
+    if (!expertVideoRef.current || !expert?.id) return;
+    const savedTime = getSavedPlaybackPosition(expert.id);
+    if (savedTime > 0) {
+      try {
+        const dur = expertVideoRef.current.duration;
+        const targetTime = dur > 0 ? (savedTime % dur) : savedTime;
+        if (Math.abs(expertVideoRef.current.currentTime - targetTime) > 0.5) {
+          expertVideoRef.current.currentTime = targetTime;
+        }
+      } catch (e) {
+        console.warn('Seek error:', e);
       }
-      hasSeekedRef.current = true;
     }
+    hasSeekedRef.current = true;
+  };
+
+  const handleLoadedMetadata = () => {
+    applyResumePosition();
   };
 
   const handleVideoCanPlay = () => {
+    applyResumePosition();
     if (callState === 'active') return;
 
     if (expertVideoRef.current) {
-      if (!hasSeekedRef.current && expert?.id) {
-        const savedTime = getSavedPlaybackPosition(expert.id);
-        const dur = expertVideoRef.current.duration || 0;
-        if (savedTime > 0 && (dur === 0 || savedTime < dur - 2)) {
-          try {
-            expertVideoRef.current.currentTime = savedTime;
-          } catch (e) {}
-        }
-        hasSeekedRef.current = true;
-      }
-
       expertVideoRef.current
         .play()
         .then(() => {
-          // Transition to active call only once real video is playing
+          applyResumePosition();
           setCallState('active');
         })
         .catch((err) => {
@@ -149,8 +274,11 @@ export default function VideoCallScreen({
             expertVideoRef.current.muted = true;
             expertVideoRef.current
               .play()
-              .then(() => setCallState('active'))
-              .catch((e) => {
+              .then(() => {
+                applyResumePosition();
+                setCallState('active');
+              })
+              .catch(() => {
                 setErrorMsg('Unable to start video stream.');
                 setCallState('error');
               });
@@ -160,19 +288,23 @@ export default function VideoCallScreen({
   };
 
   const handleTimeUpdate = () => {
-    if (expertVideoRef.current) {
-      lastSavedTimeRef.current = expertVideoRef.current.currentTime;
+    if (expertVideoRef.current && expert?.id) {
+      const cur = expertVideoRef.current.currentTime;
+      if (cur > 0) {
+        lastSavedTimeRef.current = cur;
+        // Continuously persist current playback position so progress is never lost
+        try {
+          const key = getStorageKey();
+          const saved = JSON.parse(localStorage.getItem(key) || '{}');
+          saved[expert.id] = cur;
+          localStorage.setItem(key, JSON.stringify(saved));
+        } catch (e) {}
+      }
     }
   };
 
   const handleVideoEnded = () => {
-    if (expert?.id) {
-      try {
-        const saved = JSON.parse(localStorage.getItem('connect_video_progress') || '{}');
-        saved[expert.id] = 0;
-        localStorage.setItem('connect_video_progress', JSON.stringify(saved));
-      } catch (e) {}
-    }
+    // If video naturally ends, allow it to loop without resetting to 0
   };
 
   const handleVideoError = () => {
@@ -246,41 +378,140 @@ export default function VideoCallScreen({
     };
   }, [callState, callRate, onDeductCoins, onInsufficientCoins, onEndCall, onToast]);
 
-  /* ── 4. User Camera Preview (PiP) ── */
-  useEffect(() => {
-    let active = true;
-
-    async function setupUserCamera() {
-      try {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: isFrontCamera ? 'user' : 'environment' },
-            audio: false,
-          });
-          if (active) {
-            mediaStreamRef.current = stream;
-            if (userCamVideoRef.current) {
-              userCamVideoRef.current.srcObject = stream;
-            }
-          }
-        }
-      } catch (e) {
-        // Fallback gracefully to simulated selfie view if camera permission not granted
-        console.log('User camera not accessible or denied, using simulated preview.');
-      }
-    }
-
-    if (callState === 'active') {
-      setupUserCamera();
-    }
-
-    return () => {
-      active = false;
+  /* ── 4. User Camera & Mic (PiP) Setup ── */
+  const setupUserCamera = async (isFront = isFrontCamera) => {
+    setCameraLoading(true);
+    try {
       if (mediaStreamRef.current) {
         mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setHasCamera(false);
+        setCameraLoading(false);
+        onToast?.('Camera not supported in this browser.');
+        return;
+      }
+
+      // 1. Initial permission acquisition
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: isFront ? 'user' : 'environment',
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+          },
+          audio: true,
+        });
+      } catch (audioErr) {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: isFront ? 'user' : 'environment',
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+          },
+          audio: false,
+        });
+      }
+
+      // 2. Enumerate devices now that permission is granted
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter((d) => d.kind === 'videoinput');
+
+      // Detect virtual / inactive software cameras (e.g., OBS Virtual Camera, Droidcam, Iriun)
+      const isVirtualCam = (label) => {
+        const l = (label || '').toLowerCase();
+        return (
+          l.includes('obs') ||
+          l.includes('virtual') ||
+          l.includes('vysor') ||
+          l.includes('droidcam') ||
+          l.includes('iriun') ||
+          l.includes('screen')
+        );
+      };
+
+      const physicalCameras = videoDevices.filter((d) => !isVirtualCam(d.label));
+      availableCamerasRef.current = physicalCameras.length > 0 ? physicalCameras : videoDevices;
+
+      // Check current active track's device
+      const currentTrack = stream.getVideoTracks()[0];
+      const currentLabel = currentTrack?.label || '';
+
+      // If current track is an inactive OBS/virtual camera and we have real physical cameras:
+      if (isVirtualCam(currentLabel) && physicalCameras.length > 0) {
+        const preferredCam = physicalCameras[0];
+        stream.getTracks().forEach((t) => t.stop());
+
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              deviceId: { exact: preferredCam.deviceId },
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+            },
+            audio: true,
+          });
+        } catch (e) {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              deviceId: { exact: preferredCam.deviceId },
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+            },
+            audio: false,
+          });
+        }
+      }
+
+      mediaStreamRef.current = stream;
+      setHasCamera(true);
+      setCameraLoading(false);
+
+      // Apply current mic mute status to audio track
+      stream.getAudioTracks().forEach((track) => {
+        track.enabled = !isMuted;
+      });
+
+      // Apply current camera off status to video track
+      stream.getVideoTracks().forEach((track) => {
+        track.enabled = !isVideoOff;
+      });
+
+      if (userCamVideoRef.current) {
+        userCamVideoRef.current.srcObject = stream;
+        userCamVideoRef.current.play().catch(() => {});
+      }
+    } catch (err) {
+      console.warn('Camera permission denied or camera unavailable:', err);
+      setHasCamera(false);
+      setCameraLoading(false);
+    }
+  };
+
+  // Start requesting camera permission as soon as the video call screen opens
+  useEffect(() => {
+    setupUserCamera(isFrontCamera);
+
+    return () => {
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+        mediaStreamRef.current = null;
       }
     };
-  }, [callState, isFrontCamera]);
+  }, [isFrontCamera]);
+
+  // Ensure stream stays attached whenever active screen mounts userCamVideoRef
+  useEffect(() => {
+    if (callState === 'active' && userCamVideoRef.current && mediaStreamRef.current) {
+      if (userCamVideoRef.current.srcObject !== mediaStreamRef.current) {
+        userCamVideoRef.current.srcObject = mediaStreamRef.current;
+        userCamVideoRef.current.play().catch(() => {});
+      }
+    }
+  }, [callState, hasCamera]);
 
   /* ── Clean Up on End Call ── */
   const handleEnd = () => {
@@ -288,6 +519,7 @@ export default function VideoCallScreen({
     if (durationTimerRef.current) clearInterval(durationTimerRef.current);
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      mediaStreamRef.current = null;
     }
     if (expertVideoRef.current) {
       expertVideoRef.current.pause();
@@ -297,42 +529,109 @@ export default function VideoCallScreen({
   };
 
   /* ── Controls Handlers ── */
+  // 1. Flip: Switches User's Camera between available physical cameras or Front/Back
+  const toggleCameraFlip = async () => {
+    const cameras = availableCamerasRef.current;
+    if (cameras && cameras.length > 1) {
+      const nextIdx = (activeCameraIndexRef.current + 1) % cameras.length;
+      activeCameraIndexRef.current = nextIdx;
+      const targetCam = cameras[nextIdx];
+
+      setCameraLoading(true);
+      try {
+        if (mediaStreamRef.current) {
+          mediaStreamRef.current.getTracks().forEach((t) => t.stop());
+        }
+
+        let stream;
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              deviceId: { exact: targetCam.deviceId },
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+            },
+            audio: true,
+          });
+        } catch (e) {
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              deviceId: { exact: targetCam.deviceId },
+              width: { ideal: 640 },
+              height: { ideal: 480 },
+            },
+            audio: false,
+          });
+        }
+
+        mediaStreamRef.current = stream;
+        setHasCamera(true);
+        setCameraLoading(false);
+
+        if (userCamVideoRef.current) {
+          userCamVideoRef.current.srcObject = stream;
+          userCamVideoRef.current.play().catch(() => {});
+        }
+        onToast?.(`Switched camera: ${targetCam.label || 'Camera ' + (nextIdx + 1)}`);
+        return;
+      } catch (err) {
+        console.warn('Switch camera error:', err);
+      }
+    }
+
+    // Default mobile fallback facingMode toggle
+    setIsFrontCamera((prev) => {
+      const next = !prev;
+      onToast?.(next ? 'Switched to Front Camera' : 'Switched to Back Camera');
+      return next;
+    });
+  };
+
+  // 2. Mute: Mutes User's Microphone (Never mutes the expert's video audio)
   const toggleMute = () => {
     setIsMuted((prev) => {
       const next = !prev;
-      if (expertVideoRef.current) {
-        expertVideoRef.current.muted = next;
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getAudioTracks().forEach((track) => {
+          track.enabled = !next;
+        });
       }
-      onToast?.(next ? 'Microphone Muted' : 'Microphone Unmuted');
+      onToast?.(next ? 'Your Microphone Muted 🔇' : 'Your Microphone Unmuted 🎙️');
       return next;
     });
   };
 
+  // 4. Speaker: Toggles Expert's Video Audio (Out loud vs silent)
   const toggleSpeaker = () => {
     setIsSpeakerOn((prev) => {
       const next = !prev;
-      onToast?.(next ? 'Speaker On' : 'Earpiece Mode');
+      if (expertVideoRef.current) {
+        expertVideoRef.current.muted = !next;
+      }
+      onToast?.(next ? 'Speaker Sound On 🔊' : 'Speaker Muted 🔈');
       return next;
     });
   };
 
+  // 5. Video: Turns User's Camera On/Off (Never hides or pauses the expert video)
   const toggleVideo = () => {
     setIsVideoOff((prev) => {
       const next = !prev;
-      onToast?.(next ? 'Camera Turned Off' : 'Camera Turned On');
+      if (mediaStreamRef.current) {
+        mediaStreamRef.current.getVideoTracks().forEach((track) => {
+          track.enabled = !next;
+        });
+      }
+      onToast?.(next ? 'Your Camera Turned Off' : 'Your Camera Turned On');
       return next;
     });
-  };
-
-  const toggleCameraFlip = () => {
-    setIsFrontCamera((prev) => !prev);
-    onToast?.('Camera Switched');
   };
 
   const handleSendGift = (gift) => {
     // 1. Check if user has sufficient coins for this specific gift
     if (coins < gift.cost) {
-      onToast?.(`⚠️ You need ${gift.cost} Coins to send ${gift.name}! Your balance: ${coins} Coins. Please recharge!`);
+      setShowGiftModal(false);
+      onToast?.(`⚠️ You need ${gift.cost} Coins to send ${gift.name}! Your balance: ${coins} Coins. Please recharge.`);
       if (onOpenRecharge) {
         onOpenRecharge();
       }
@@ -343,10 +642,10 @@ export default function VideoCallScreen({
     const success = onDeductCoins ? onDeductCoins(gift.cost) : false;
     if (success) {
       setShowGiftModal(false);
-      setActiveGiftAnim(gift.emoji);
+      setActiveGiftAnim(gift);
       onToast?.(`🎁 Sent ${gift.name} (${gift.emoji}) to ${expert.name}! (-${gift.cost} Coins)`);
-      setTimeout(() => setActiveGiftAnim(null), 2500);
     } else {
+      setShowGiftModal(false);
       onToast?.(`⚠️ Insufficient coins! Please recharge to send ${gift.name}.`);
       if (onOpenRecharge) {
         onOpenRecharge();
@@ -384,24 +683,14 @@ export default function VideoCallScreen({
           playsInline
           autoPlay
           loop
-          className={`video-call-fullscreen ${callState === 'active' && !isVideoOff ? 'visible' : 'hidden'}`}
+          className={`video-call-fullscreen ${callState === 'active' ? 'visible' : 'hidden'}`}
           onLoadedMetadata={handleLoadedMetadata}
           onCanPlay={handleVideoCanPlay}
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleVideoEnded}
           onError={handleVideoError}
-          muted={isMuted}
+          muted={!isSpeakerOn}
         />
-
-      {/* When video is turned off by user or placeholder */}
-      {callState === 'active' && isVideoOff && (
-        <div className="video-off-backdrop">
-          <div className="video-off-avatar">
-            <img src={expert.photo} alt={expert.name} className="v-off-img" />
-          </div>
-          <span className="v-off-text">Video Paused</span>
-        </div>
-      )}
 
       {/* ══════════════════════════════════════════════════════════
          SCREEN 1: CONNECTING CALL (Reference Left Image)
@@ -530,22 +819,53 @@ export default function VideoCallScreen({
             {/* Top Right: User Camera Preview (Picture-in-Picture) */}
             <div className="user-cam-pip" onClick={toggleCameraFlip} title="Tap to flip camera">
               <video
-                ref={userCamVideoRef}
+                ref={(el) => {
+                  userCamVideoRef.current = el;
+                  if (el && mediaStreamRef.current && el.srcObject !== mediaStreamRef.current) {
+                    el.srcObject = mediaStreamRef.current;
+                    el.play().catch(() => {});
+                  }
+                }}
                 autoPlay
                 playsInline
                 muted
-                className="user-pip-video"
+                className={`user-pip-video ${isFrontCamera ? 'mirror' : ''}`}
               />
-              {/* Fallback image if user webcam stream not active */}
-              <img
-                src="/assets/profiles/priya.jpg"
-                alt="Your camera preview"
-                className="user-pip-fallback-img"
-                onError={(e) => {
-                  e.target.src = '/assets/profiles/simran.jpg';
+
+              {/* Overlays: Video Off, Loading, or Permission Prompt */}
+              {isVideoOff ? (
+                <div className="pip-state-overlay pip-off">
+                  <VideoOff size={18} color="#ff2a8d" />
+                  <span>{t('camera_off', 'Camera Off')}</span>
+                </div>
+              ) : cameraLoading ? (
+                <div className="pip-state-overlay pip-loading">
+                  <div className="pip-spinner" />
+                  <span>Starting...</span>
+                </div>
+              ) : !hasCamera ? (
+                <div
+                  className="pip-state-overlay pip-denied"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setupUserCamera();
+                  }}
+                  title="Click to allow camera"
+                >
+                  <VideoOff size={18} color="#ffd700" />
+                  <span>{t('allow_camera', 'Allow Camera')}</span>
+                </div>
+              ) : null}
+
+              <button
+                type="button"
+                className="pip-flip-btn"
+                aria-label="Flip camera"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleCameraFlip();
                 }}
-              />
-              <button className="pip-flip-btn" aria-label="Flip camera">
+              >
                 <RefreshCw size={12} color="#fff" />
               </button>
             </div>
@@ -553,10 +873,11 @@ export default function VideoCallScreen({
 
           {/* ── Floating Gift Animation Overlay ── */}
           {activeGiftAnim && (
-            <div className="floating-gift-anim" aria-hidden="true">
-              <span className="f-gift-emoji">{activeGiftAnim}</span>
-              <span className="f-gift-burst">✨ ✨ ✨</span>
-            </div>
+            <GiftAnimationOverlay
+              gift={activeGiftAnim}
+              expertName={expert.name}
+              onComplete={() => setActiveGiftAnim(null)}
+            />
           )}
 
           {/* ── Right-side Floating Action Buttons ── */}
@@ -638,7 +959,25 @@ export default function VideoCallScreen({
                 <div className="gift-modal-header">
                   <div className="gift-header-text">
                     <span className="gift-modal-title">{t('send_gift_to', 'Send a Gift to')} {expert.name}</span>
-                    <span className="gift-balance-sub">🪙 {t('your_balance_label', 'Your Balance:')} <strong>{coins} {t('coins', 'Coins')}</strong></span>
+                    <div className="gift-balance-row">
+                      <span className="gift-balance-sub">🪙 {t('your_balance_label', 'Your Balance:')} <strong>{coins} {t('coins', 'Coins')}</strong></span>
+                      {/* Local Test Coin Button */}
+                      <button
+                        type="button"
+                        className="gift-test-coin-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onAddCoins) {
+                            onAddCoins(100);
+                          } else {
+                            onToast?.('Added 100 Coins for testing!');
+                          }
+                        }}
+                        title="Add 100 Coins for testing"
+                      >
+                        +100 🪙 Test
+                      </button>
+                    </div>
                   </div>
                   <button
                     type="button"
@@ -656,9 +995,14 @@ export default function VideoCallScreen({
                       className="gift-card-item"
                       onClick={() => handleSendGift(g)}
                     >
-                      <span className="gift-emoji">{g.emoji}</span>
+                      <div className="gift-emoji-wrap">
+                        <span className="gift-emoji">{g.emoji}</span>
+                      </div>
                       <span className="gift-name">{g.name}</span>
-                      <span className="gift-cost">🪙 {g.cost}</span>
+                      <div className="gift-cost-pill">
+                        <span className="gift-coin-icon">🪙</span>
+                        <span className="gift-cost-val">{g.cost}</span>
+                      </div>
                     </div>
                   ))}
                 </div>

@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Wallet, ArrowRight } from 'lucide-react';
 import { CoinStackGraphic } from './CoinGraphic';
 import { useLanguage } from '../context/LanguageContext';
+import {
+  COIN_PACKAGES,
+  getPurchasedPackIds,
+  markPackAsPurchased,
+} from '../data/packages';
 
 // Graphic matching the reference image: gold coins stack + sparkles + pink exclamation badge
 function CoinWarningIllustration() {
@@ -103,51 +108,67 @@ export default function InsufficientCoinsModal({
 }) {
   const { t } = useLanguage();
 
-  // Exactly the 3 packages specified in the prompt and reference image:
-  const PACKAGES = [
-    {
-      id: 'pack-19',
-      coins: 50,
-      originalCoins: null,
-      price: 19,
-      badge: t('starter_badge', '⚡ Starter'),
-      badgeClass: 'starter',
-      extraText: null,
-    },
-    {
-      id: 'pack-49',
-      coins: 160,
-      originalCoins: null,
-      price: 49,
-      badge: null,
-      badgeClass: null,
-      extraText: null,
-    },
-    {
-      id: 'pack-99',
-      coins: 400,
-      originalCoins: 360,
-      price: 99,
-      badge: t('most_popular_badge', '👑 Most Popular'),
-      badgeClass: 'popular',
-      extraText: `40 ${t('extra_coins', 'Extra Coins')}`,
-    },
-  ];
+  // Track purchased pack IDs
+  const [purchasedPackIds, setPurchasedPackIds] = useState(getPurchasedPackIds);
 
-  // Default selection is ₹99 (Most Popular)
-  const [selectedPackId, setSelectedPackId] = useState('pack-99');
+  useEffect(() => {
+    const handleSync = () => {
+      setPurchasedPackIds(getPurchasedPackIds());
+    };
+    window.addEventListener('connect_purchased_packs_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('connect_purchased_packs_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
+
+  // Filter out any packs that have already been purchased and take the next 3 available packs
+  const availablePacks = COIN_PACKAGES.filter(
+    (p) => !purchasedPackIds.includes(p.id)
+  ).slice(0, 3);
+
+  // Compute default selection: popular pack if available, or first pack
+  const defaultPackId =
+    availablePacks.find((p) => p.isPopular)?.id ||
+    availablePacks[0]?.id ||
+    '';
+
+  const [selectedPackId, setSelectedPackId] = useState(defaultPackId);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const selectedPack = PACKAGES.find((p) => p.id === selectedPackId) || PACKAGES[2];
+  // Keep selected pack valid if available packs change
+  useEffect(() => {
+    if (
+      availablePacks.length > 0 &&
+      !availablePacks.some((p) => p.id === selectedPackId)
+    ) {
+      setSelectedPackId(defaultPackId);
+    }
+  }, [availablePacks, selectedPackId, defaultPackId]);
+
+  const selectedPack =
+    availablePacks.find((p) => p.id === selectedPackId) || availablePacks[0];
 
   const handleSelect = (pkg) => {
     setSelectedPackId(pkg.id);
   };
 
+  const getBadgeText = (pkg) => {
+    if (pkg.badgeType === 'starter') return t('starter_badge', '⚡ Starter');
+    if (pkg.badgeType === 'popular') return t('most_popular_badge', '👑 Most Popular');
+    if (pkg.badgeType === 'hot') return t('hot_deal_badge', '🔥 Hot Deal');
+    if (pkg.badgeType === 'value') return t('value_pack_badge', '⭐ Value Pack');
+    return pkg.badge;
+  };
+
   const handleCheckout = async () => {
+    if (!selectedPack) return;
     setIsSubmitting(true);
     try {
+      markPackAsPurchased(selectedPack.id);
       await onProceedPay?.(selectedPack);
+      onClose?.();
     } catch (err) {
       onToast?.(err.message || 'Payment initiation failed.');
     } finally {
@@ -197,63 +218,76 @@ export default function InsufficientCoinsModal({
           <div className="divider-line right" />
         </div>
 
-        {/* ── 3 Recharge Packages (No Horizontal Scrolling) ── */}
-        <div className="sheet-packs-grid">
-          {PACKAGES.map((pkg) => {
-            const isSelected = selectedPackId === pkg.id;
+        {/* ── Progressive Recharge Packages (3 Available Packs) ── */}
+        {availablePacks.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '24px 12px', color: '#c9b4d5', fontSize: '13px' }}>
+            {t('all_packs_purchased', 'All special one-time coin packs have been purchased!')}
+          </div>
+        ) : (
+          <div className="sheet-packs-grid">
+            {availablePacks.map((pkg) => {
+              const isSelected = selectedPackId === pkg.id;
+              const badgeText = getBadgeText(pkg);
+              const badgeClass = pkg.badgeType || pkg.badgeClass || '';
+              const extraBannerText = pkg.extraText
+                ? pkg.extraText.replace('Extra Coins', t('extra_coins', 'Extra Coins'))
+                : null;
 
-            return (
-              <div
-                key={pkg.id}
-                className={`sheet-pack-card ${isSelected ? 'pack-selected' : ''}`}
-                onClick={() => handleSelect(pkg)}
-              >
-                {/* Floating Top Badge */}
-                {pkg.badge && (
-                  <div className={`sheet-floating-badge ${pkg.badgeClass}`}>
-                    {pkg.badge}
-                  </div>
-                )}
-
-                {/* Extra Coins Banner (Lavender/Pink) */}
-                {pkg.extraText ? (
-                  <div className="sheet-pack-extra-banner">{pkg.extraText}</div>
-                ) : (
-                  <div className="sheet-pack-extra-banner empty" />
-                )}
-
-                {/* Coin Visual */}
-                <div className="sheet-pack-coin-wrap">
-                  <CoinStackGraphic size={42} />
-                </div>
-
-                {/* Coins Display */}
-                <div className="sheet-pack-coins">
-                  {pkg.originalCoins ? (
-                    <div className="sheet-coins-dual">
-                      <span className="sheet-coins-orig">{pkg.originalCoins}</span>
-                      <span className="sheet-coins-current">{pkg.coins}</span>
-                    </div>
-                  ) : (
-                    <span className="sheet-coins-single">{pkg.coins} {t('coins', 'Coins')}</span>
-                  )}
-                </div>
-
-                {/* Price Pill */}
-                <button
-                  type="button"
-                  className={`sheet-price-pill ${isSelected ? 'pill-active' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSelect(pkg);
-                  }}
+              return (
+                <div
+                  key={pkg.id}
+                  className={`sheet-pack-card ${isSelected ? 'pack-selected' : ''}`}
+                  onClick={() => handleSelect(pkg)}
                 >
-                  ₹{pkg.price}
-                </button>
-              </div>
-            );
-          })}
-        </div>
+                  {/* Floating Top Badge */}
+                  {badgeText && (
+                    <div className={`sheet-floating-badge ${badgeClass}`}>
+                      {badgeText}
+                    </div>
+                  )}
+
+                  {/* Extra Coins Banner (Lavender/Pink) */}
+                  {extraBannerText ? (
+                    <div className="sheet-pack-extra-banner">{extraBannerText}</div>
+                  ) : (
+                    <div className="sheet-pack-extra-banner empty" />
+                  )}
+
+                  {/* Coin Visual */}
+                  <div className="sheet-pack-coin-wrap">
+                    <CoinStackGraphic size={42} />
+                  </div>
+
+                  {/* Coins Display */}
+                  <div className="sheet-pack-coins">
+                    {pkg.originalCoins ? (
+                      <div className="sheet-coins-dual">
+                        <span className="sheet-coins-orig">{pkg.originalCoins}</span>
+                        <span className="sheet-coins-current">{pkg.coins}</span>
+                      </div>
+                    ) : (
+                      <span className="sheet-coins-single">
+                        {pkg.coins} {t('coins', 'Coins')}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Price Pill */}
+                  <button
+                    type="button"
+                    className={`sheet-price-pill ${isSelected ? 'pill-active' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelect(pkg);
+                    }}
+                  >
+                    ₹{pkg.price}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* ── Main CTA: Recharge & Proceed to Pay ── */}
         <button

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -12,7 +12,11 @@ import {
   Check,
   Crown,
 } from 'lucide-react';
-import { COIN_PACKAGES } from '../data/packages';
+import {
+  COIN_PACKAGES,
+  getPurchasedPackIds,
+  markPackAsPurchased,
+} from '../data/packages';
 import { CoinStackGraphic } from './CoinGraphic';
 import TransactionsModal from './TransactionsModal';
 import LoginRequiredModal from './LoginRequiredModal';
@@ -22,6 +26,7 @@ import { useLanguage } from '../context/LanguageContext';
 export default function WalletScreen({
   coins = 0,
   userProfile,
+  uid,
   isGuest = false,
   onBack,
   onNavigateTab,
@@ -32,9 +37,37 @@ export default function WalletScreen({
   onToast,
 }) {
   const { t } = useLanguage();
-  const [selectedPackId, setSelectedPackId] = useState('pack-99'); // default select ₹99 pack
+  const [purchasedPackIds, setPurchasedPackIds] = useState(getPurchasedPackIds);
+
+  useEffect(() => {
+    const handleSync = () => {
+      setPurchasedPackIds(getPurchasedPackIds());
+    };
+    window.addEventListener('connect_purchased_packs_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('connect_purchased_packs_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, []);
+
+  const availablePacks = COIN_PACKAGES.filter(
+    (p) => !purchasedPackIds.includes(p.id)
+  );
+
+  const [selectedPackId, setSelectedPackId] = useState(() => {
+    return availablePacks.find((p) => p.isPopular)?.id || availablePacks[0]?.id || 'pack-99';
+  });
   const [showTransactions, setShowTransactions] = useState(false);
   const [showLoginRequired, setShowLoginRequired] = useState(false);
+
+  // Sync selected pack if the selected one gets purchased
+  useEffect(() => {
+    if (availablePacks.length > 0 && !availablePacks.some((p) => p.id === selectedPackId)) {
+      const nextPack = availablePacks.find((p) => p.isPopular) || availablePacks[0];
+      setSelectedPackId(nextPack?.id || '');
+    }
+  }, [availablePacks, selectedPackId]);
 
   const handleSelectPack = (pkg) => {
     setSelectedPackId(pkg.id);
@@ -47,6 +80,8 @@ export default function WalletScreen({
       setShowLoginRequired(true);
       return;
     }
+    markPackAsPurchased(pkg.id);
+    setPurchasedPackIds(getPurchasedPackIds());
     setSelectedPackId(pkg.id);
     onAddCoins?.(pkg.coins);
     onToast?.(`🎉 Success! Added ${pkg.coins} Coins to your balance.`);
@@ -98,7 +133,12 @@ export default function WalletScreen({
               <Plus size={14} strokeWidth={3} />
             </button>
           </div>
-          <button className="notif-btn" aria-label="Notifications">
+          <button
+            type="button"
+            className="notif-btn"
+            aria-label="Notifications"
+            onClick={() => onToast?.('🔔 No new notifications')}
+          >
             <Bell size={22} color="#c9b4d5" />
             <span className="notif-dot" />
           </button>
@@ -194,65 +234,88 @@ export default function WalletScreen({
 
         {/* ── 3. Coin Packages Grid (3 columns) ── */}
         <div className="coin-packages-grid">
-          {COIN_PACKAGES.map((pkg) => {
-            const isSelected = selectedPackId === pkg.id;
-            const isPopular = pkg.isPopular;
+          {availablePacks.length === 0 ? (
+            <div
+              className="no-packs-msg"
+              style={{
+                gridColumn: '1 / -1',
+                textAlign: 'center',
+                padding: '40px 16px',
+                color: '#c9b4d5',
+                fontSize: '14px',
+              }}
+            >
+              {t(
+                'all_packs_purchased',
+                'All special one-time coin packs have been purchased!'
+              )}
+            </div>
+          ) : (
+            availablePacks.map((pkg) => {
+              const isSelected = selectedPackId === pkg.id;
+              const isPopular = pkg.isPopular;
 
-            return (
-              <div
-                key={pkg.id}
-                className={`coin-pack-card ${isSelected ? 'selected' : ''} ${
-                  pkg.badgeType ? `has-badge ${pkg.badgeType}` : ''
-                }`}
-                onClick={() => handleSelectPack(pkg)}
-              >
-                {/* Floating Badge (e.g. Most Popular / Value Pack) */}
-                {pkg.badge && (
-                  <div className={`floating-pack-badge ${pkg.badgeType}`}>
-                    {pkg.badge === 'Most Popular' ? t('most_popular_badge', 'Most Popular') : pkg.badge}
-                  </div>
-                )}
-
-                {/* Lavender / Pink Extra Coins Header Banner */}
-                {pkg.extraText ? (
-                  <div className="pack-header-banner">
-                    {pkg.extraText.replace('Extra Coins', t('extra_coins', 'Extra Coins'))}
-                  </div>
-                ) : (
-                  <div className="pack-header-banner empty" />
-                )}
-
-                {/* Center Coin Stack */}
-                <div className="pack-coin-visual">
-                  <CoinStackGraphic size={48} />
-                </div>
-
-                {/* Coins Display */}
-                <div className="pack-coins-row">
-                  {pkg.originalCoins ? (
-                    <>
-                      <span className="pack-orig-coins">{pkg.originalCoins}</span>
-                      <span className="pack-current-coins">{pkg.coins}</span>
-                    </>
-                  ) : (
-                    <span className="pack-single-coins">{pkg.coins} {t('coins', 'Coins')}</span>
-                  )}
-                </div>
-
-                {/* Price Button / Pill */}
-                <button
-                  type="button"
-                  className={`pack-price-btn ${isPopular ? 'popular-pill' : ''} ${
-                    isSelected ? 'active-buy' : ''
-                  }`}
-                  onClick={(e) => handleBuyPack(e, pkg)}
-                  title={`Buy for ₹${pkg.price}`}
+              return (
+                <div
+                  key={pkg.id}
+                  className={`coin-pack-card ${isSelected ? 'selected' : ''} ${pkg.badgeType ? `has-badge ${pkg.badgeType}` : ''
+                    }`}
+                  onClick={() => handleSelectPack(pkg)}
                 >
-                  ₹{pkg.price.toLocaleString()}
-                </button>
-              </div>
-            );
-          })}
+                  {/* Floating Badge (e.g. Most Popular / Value Pack) */}
+                  {pkg.badge && (
+                    <div className={`floating-pack-badge ${pkg.badgeType}`}>
+                      {pkg.badge === 'Most Popular'
+                        ? t('most_popular_badge', 'Most Popular')
+                        : pkg.badge}
+                    </div>
+                  )}
+
+                  {/* Lavender / Pink Extra Coins Header Banner */}
+                  {pkg.extraText ? (
+                    <div className="pack-header-banner">
+                      {pkg.extraText.replace(
+                        'Extra Coins',
+                        t('extra_coins', 'Extra Coins')
+                      )}
+                    </div>
+                  ) : (
+                    <div className="pack-header-banner empty" />
+                  )}
+
+                  {/* Center Coin Stack */}
+                  <div className="pack-coin-visual">
+                    <CoinStackGraphic size={48} />
+                  </div>
+
+                  {/* Coins Display */}
+                  <div className="pack-coins-row">
+                    {pkg.originalCoins ? (
+                      <>
+                        <span className="pack-orig-coins">{pkg.originalCoins}</span>
+                        <span className="pack-current-coins">{pkg.coins}</span>
+                      </>
+                    ) : (
+                      <span className="pack-single-coins">
+                        {pkg.coins} {t('coins', 'Coins')}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Price Button / Pill */}
+                  <button
+                    type="button"
+                    className={`pack-price-btn ${isPopular ? 'popular-pill' : ''
+                      } ${isSelected ? 'active-buy' : ''}`}
+                    onClick={(e) => handleBuyPack(e, pkg)}
+                    title={`Buy for ₹${pkg.price}`}
+                  >
+                    ₹{pkg.price.toLocaleString()}
+                  </button>
+                </div>
+              );
+            })
+          )}
         </div>
       </div>
 
@@ -296,7 +359,7 @@ export default function WalletScreen({
 
       {/* ── 4. Transactions Modal Screen ── */}
       {showTransactions && (
-        <TransactionsModal onClose={() => setShowTransactions(false)} />
+        <TransactionsModal uid={uid} onClose={() => setShowTransactions(false)} />
       )}
 
       {/* ── Login Required Modal for Guests ── */}

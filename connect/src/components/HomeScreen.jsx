@@ -15,8 +15,10 @@ import TransactionsModal from './TransactionsModal';
 import VideoCallScreen from './VideoCallScreen';
 import InsufficientCoinsModal from './InsufficientCoinsModal';
 import LoginRequiredModal from './LoginRequiredModal';
+import DailyRewardModal from './DailyRewardModal';
 import heartLogoImg from '../../assets/images/heart-logo-transparent.png';
 import { useLanguage } from '../context/LanguageContext';
+import { recordUserCall } from '../firebase/userService';
 
 const ALL_EXPERTS = [...TOP_EXPERTS, ...NORMAL_EXPERTS];
 
@@ -214,6 +216,7 @@ function StarsPage({ favourites, onCall, onFavToggle }) {
 export default function HomeScreen({
   coins = 0,
   userProfile,
+  uid,
   isGuest = false,
   initialTab = 'call',
   initialCallingExpert = null,
@@ -238,10 +241,26 @@ export default function HomeScreen({
   const [loginReqAction, setLoginReqAction] = useState(null); // null | 'call' | 'recharge'
   const [notification, setNotification] = useState(false);
   const [showTransactions, setShowTransactions] = useState(false);
+  const [showDailyReward, setShowDailyReward] = useState(false);
 
   useEffect(() => {
     setActiveNav(initialTab);
   }, [initialTab]);
+
+  // Auto-launch Daily Reward popup on login for registered users
+  useEffect(() => {
+    if (!isGuest && uid) {
+      const sessionKey = `connect_daily_rwd_shown_${uid}`;
+      const alreadyShown = sessionStorage.getItem(sessionKey);
+      if (!alreadyShown) {
+        sessionStorage.setItem(sessionKey, 'true');
+        const timer = setTimeout(() => {
+          setShowDailyReward(true);
+        }, 600);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isGuest, uid]);
 
   // Auto-launch call if returned from verified payment recharge
   useEffect(() => {
@@ -265,7 +284,7 @@ export default function HomeScreen({
       setLoginReqAction('call');
       return;
     }
-    const callRate = expert.price || 25;
+    const callRate = expert.price || 30;
     if (coins < callRate) {
       setPendingCallExpert(expert);
       setInsufficientModal(true);
@@ -280,11 +299,22 @@ export default function HomeScreen({
   };
 
   const handleEndCall = (duration = 0) => {
+    const expert = callingExpert;
     setCallingExpert(null);
     if (duration > 0) {
       const m = Math.floor(duration / 60);
       const s = duration % 60;
-      onToast?.(`Call ended • Duration: ${m > 0 ? `${m}m ` : ''}${s}s`);
+      const formatted = m > 0 ? `${m}m ${s}s` : `${s}s`;
+      onToast?.(`Call ended • Duration: ${formatted}`);
+      if (uid && expert) {
+        recordUserCall(uid, {
+          name: expert.name,
+          type: 'Video',
+          duration: formatted,
+          durationSeconds: duration,
+          coins: expert.pricePerMin || 0,
+        }).catch(() => { });
+      }
     }
   };
 
@@ -357,6 +387,17 @@ export default function HomeScreen({
               <Plus size={14} strokeWidth={3} />
             </button>
           </div>
+          {!isGuest && (
+            <button
+              type="button"
+              className="daily-rwd-nav-btn"
+              onClick={() => setShowDailyReward(true)}
+              aria-label="Daily Rewards"
+              title="Daily Rewards"
+            >
+              🎁
+            </button>
+          )}
           <button
             className={`notif-btn ${notification ? 'notif-active' : ''}`}
             onClick={() => setNotification((n) => !n)}
@@ -386,7 +427,13 @@ export default function HomeScreen({
             <section className="section-block">
               <div className="section-header">
                 <span className="section-title">👑 {t('top_experts', 'Top Experts')}</span>
-                <button className="view-all-btn">{t('view_all', 'View All →')}</button>
+                <button
+                  type="button"
+                  className="view-all-btn"
+                  onClick={() => document.querySelector('.normal-experts-list')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  {t('view_all', 'View All →')}
+                </button>
               </div>
               <div className="top-experts-grid">
                 {TOP_EXPERTS.map((expert) => (
@@ -513,10 +560,12 @@ export default function HomeScreen({
       {callingExpert && (
         <VideoCallScreen
           expert={callingExpert}
+          uid={uid}
           coins={coins}
           onEndCall={handleEndCall}
           onToast={onToast}
           onDeductCoins={onDeductCoins}
+          onAddCoins={onAddCoins}
           onInsufficientCoins={() => {
             const exp = callingExpert;
             setCallingExpert(null);
@@ -532,8 +581,19 @@ export default function HomeScreen({
 
       {/* ── Transactions History Modal ── */}
       {showTransactions && (
-        <TransactionsModal onClose={() => setShowTransactions(false)} />
+        <TransactionsModal uid={uid} onClose={() => setShowTransactions(false)} />
       )}
+
+      {/* ── Daily Login Reward Popup Modal (PART 1) ── */}
+      <DailyRewardModal
+        isOpen={showDailyReward}
+        uid={uid}
+        onClose={() => setShowDailyReward(false)}
+        onRewardClaimed={(awarded) => {
+          onAddCoins?.(awarded);
+        }}
+        onToast={onToast}
+      />
 
       {/* ── Insufficient Coins Recharge Bottom Sheet Modal ── */}
       {insufficientModal && (

@@ -3,6 +3,7 @@ import { Camera, Calendar, User, Check, Upload, Sparkles, ArrowRight } from 'luc
 import { DEFAULT_AVATARS } from '../data/defaultAvatars';
 import heartLogoImg from '../../assets/images/heart-logo-transparent.png';
 import { useLanguage } from '../context/LanguageContext';
+import { calculateAge, getMaxDobFor18Plus, isAtLeast18 } from '../utils/dateUtils';
 
 export default function SetProfileScreen({ initialProfile, onConfirm, onToast }) {
   const { t } = useLanguage();
@@ -48,7 +49,12 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
       return;
     }
     if (!dob) {
-      onToast?.('⚠️ Please select your Date of Birth');
+      onToast?.(t('please_select_dob', '⚠️ Please select your Date of Birth'));
+      return;
+    }
+    if (!isAtLeast18(dob)) {
+      const currentAge = calculateAge(dob);
+      onToast?.(t('must_be_18_warning', `⚠️ You must be at least 18 years old to use CONNECT. (Current age: ${currentAge} years)`));
       return;
     }
 
@@ -58,7 +64,7 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
       dob: dob,
       userId: initialProfile?.userId || 'CN-' + Math.floor(100000 + Math.random() * 900000),
       username: '@' + name.trim().toLowerCase().replace(/[^a-z0-9]/g, '_'),
-      phone: initialProfile?.phone || '+91 98765 43210',
+      phone: initialProfile?.phone || '',
     };
 
     onToast?.(`🎉 Profile saved! Welcome, ${name.trim()}!`);
@@ -192,11 +198,14 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
               </div>
             </div>
 
-            {/* ── 3. Date of Birth Input ── */}
+            {/* ── 3. Date of Birth Input (Strict 18+ Mandatory) ── */}
             <div className="set-profile-field">
-              <label className="set-profile-label" htmlFor="user-dob">
-                {t('date_of_birth', 'Date of Birth')}
-              </label>
+              <div className="set-profile-label-row">
+                <label className="set-profile-label" htmlFor="user-dob">
+                  {t('date_of_birth', 'Date of Birth')}
+                </label>
+                <span className="set-profile-18-badge">18+ ONLY</span>
+              </div>
               <div className="set-input-box">
                 <Calendar size={18} className="set-input-icon" />
                 <input
@@ -205,10 +214,19 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
                   className="set-date-input"
                   value={dob}
                   onChange={(e) => setDob(e.target.value)}
-                  max={new Date().toISOString().split('T')[0]}
+                  max={getMaxDobFor18Plus()}
                   required
                 />
               </div>
+              {dob && !isAtLeast18(dob) ? (
+                <span className="set-dob-warning">
+                  ❌ Must be 18+ years old (Current age: {calculateAge(dob)} years)
+                </span>
+              ) : (
+                <span className="set-dob-hint">
+                  🔞 {t('dob_18_mandatory_hint', 'Age must be 18 years or older to register')}
+                </span>
+              )}
             </div>
 
             {/* ── Confirm Button ── */}

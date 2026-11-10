@@ -121,53 +121,54 @@ export const COIN_PACKAGES = [
   },
 ];
 
-export const SAMPLE_TRANSACTIONS = [
-  {
-    id: 'TXN-984210',
-    type: 'purchase',
-    title: 'Added Coins - ₹99 Most Popular Pack',
-    date: '09 Nov 2026, 04:15 PM',
-    coins: 400,
-    isCredit: true,
-    amount: '₹99',
-    status: 'Success',
-  },
-  {
-    id: 'TXN-983195',
-    type: 'call',
-    title: 'Video Call with Simran (10 mins)',
-    date: '08 Nov 2026, 09:30 PM',
-    coins: 650,
-    isCredit: false,
-    status: 'Completed',
-  },
-  {
-    id: 'TXN-981042',
-    type: 'purchase',
-    title: 'Added Coins - ₹499 Value Pack',
-    date: '07 Nov 2026, 02:40 PM',
-    coins: 2400,
-    isCredit: true,
-    amount: '₹499',
-    status: 'Success',
-  },
-  {
-    id: 'TXN-979201',
-    type: 'call',
-    title: 'Voice Call with Uma (8 mins)',
-    date: '06 Nov 2026, 07:15 PM',
-    coins: 520,
-    isCredit: false,
-    status: 'Completed',
-  },
-  {
-    id: 'TXN-976450',
-    type: 'bonus',
-    title: 'Welcome Bonus Coins',
-    date: '05 Nov 2026, 11:00 AM',
-    coins: 160,
-    isCredit: true,
-    status: 'Success',
-  },
-];
+// ── One-Time Purchase Tracking Helpers ──
+export const getPurchasedPackIds = () => {
+  try {
+    const saved = localStorage.getItem('connect_purchased_packs');
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+};
+
+export const markPackAsPurchased = (packId) => {
+  if (!packId) return;
+  try {
+    const cleanId = String(packId).replace(/^connect-/, '');
+    const existing = getPurchasedPackIds();
+    if (!existing.includes(cleanId)) {
+      existing.push(cleanId);
+      localStorage.setItem('connect_purchased_packs', JSON.stringify(existing));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('connect_purchased_packs_updated', {
+            detail: { packId: cleanId, all: existing },
+          })
+        );
+      }
+    }
+  } catch (e) {}
+};
+
+export const resetPurchasedPacks = () => {
+  try {
+    localStorage.removeItem('connect_purchased_packs');
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('connect_purchased_packs_updated', {
+          detail: { all: [] },
+        })
+      );
+    }
+  } catch (e) {}
+};
+
+if (typeof window !== 'undefined') {
+  window.resetPurchasedPacks = resetPurchasedPacks;
+  window.getPurchasedPackIds = getPurchasedPackIds;
+}
+
+export const SAMPLE_TRANSACTIONS = [];
 

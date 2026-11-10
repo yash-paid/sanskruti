@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
@@ -24,16 +24,23 @@ import {
   X,
   Crown,
   Sparkles,
+  Upload,
 } from 'lucide-react';
 import { CoinStackGraphic } from './CoinGraphic';
 import TransactionsModal from './TransactionsModal';
 import LanguageModal from './LanguageModal';
+import ProfileDailyRewardCalendar from './ProfileDailyRewardCalendar';
+import { calculateAge, getMaxDobFor18Plus, isAtLeast18 } from '../utils/dateUtils';
 import { useLanguage } from '../context/LanguageContext';
 import heartLogoImg from '../../assets/images/heart-logo-transparent.png';
+import { DEFAULT_AVATARS } from '../data/defaultAvatars';
+import { fetchUserCallHistory, fetchUserVipEntitlement, saveUserProfile } from '../firebase/userService';
 
 export default function ProfileScreen({
   coins = 0,
   userProfile,
+  uid,
+  onRewardClaimed,
   onUpdateProfile,
   onBack,
   onNavigateTab,
@@ -50,10 +57,10 @@ export default function ProfileScreen({
       if (saved) return JSON.parse(saved);
     } catch (e) {}
     return {
-      name: 'Rahul Sharma',
-      username: '@rahul_connect',
-      phone: '+91 98765 43210',
-      userId: 'CN-894204',
+      name: '',
+      username: '',
+      phone: '',
+      userId: '',
       avatar: '/default-avatars/1.png',
       dob: '2000-01-01',
     };
@@ -67,8 +74,62 @@ export default function ProfileScreen({
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
 
+  const [callHistory, setCallHistory] = useState([]);
+  const [isLoadingCalls, setIsLoadingCalls] = useState(false);
+  const [activeVip, setActiveVip] = useState(null);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    if (uid) {
+      setIsLoadingCalls(true);
+      fetchUserCallHistory(uid)
+        .then((calls) => {
+          if (isMounted) {
+            setCallHistory(calls || []);
+            setIsLoadingCalls(false);
+          }
+        })
+        .catch(() => {
+          if (isMounted) setIsLoadingCalls(false);
+        });
+
+      fetchUserVipEntitlement(uid)
+        .then((res) => {
+          if (isMounted && res?.entitlement && res.entitlement.active) {
+            setActiveVip(res.entitlement);
+          } else if (isMounted) {
+            setActiveVip(null);
+          }
+        })
+        .catch(() => {});
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [uid]);
+
+  const totalCallsCount = callHistory.length;
+  const totalDurationSeconds = callHistory.reduce((acc, c) => acc + (c.durationSeconds || 0), 0);
+  const totalDurationFormatted =
+    totalDurationSeconds === 0
+      ? '0h'
+      : totalDurationSeconds < 3600
+      ? `${Math.ceil(totalDurationSeconds / 60)}m`
+      : `${(totalDurationSeconds / 3600).toFixed(1)} h`;
+
+  const favCount = (() => {
+    try {
+      const favs = JSON.parse(localStorage.getItem('connect_favourites') || '[]');
+      return Array.isArray(favs) ? favs.length : 0;
+    } catch (e) {
+      return 0;
+    }
+  })();
+
   // Edit form state
   const [editForm, setEditForm] = useState({ ...profileData });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const editFileInputRef = useRef(null);
 
   React.useEffect(() => {
     if (userProfile) {
@@ -84,23 +145,71 @@ export default function ProfileScreen({
     setTimeout(() => setCopiedId(false), 2000);
   };
 
-  const handleSaveProfile = (e) => {
-    e.preventDefault();
-    setProfileData({ ...editForm });
-    try {
-      localStorage.setItem('connect_user_profile', JSON.stringify(editForm));
-    } catch (err) {}
-    onUpdateProfile?.(editForm);
-    setShowEditModal(false);
-    onToast?.('Profile updated successfully!');
+  const handleAvatarFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      onToast?.('⚠️ Please choose a valid image file');
+      return;
+    }
+
+    if (file.size > 8 * 1024 * 1024) {
+      onToast?.('⚠️ Image size should be under 8MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setEditForm((prev) => ({ ...prev, avatar: event.target.result }));
+        onToast?.('📸 Profile photo selected!');
+      }
+    };
+    reader.readAsDataURL(file);
   };
 
-  const sampleCallHistory = [
-    { name: 'Simran', time: 'Today, 03:20 PM', duration: '12m 40s', coins: '-820 Coins', type: 'Video' },
-    { name: 'Uma', time: 'Yesterday, 09:15 PM', duration: '8m 10s', coins: '-530 Coins', type: 'Voice' },
-    { name: 'Alina', time: '07 Nov, 06:45 PM', duration: '15m 00s', coins: '-375 Coins', type: 'Video' },
-    { name: 'Neha', time: '05 Nov, 04:10 PM', duration: '5m 25s', coins: '-135 Coins', type: 'Voice' },
-  ];
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    if (!editForm.name?.trim()) {
+      onToast?.('⚠️ Name cannot be empty');
+      return;
+    }
+    if (editForm.dob && !isAtLeast18(editForm.dob)) {
+      const currentAge = calculateAge(editForm.dob);
+      onToast?.(`⚠️ You must be at least 18 years old. (Current age: ${currentAge} years)`);
+      return;
+    }
+
+    const updated = {
+      ...profileData,
+      ...editForm,
+      name: editForm.name.trim(),
+      username: editForm.username?.trim().startsWith('@')
+        ? editForm.username.trim()
+        : `@${editForm.username?.trim() || 'user'}`,
+    };
+
+    setIsSavingProfile(true);
+    setProfileData(updated);
+
+    try {
+      localStorage.setItem('connect_user_profile', JSON.stringify(updated));
+    } catch (err) {}
+
+    if (uid) {
+      try {
+        await saveUserProfile(uid, updated);
+      } catch (err) {
+        console.warn('saveUserProfile error:', err);
+      }
+    }
+
+    setIsSavingProfile(false);
+    onUpdateProfile?.(updated);
+    setShowEditModal(false);
+    onToast?.('🎉 Profile updated successfully!');
+  };
 
   return (
     <div className="profile-screen">
@@ -140,7 +249,12 @@ export default function ProfileScreen({
               <Plus size={14} strokeWidth={3} />
             </button>
           </div>
-          <button className="notif-btn" aria-label="Notifications">
+          <button
+            type="button"
+            className="notif-btn"
+            aria-label="Notifications"
+            onClick={() => onToast?.('🔔 No new notifications')}
+          >
             <Bell size={22} color="#c9b4d5" />
             <span className="notif-dot" />
           </button>
@@ -151,22 +265,34 @@ export default function ProfileScreen({
       <div className="profile-content">
         {/* ── 1. User Hero Card ── */}
         <div className="profile-hero-card">
-          <div className="profile-avatar-outer">
+          <div
+            className="profile-avatar-outer"
+            onClick={() => {
+              setEditForm({ ...profileData });
+              setShowEditModal(true);
+            }}
+            style={{ cursor: 'pointer' }}
+            title="Click to edit profile & photo"
+          >
             <div className="profile-avatar-frame">
               <img
-                src={profileData.avatar}
+                src={profileData.avatar || '/default-avatars/1.png'}
                 alt={profileData.name}
                 className="profile-main-photo"
                 onError={(e) => {
-                  e.target.src = '/assets/profiles/simran.jpg';
+                  e.target.src = '/default-avatars/1.png';
                 }}
               />
             </div>
             <button
               className="profile-camera-badge"
-              onClick={() => setShowEditModal(true)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditForm({ ...profileData });
+                setShowEditModal(true);
+              }}
               aria-label="Change photo"
-              title="Edit Profile"
+              title="Change photo / Edit profile"
             >
               <Camera size={14} color="#fff" />
             </button>
@@ -189,7 +315,15 @@ export default function ProfileScreen({
             <div className="profile-userid-chip" onClick={handleCopyId} title="Click to copy ID">
               <span className="userid-label">{t('user_id', 'User ID:')}</span>
               <span className="userid-value">{profileData.userId}</span>
-              <button className="userid-copy-btn" aria-label="Copy User ID">
+              <button
+                type="button"
+                className="userid-copy-btn"
+                aria-label="Copy User ID"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCopyId();
+                }}
+              >
                 {copiedId ? <Check size={14} color="#4ade80" /> : <Copy size={14} color="#c9b4d5" />}
               </button>
             </div>
@@ -204,11 +338,13 @@ export default function ProfileScreen({
             </div>
             <div className="vip-banner-text">
               <div className="vip-banner-title-row">
-                <span className="vip-banner-title">{t('vip_membership', 'VIP Membership')}</span>
-                <span className="vip-exclusive-pill">EXCLUSIVE</span>
+                <span className="vip-banner-title">{activeVip ? activeVip.planName : t('vip_membership', 'VIP Membership')}</span>
+                <span className="vip-exclusive-pill">{activeVip ? 'ACTIVE' : 'EXCLUSIVE'}</span>
               </div>
               <p className="vip-banner-subtitle">
-                {t('vip_hero_desc', 'Priority calls, 10% bonus coins & weekly deals')}
+                {activeVip
+                  ? `Valid until ${activeVip.expiryDate} • Priority Visibility & Daily Bonus Active`
+                  : 'No active membership • Priority calls, 10% bonus coins & weekly deals'}
               </p>
             </div>
           </div>
@@ -220,18 +356,25 @@ export default function ProfileScreen({
               onOpenVip?.();
             }}
           >
-            <span>{t('upgrade_btn', 'Upgrade')}</span>
+            <span>{activeVip ? 'View Plan' : t('upgrade_btn', 'Upgrade')}</span>
             <ChevronRight size={16} />
           </button>
         </div>
 
+        {/* ── 1.5 7-Day Daily Login Reward Calendar (PART 2) ── */}
+        <ProfileDailyRewardCalendar
+          uid={uid}
+          onRewardClaimed={onRewardClaimed}
+          onToast={onToast}
+        />
+
         {/* ── 2. Statistics (3 Cards Row) ── */}
         <div className="profile-stats-grid">
-          <div className="stat-card">
+          <div className="stat-card" onClick={() => setShowCallHistory(true)}>
             <div className="stat-icon-wrap phone">
               <PhoneCall size={18} />
             </div>
-            <div className="stat-value">48</div>
+            <div className="stat-value">{totalCallsCount}</div>
             <div className="stat-label">{t('total_calls', 'Total Calls')}</div>
           </div>
 
@@ -239,7 +382,7 @@ export default function ProfileScreen({
             <div className="stat-icon-wrap heart">
               <Heart size={18} fill="#ff2a8d" color="#ff2a8d" />
             </div>
-            <div className="stat-value">12</div>
+            <div className="stat-value">{favCount}</div>
             <div className="stat-label">{t('favorites', 'Favorites')}</div>
           </div>
 
@@ -247,7 +390,7 @@ export default function ProfileScreen({
             <div className="stat-icon-wrap clock">
               <Clock size={18} />
             </div>
-            <div className="stat-value">14.5 h</div>
+            <div className="stat-value">{totalDurationFormatted}</div>
             <div className="stat-label">{t('call_history', 'Call History')}</div>
           </div>
         </div>
@@ -419,7 +562,7 @@ export default function ProfileScreen({
       {/* ── Edit Profile Modal ── */}
       {showEditModal && (
         <div className="transactions-modal-overlay" role="dialog" aria-modal="true">
-          <div className="transactions-modal-container">
+          <div className="transactions-modal-container" style={{ maxHeight: '90vh' }}>
             <div className="transactions-modal-header">
               <h2 className="txn-modal-title">Edit Profile</h2>
               <button
@@ -431,12 +574,89 @@ export default function ProfileScreen({
               </button>
             </div>
 
-            <form onSubmit={handleSaveProfile} className="auth-form" style={{ marginTop: 10 }}>
+            <form
+              onSubmit={handleSaveProfile}
+              className="auth-form"
+              style={{ marginTop: 10, overflowY: 'auto', maxHeight: 'calc(90vh - 90px)', paddingRight: 4 }}
+            >
+              {/* Profile Photo / Avatar Picker */}
+              <div className="set-profile-avatar-section" style={{ marginBottom: 18 }}>
+                <label className="edit-label">Profile Photo</label>
+                <div className="set-avatar-center-wrap">
+                  <div
+                    className="set-avatar-preview-circle"
+                    onClick={() => editFileInputRef.current?.click()}
+                    title="Click to choose photo from gallery"
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <img
+                      src={editForm.avatar || profileData.avatar || '/default-avatars/1.png'}
+                      alt="Avatar"
+                      className="set-avatar-img"
+                      onError={(e) => {
+                        e.target.src = '/default-avatars/1.png';
+                      }}
+                    />
+                    <div className="set-avatar-cam-badge">
+                      <Camera size={16} color="#fff" />
+                    </div>
+                  </div>
+
+                  <input
+                    type="file"
+                    ref={editFileInputRef}
+                    onChange={handleAvatarFileChange}
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                  />
+                  <button
+                    type="button"
+                    className="set-upload-gallery-btn"
+                    onClick={() => editFileInputRef.current?.click()}
+                  >
+                    <Upload size={14} />
+                    <span>Choose from Gallery</span>
+                  </button>
+                </div>
+
+                {/* Default Avatars Carousel */}
+                <div className="set-default-avatars-wrap" style={{ marginTop: 12 }}>
+                  <span className="set-default-avatars-label">Or choose an avatar:</span>
+                  <div className="set-default-avatars-scroll">
+                    {DEFAULT_AVATARS.map((av) => {
+                      const isSelected = (editForm.avatar || profileData.avatar) === av.url;
+                      return (
+                        <div
+                          key={av.id}
+                          className={`set-default-avatar-chip ${isSelected ? 'selected' : ''}`}
+                          onClick={() => setEditForm((prev) => ({ ...prev, avatar: av.url }))}
+                          title={av.label}
+                        >
+                          <img
+                            src={av.url}
+                            alt={av.label}
+                            className="set-chip-img"
+                            onError={(e) => {
+                              e.target.src = '/default-avatars/1.png';
+                            }}
+                          />
+                          {isSelected && (
+                            <div className="set-chip-check">
+                              <Check size={11} color="#fff" strokeWidth={3} />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
               <div className="edit-field-group">
                 <label className="edit-label">Full Name</label>
                 <input
                   type="text"
-                  value={editForm.name}
+                  value={editForm.name || ''}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                   className="auth-input edit-box"
                   placeholder="Your Name"
@@ -448,7 +668,7 @@ export default function ProfileScreen({
                 <label className="edit-label">Username</label>
                 <input
                   type="text"
-                  value={editForm.username}
+                  value={editForm.username || ''}
                   onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
                   className="auth-input edit-box"
                   placeholder="@username"
@@ -460,7 +680,7 @@ export default function ProfileScreen({
                 <label className="edit-label">Mobile Number</label>
                 <input
                   type="text"
-                  value={editForm.phone}
+                  value={editForm.phone || ''}
                   onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                   className="auth-input edit-box"
                   placeholder="+91..."
@@ -468,18 +688,38 @@ export default function ProfileScreen({
               </div>
 
               <div className="edit-field-group">
-                <label className="edit-label">Date of Birth</label>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <label className="edit-label" style={{ marginBottom: 0 }}>Date of Birth</label>
+                  <span style={{ fontSize: 10, fontWeight: 800, color: '#ff2a8d', background: 'rgba(255, 42, 141, 0.15)', padding: '2px 7px', borderRadius: 9999, border: '1px solid rgba(255, 42, 141, 0.4)' }}>
+                    18+ ONLY
+                  </span>
+                </div>
                 <input
                   type="date"
                   value={editForm.dob || '2000-01-01'}
                   onChange={(e) => setEditForm({ ...editForm, dob: e.target.value })}
                   className="auth-input edit-box"
-                  max={new Date().toISOString().split('T')[0]}
+                  max={getMaxDobFor18Plus()}
+                  required
                 />
+                {editForm.dob && !isAtLeast18(editForm.dob) ? (
+                  <span style={{ fontSize: 11, color: '#ff4d6d', marginTop: 4, display: 'block', fontWeight: 700 }}>
+                    ❌ Must be 18+ years old (Current age: {calculateAge(editForm.dob)} years)
+                  </span>
+                ) : (
+                  <span style={{ fontSize: 11, color: '#c9b4d5', marginTop: 4, display: 'block' }}>
+                    🔞 Age must be 18 years or older
+                  </span>
+                )}
               </div>
 
-              <button type="submit" className="txn-close-btn" style={{ marginTop: 14 }}>
-                Save Changes
+              <button
+                type="submit"
+                className="txn-close-btn"
+                style={{ marginTop: 14 }}
+                disabled={isSavingProfile}
+              >
+                {isSavingProfile ? 'Saving...' : 'Save Changes'}
               </button>
             </form>
           </div>
@@ -502,27 +742,42 @@ export default function ProfileScreen({
             </div>
 
             <div className="txn-list" style={{ marginTop: 8 }}>
-              {sampleCallHistory.map((call, idx) => (
-                <div key={idx} className="txn-card">
-                  <div className="txn-card-left">
-                    <div className="txn-icon-wrap debit">
-                      <PhoneCall size={16} />
-                    </div>
-                    <div className="txn-details">
-                      <div className="txn-title">
-                        {call.name} • {call.type} Call
-                      </div>
-                      <div className="txn-date">
-                        {call.time} ({call.duration})
-                      </div>
-                    </div>
+              {isLoadingCalls ? (
+                <div style={{ padding: '32px 16px', textAlign: 'center', color: '#c9b4d5' }}>
+                  Loading call history...
+                </div>
+              ) : callHistory.length === 0 ? (
+                <div style={{ padding: '40px 16px', textAlign: 'center', color: '#c9b4d5' }}>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: '#f3e8ff', marginBottom: 4 }}>
+                    No call history yet.
                   </div>
-                  <div className="txn-card-right">
-                    <div className="txn-coins debit">{call.coins}</div>
-                    <span className="txn-status-badge">Completed</span>
+                  <div style={{ fontSize: 13, opacity: 0.7 }}>
+                    Your video and voice calls will appear here.
                   </div>
                 </div>
-              ))}
+              ) : (
+                callHistory.map((call, idx) => (
+                  <div key={idx} className="txn-card">
+                    <div className="txn-card-left">
+                      <div className="txn-icon-wrap debit">
+                        <PhoneCall size={16} />
+                      </div>
+                      <div className="txn-details">
+                        <div className="txn-title">
+                          {call.name} • {call.type} Call
+                        </div>
+                        <div className="txn-date">
+                          {call.time} ({call.duration})
+                        </div>
+                      </div>
+                    </div>
+                    <div className="txn-card-right">
+                      <div className="txn-coins debit">-{call.coins} Coins</div>
+                      <span className="txn-status-badge">Completed</span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             <button className="txn-close-btn" onClick={() => setShowCallHistory(false)}>
@@ -534,7 +789,7 @@ export default function ProfileScreen({
 
       {/* ── Transactions History Modal ── */}
       {showTransactions && (
-        <TransactionsModal onClose={() => setShowTransactions(false)} />
+        <TransactionsModal uid={uid} onClose={() => setShowTransactions(false)} />
       )}
 
       {/* ── Help & Support Modal ── */}

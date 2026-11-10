@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Lock, Eye, EyeOff, ArrowRight, Zap } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, ArrowRight, Zap, AlertCircle } from 'lucide-react';
 import FeatureBadges from './FeatureBadges';
 import { GoogleIcon } from './LoginRequiredModal';
 import { useLanguage } from '../context/LanguageContext';
@@ -14,43 +14,96 @@ export default function AuthCard({
   const { t } = useLanguage();
   const [mode, setMode] = useState(initialMode); // 'login' | 'signup'
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [noAccountFound, setNoAccountFound] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     identifier: '',
     password: '',
+    confirmPassword: '',
   });
 
   useEffect(() => {
     setMode(initialMode);
+    setNoAccountFound(false);
   }, [initialMode]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (noAccountFound) setNoAccountFound(false);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.identifier.trim()) {
-      onToast(t('id_placeholder', 'Please enter your Email or Mobile Number'));
+      onToast('Enter mobile number or email');
       return;
     }
     if (!formData.password) {
       onToast(t('password_placeholder', 'Please enter your password'));
       return;
     }
-    // Demo: immediately proceed
-    onToast(mode === 'login' ? `Welcome back! Logging in...` : `Account created! Welcome to CONNECT.`);
-    setTimeout(() => onLoginSuccess?.(formData), 800);
+    if (formData.password.length < 6) {
+      onToast('Password must be at least 6 characters long.');
+      return;
+    }
+    if (mode === 'signup') {
+      if (!formData.confirmPassword) {
+        onToast('Please enter confirm password.');
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        onToast('Passwords do not match. Please verify your confirm password.');
+        return;
+      }
+    }
+
+    setIsSubmitting(true);
+    try {
+      await onLoginSuccess?.({
+        mode,
+        identifier: formData.identifier.trim(),
+        email: formData.identifier.trim(),
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+        name: formData.name.trim(),
+      });
+    } catch (err) {
+      const code = err?.code || '';
+      // If customer account is not found in database:
+      if (
+        code === 'auth/user-not-found' ||
+        code === 'auth/invalid-credential' ||
+        err?.message?.toLowerCase().includes('user-not-found') ||
+        err?.message?.toLowerCase().includes('no account found')
+      ) {
+        if (mode === 'login') {
+          setMode('signup');
+          setNoAccountFound(true);
+          onToast?.('⚠️ No account found..!! Please sign up to create your account.');
+        }
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleGuestLogin = () => {
     onGuestLogin?.();
   };
 
-  const handleGoogleClick = () => {
-    onToast?.('✨ Connecting Google Account...');
-    setTimeout(() => onGoogleLogin?.(), 700);
+  const handleGoogleClick = async () => {
+    setIsGoogleLoading(true);
+    try {
+      await onGoogleLogin?.();
+    } catch (err) {
+      // Error handled by parent with toast
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
@@ -67,7 +120,10 @@ export default function AuthCard({
             role="tab"
             aria-selected={mode === 'login'}
             className={`toggle-pill-btn ${mode === 'login' ? 'active' : ''}`}
-            onClick={() => setMode('login')}
+            onClick={() => {
+              setMode('login');
+              setNoAccountFound(false);
+            }}
           >
             {t('login_tab', 'Log In')}
           </button>
@@ -76,7 +132,10 @@ export default function AuthCard({
             role="tab"
             aria-selected={mode === 'signup'}
             className={`toggle-pill-btn ${mode === 'signup' ? 'active' : ''}`}
-            onClick={() => setMode('signup')}
+            onClick={() => {
+              setMode('signup');
+              setNoAccountFound(false);
+            }}
           >
             {t('signup_tab', 'Sign Up')}
           </button>
@@ -89,9 +148,20 @@ export default function AuthCard({
             : t('auth_sub_signup', 'Create your account to start video calling')}
         </p>
 
+        {/* Inline No Account Found Notification Banner */}
+        {noAccountFound && (
+          <div className="auth-alert-banner">
+            <AlertCircle size={18} color="#ff4d6d" className="auth-alert-icon" />
+            <div className="auth-alert-text">
+              <strong>No account found..!!</strong>
+              <span>Switched to Sign Up so you can create your account.</span>
+            </div>
+          </div>
+        )}
+
         {/* Auth Form */}
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
-          {/* Sign Up extra field: Name */}
+          {/* Sign Up extra field: Username */}
           {mode === 'signup' && (
             <div className="input-group">
               <span className="input-icon-left" aria-hidden="true">
@@ -102,9 +172,9 @@ export default function AuthCard({
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder={t('name_label', 'Full Name')}
+                placeholder="Enter username"
                 className="auth-input"
-                autoComplete="name"
+                autoComplete="username"
               />
             </div>
           )}
@@ -119,7 +189,7 @@ export default function AuthCard({
               name="identifier"
               value={formData.identifier}
               onChange={handleChange}
-              placeholder={t('id_label', 'Email or Mobile Number')}
+              placeholder="Enter mobile number or email"
               className="auth-input"
               autoComplete="username"
             />
@@ -149,9 +219,45 @@ export default function AuthCard({
             </button>
           </div>
 
+          {/* Confirm Password (Sign Up only) */}
+          {mode === 'signup' && (
+            <div className="input-group">
+              <span className="input-icon-left" aria-hidden="true">
+                <Lock size={19} />
+              </span>
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm password"
+                className="auth-input"
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+              >
+                {showConfirmPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+              </button>
+            </div>
+          )}
+
           {/* Primary Action Button */}
-          <button type="submit" className="btn-primary-action">
-            <span>{mode === 'login' ? t('login_tab', 'Log In') : t('signup_tab', 'Sign Up')}</span>
+          <button
+            type="submit"
+            className="btn-primary-action"
+            disabled={isSubmitting || isGoogleLoading}
+          >
+            <span>
+              {isSubmitting
+                ? 'Please wait...'
+                : mode === 'login'
+                ? t('login_tab', 'Log In')
+                : t('signup_tab', 'Sign Up')}
+            </span>
             <ArrowRight size={20} className="btn-action-arrow" />
           </button>
         </form>
@@ -170,9 +276,16 @@ export default function AuthCard({
           type="button"
           className="btn-google-auth"
           onClick={handleGoogleClick}
+          disabled={isGoogleLoading || isSubmitting}
         >
           <GoogleIcon size={20} />
-          <span>{mode === 'login' ? t('google_signin', 'Sign in with Google') : t('google_signup', 'Sign up with Google')}</span>
+          <span>
+            {isGoogleLoading
+              ? 'Connecting Google...'
+              : mode === 'login'
+              ? t('google_signin', 'Sign in with Google')
+              : t('google_signup', 'Sign up with Google')}
+          </span>
         </button>
 
         {/* Continue as Guest Button */}
