@@ -111,8 +111,43 @@ const getInitialPage = () => {
   })();
   const storedPhone = getStoredPhoneUser();
   const hasPhoneSession = Boolean(storedPhone);
-  const hasAuth = Boolean(auth.currentUser) || hasPhoneSession || isGuest;
-  const currentUid = auth.currentUser?.uid || storedPhone?.uid;
+  const storedSession = (() => {
+    try {
+      const raw = localStorage.getItem('connect_user_session');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  })();
+  const isLoggedInFlag = (() => {
+    try {
+      return localStorage.getItem('connect_logged_in') === 'true';
+    } catch (e) {
+      return false;
+    }
+  })();
+  const lastAuthUid = (() => {
+    try {
+      return localStorage.getItem('connect_last_auth_uid') || '';
+    } catch (e) {
+      return '';
+    }
+  })();
+
+  const hasAuth =
+    isLoggedInFlag ||
+    Boolean(storedSession) ||
+    Boolean(lastAuthUid) ||
+    Boolean(auth.currentUser) ||
+    hasPhoneSession ||
+    isGuest;
+
+  const currentUid =
+    auth.currentUser?.uid ||
+    storedPhone?.uid ||
+    storedSession?.uid ||
+    lastAuthUid ||
+    null;
 
   // Strict check: if this user has already completed profile setup, never allow setup-profile
   if (currentUid && isProfileSetupDone(currentUid)) {
@@ -148,6 +183,10 @@ const getInitialPage = () => {
       if (savedPage === 'setup-profile' && currentUid && isProfileSetupDone(currentUid)) {
         return 'home';
       }
+      // If user has an active authenticated session, never show login page
+      if (hasAuth && savedPage === 'login') {
+        return 'home';
+      }
       return savedPage;
     }
   } catch (e) {}
@@ -160,26 +199,68 @@ export default function App() {
   // Pages: 'login' | 'setup-profile' | 'home' | 'wallet' | 'profile' | 'vip'
   const [page, setPage] = useState(getInitialPage);
 
-  // User Profile state for authenticated user
-  const [userProfile, setUserProfile] = useState({
-    name: '',
-    username: '',
-    phone: '',
-    userId: '',
-    avatar: '/default-avatars/1.png',
-    dob: '2000-01-01',
-    isProfileComplete: false,
+  // User Profile state for authenticated user (instant restore from session)
+  const [userProfile, setUserProfile] = useState(() => {
+    try {
+      const raw = localStorage.getItem('connect_user_session') || localStorage.getItem('connect_user_profile');
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p && (p.uid || p.userId)) return p;
+      }
+      const phone = getStoredPhoneUser();
+      if (phone && phone.uid) {
+        return {
+          uid: phone.uid,
+          name: phone.displayName || phone.name || 'CONNECT User',
+          username: phone.username || '',
+          phone: phone.phoneNumber || phone.phone || '',
+          avatar: '/default-avatars/1.png',
+          dob: '2000-01-01',
+          isProfileComplete: isProfileSetupDone(phone.uid),
+        };
+      }
+    } catch (e) {}
+    return {
+      name: '',
+      username: '',
+      phone: '',
+      userId: '',
+      avatar: '/default-avatars/1.png',
+      dob: '2000-01-01',
+      isProfileComplete: false,
+    };
   });
 
   // Confirmed coins balance from live backend
-  const [coins, setCoins] = useState(0);
+  const [coins, setCoins] = useState(() => {
+    try {
+      const last = localStorage.getItem('connect_last_known_balance');
+      return last ? parseInt(last, 10) || 0 : 0;
+    } catch (e) {
+      return 0;
+    }
+  });
 
   const coinsRef = useRef(coins);
   useEffect(() => {
     coinsRef.current = coins;
+    try {
+      localStorage.setItem('connect_last_known_balance', String(coins));
+    } catch (e) {}
   }, [coins]);
 
-  const currentUid = auth.currentUser?.uid || getStoredPhoneUser()?.uid || null;
+  const currentUid =
+    auth.currentUser?.uid ||
+    getStoredPhoneUser()?.uid ||
+    userProfile?.uid ||
+    (() => {
+      try {
+        return localStorage.getItem('connect_last_auth_uid') || null;
+      } catch (e) {
+        return null;
+      }
+    })() ||
+    null;
 
   // Sync confirmed live wallet coins and profile from backend whenever user changes
   useEffect(() => {
@@ -376,7 +457,19 @@ export default function App() {
           return false;
         }
       })();
-      const hasAuth = Boolean(auth.currentUser) || Boolean(getStoredPhoneUser()) || isGuestUser;
+      const isLoggedInFlag = (() => {
+        try {
+          return localStorage.getItem('connect_logged_in') === 'true';
+        } catch (e) {
+          return false;
+        }
+      })();
+      const hasAuth =
+        isLoggedInFlag ||
+        Boolean(auth.currentUser) ||
+        Boolean(getStoredPhoneUser()) ||
+        Boolean(localStorage.getItem('connect_last_auth_uid')) ||
+        isGuestUser;
 
       if (!targetPage || targetPage === 'home' || targetPage === 'login') {
         targetPage = hasAuth ? 'home' : 'login';
@@ -445,6 +538,12 @@ export default function App() {
 
   // Helper to load or initialize user profile by UID from backend
   const loadProfileForUid = async (uid, fallbackData = {}) => {
+    if (!uid) return;
+    try {
+      localStorage.setItem('connect_logged_in', 'true');
+      localStorage.setItem('connect_last_auth_uid', uid);
+    } catch (e) {}
+
     try {
       const serverCoins = await fetchUserWallet(uid);
       setCoins(serverCoins);
@@ -468,6 +567,10 @@ export default function App() {
           isProfileComplete: alreadyDone || Boolean(serverProfile.isProfileComplete),
         };
         setUserProfile(fullProfile);
+        try {
+          localStorage.setItem('connect_user_profile', JSON.stringify(fullProfile));
+          localStorage.setItem('connect_user_session', JSON.stringify(fullProfile));
+        } catch (e) {}
 
         // Open setup-profile if user has never completed initial profile setup
         if (!alreadyDone) {
@@ -513,6 +616,10 @@ export default function App() {
     };
 
     setUserProfile(newProfile);
+    try {
+      localStorage.setItem('connect_user_profile', JSON.stringify(newProfile));
+      localStorage.setItem('connect_user_session', JSON.stringify(newProfile));
+    } catch (e) {}
 
     // Open setup-profile if user has never completed initial profile setup
     if (!alreadyDone) {
@@ -552,6 +659,8 @@ export default function App() {
         setIsGuest(false);
         try {
           localStorage.setItem('connect_is_guest', 'false');
+          localStorage.setItem('connect_logged_in', 'true');
+          localStorage.setItem('connect_last_auth_uid', firebaseUser.uid);
         } catch (e) {}
 
         const uid = firebaseUser.uid;
@@ -568,6 +677,8 @@ export default function App() {
           setIsGuest(false);
           try {
             localStorage.setItem('connect_is_guest', 'false');
+            localStorage.setItem('connect_logged_in', 'true');
+            localStorage.setItem('connect_last_auth_uid', phoneUser.uid);
           } catch (e) {}
           loadProfileForUid(phoneUser.uid, {
             name: phoneUser.displayName || phoneUser.name || 'CONNECT User',
@@ -587,7 +698,29 @@ export default function App() {
           }
         })();
 
-        if (!isGuestUser) {
+        const isLoggedInFlag = (() => {
+          try {
+            return localStorage.getItem('connect_logged_in') === 'true';
+          } catch (e) {
+            return false;
+          }
+        })();
+
+        const lastAuthUid = (() => {
+          try {
+            return localStorage.getItem('connect_last_auth_uid') || '';
+          } catch (e) {
+            return '';
+          }
+        })();
+
+        // If user already logged in previously, preserve session and re-sync in background
+        if (isLoggedInFlag && lastAuthUid) {
+          loadProfileForUid(lastAuthUid);
+          return;
+        }
+
+        if (!isGuestUser && !isLoggedInFlag) {
           setPage((prevPage) => {
             if (prevPage !== 'login') {
               try {
@@ -735,6 +868,8 @@ export default function App() {
     setIsGuest(true);
     try {
       localStorage.setItem('connect_is_guest', 'true');
+      localStorage.setItem('connect_logged_in', 'true');
+      localStorage.setItem('connect_current_page', 'home');
       setUserProfile((prev) => ({
         ...prev,
         name: 'Guest User',
@@ -758,10 +893,14 @@ export default function App() {
     const finalProfile = { ...updatedProfile, isProfileComplete: true };
     setUserProfile(finalProfile);
     const storedPhone = getStoredPhoneUser();
-    const uid = auth.currentUser?.uid || storedPhone?.uid;
+    const uid = auth.currentUser?.uid || storedPhone?.uid || currentUid;
     if (uid) {
       try {
         localStorage.setItem(`connect_profile_setup_done_${uid}`, 'true');
+        localStorage.setItem('connect_logged_in', 'true');
+        localStorage.setItem('connect_last_auth_uid', uid);
+        localStorage.setItem('connect_user_profile', JSON.stringify(finalProfile));
+        localStorage.setItem('connect_user_session', JSON.stringify(finalProfile));
         localStorage.setItem('connect_current_page', 'home');
         window.history.replaceState({ page: 'home' }, '', getUrlForPage('home'));
         await saveUserProfile(uid, finalProfile);
@@ -791,6 +930,11 @@ export default function App() {
       isProfileComplete: false,
     });
     try {
+      localStorage.removeItem('connect_logged_in');
+      localStorage.removeItem('connect_last_auth_uid');
+      localStorage.removeItem('connect_user_session');
+      localStorage.removeItem('connect_user_profile');
+      localStorage.removeItem('connect_last_known_balance');
       localStorage.removeItem('connect_is_guest');
       localStorage.setItem('connect_current_page', 'login');
       window.history.replaceState({ page: 'login' }, '', getUrlForPage('login'));

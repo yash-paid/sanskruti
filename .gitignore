@@ -28,6 +28,7 @@ Desktop.ini
 # Backup files
 *.backup_*
 *.bak*
+*.zip
 
 # Raw / redundant video folders excluded
 connect/upload-videos-here/
