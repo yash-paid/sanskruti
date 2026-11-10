@@ -31,7 +31,7 @@ let customFirestoreInjected = false;
 let customAuthInjected = false;
 
 const initFirebaseAdmin = () => {
-  if (adminInitialized) {
+  if (adminInitialized && adminAuth) {
     return { adminApp, adminAuth, adminFirestore };
   }
 
@@ -40,49 +40,100 @@ const initFirebaseAdmin = () => {
     const { getAuth } = require('firebase-admin/auth');
     const { getFirestore } = require('firebase-admin/firestore');
 
-    if (getApps().length === 0) {
-      if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-        adminApp = initializeApp({
-          credential: cert(serviceAccount),
-          projectId: serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-        });
-      } else if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
-        adminApp = initializeApp({
-          credential: cert({
-            projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-          }),
-          projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-        });
+    if (!adminApp) {
+      if (getApps().length > 0) {
+        adminApp = getApps()[0];
       } else {
-        adminApp = initializeApp({
-          projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-        });
+        // Attempt 1: Safe parse of FIREBASE_SERVICE_ACCOUNT_KEY
+        let serviceAccount = null;
+        if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+          try {
+            let rawKey = String(process.env.FIREBASE_SERVICE_ACCOUNT_KEY).trim();
+            if (!rawKey.startsWith('{') && rawKey.length > 30) {
+              try {
+                const decoded = Buffer.from(rawKey, 'base64').toString('utf-8').trim();
+                if (decoded.startsWith('{')) rawKey = decoded;
+              } catch (_) {}
+            }
+            let parsed = JSON.parse(rawKey);
+            if (typeof parsed === 'string') {
+              try { parsed = JSON.parse(parsed); } catch (_) {}
+            }
+            if (parsed && typeof parsed === 'object') {
+              serviceAccount = parsed;
+            }
+          } catch (parseErr) {
+            console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY in connect-auth-phone:', parseErr.message);
+          }
+        }
+
+        if (serviceAccount) {
+          try {
+            adminApp = initializeApp({
+              credential: cert(serviceAccount),
+              projectId: serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
+            });
+          } catch (certErr) {
+            console.warn('cert(serviceAccount) failed in connect-auth-phone, falling back:', certErr.message);
+            adminApp = null;
+          }
+        }
+
+        // Attempt 2: Use FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL
+        if (!adminApp && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+          try {
+            const privateKey = String(process.env.FIREBASE_PRIVATE_KEY).replace(/\\n/g, '\n');
+            adminApp = initializeApp({
+              credential: cert({
+                projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
+                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                privateKey,
+              }),
+              projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
+            });
+          } catch (certErr2) {
+            console.warn('cert(privateKey) failed in connect-auth-phone, falling back:', certErr2.message);
+            adminApp = null;
+          }
+        }
+
+        // Attempt 3: Project-only initialization
+        if (!adminApp) {
+          try {
+            adminApp = initializeApp({
+              projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
+            });
+          } catch (defaultErr) {
+            if (getApps().length > 0) {
+              adminApp = getApps()[0];
+            } else {
+              console.warn('Default initializeApp failed in connect-auth-phone:', defaultErr.message);
+            }
+          }
+        }
       }
-      adminInitialized = true;
-    } else {
-      adminApp = getApps()[0];
-      adminInitialized = true;
     }
 
     if (adminApp) {
-      if (!customAuthInjected) {
+      if (!adminAuth && !customAuthInjected) {
         try {
           adminAuth = getAuth(adminApp);
         } catch (e) {
-          console.warn('getAuth warning:', e.message);
+          console.warn('getAuth(adminApp) warning in connect-auth-phone:', e.message);
+          try {
+            adminAuth = getAuth();
+          } catch (_) {}
         }
       }
-      if (!customFirestoreInjected) {
+      if (!adminFirestore && !customFirestoreInjected && hasServiceAccountCredentials) {
         try {
           adminFirestore = getFirestore(adminApp);
         } catch (e) {
-          console.warn('getFirestore warning:', e.message);
+          console.warn('getFirestore warning in connect-auth-phone:', e.message);
         }
       }
     }
+    adminInitialized = Boolean(adminApp && adminAuth);
   } catch (e) {
     console.warn('Firebase Admin init warning in connect-auth-phone:', e.message);
   }

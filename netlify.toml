@@ -1,5 +1,5 @@
 [build]
-  command = "npm --prefix connect install && npm --prefix connect run build"
+  command = "npm install && npm --prefix connect install && npm --prefix connect run build"
   publish = "."
   functions = "netlify/functions"
 

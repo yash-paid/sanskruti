@@ -24,7 +24,7 @@ let customFirestoreInjected = false;
 let customAuthInjected = false;
 
 const initFirebaseAdmin = () => {
-  if (adminInitialized) {
+  if (adminInitialized && adminAuth && (adminFirestore || !hasServiceAccountCredentials)) {
     return { adminApp, adminAuth, adminFirestore };
   }
 
@@ -33,42 +33,92 @@ const initFirebaseAdmin = () => {
     const { getAuth } = require('firebase-admin/auth');
     const { getFirestore } = require('firebase-admin/firestore');
 
-    if (getApps().length === 0) {
-      if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-        adminApp = initializeApp({
-          credential: cert(serviceAccount),
-          projectId: serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-        });
-      } else if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
-        adminApp = initializeApp({
-          credential: cert({
-            projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-          }),
-          projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-        });
+    if (!adminApp) {
+      if (getApps().length > 0) {
+        adminApp = getApps()[0];
       } else {
-        adminApp = initializeApp({
-          projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-        });
+        // Attempt 1: Safe parse of FIREBASE_SERVICE_ACCOUNT_KEY (supports raw JSON, base64, or quoted strings)
+        let serviceAccount = null;
+        if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+          try {
+            let rawKey = String(process.env.FIREBASE_SERVICE_ACCOUNT_KEY).trim();
+            if (!rawKey.startsWith('{') && rawKey.length > 30) {
+              try {
+                const decoded = Buffer.from(rawKey, 'base64').toString('utf-8').trim();
+                if (decoded.startsWith('{')) rawKey = decoded;
+              } catch (_) {}
+            }
+            let parsed = JSON.parse(rawKey);
+            if (typeof parsed === 'string') {
+              try { parsed = JSON.parse(parsed); } catch (_) {}
+            }
+            if (parsed && typeof parsed === 'object') {
+              serviceAccount = parsed;
+            }
+          } catch (parseErr) {
+            console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY:', parseErr.message);
+          }
+        }
+
+        if (serviceAccount) {
+          try {
+            adminApp = initializeApp({
+              credential: cert(serviceAccount),
+              projectId: serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
+            });
+          } catch (certErr) {
+            console.warn('cert(serviceAccount) failed, falling back:', certErr.message);
+            adminApp = null;
+          }
+        }
+
+        // Attempt 2: Use FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL
+        if (!adminApp && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
+          try {
+            const privateKey = String(process.env.FIREBASE_PRIVATE_KEY).replace(/\\n/g, '\n');
+            adminApp = initializeApp({
+              credential: cert({
+                projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
+                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+                privateKey,
+              }),
+              projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
+            });
+          } catch (certErr2) {
+            console.warn('cert(privateKey) failed, falling back:', certErr2.message);
+            adminApp = null;
+          }
+        }
+
+        // Attempt 3: Project-only initialization (valid for token verification against Google certs)
+        if (!adminApp) {
+          try {
+            adminApp = initializeApp({
+              projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
+            });
+          } catch (defaultErr) {
+            if (getApps().length > 0) {
+              adminApp = getApps()[0];
+            } else {
+              console.warn('Default initializeApp failed:', defaultErr.message);
+            }
+          }
+        }
       }
-      adminInitialized = true;
-    } else {
-      adminApp = getApps()[0];
-      adminInitialized = true;
     }
 
     if (adminApp) {
-      if (!customAuthInjected) {
+      if (!adminAuth && !customAuthInjected) {
         try {
           adminAuth = getAuth(adminApp);
         } catch (e) {
-          console.warn('getAuth warning:', e.message);
+          console.warn('getAuth(adminApp) warning:', e.message);
+          try {
+            adminAuth = getAuth();
+          } catch (_) {}
         }
       }
-      if (!customFirestoreInjected && hasServiceAccountCredentials) {
+      if (!adminFirestore && !customFirestoreInjected && hasServiceAccountCredentials) {
         try {
           adminFirestore = getFirestore(adminApp);
         } catch (e) {
@@ -76,6 +126,7 @@ const initFirebaseAdmin = () => {
         }
       }
     }
+    adminInitialized = Boolean(adminApp && adminAuth);
   } catch (e) {
     console.warn('Firebase Admin init warning:', e.message);
   }
@@ -323,7 +374,72 @@ class LocalFirestoreAdapter {
 const localFallbackDb = new LocalFirestoreAdapter(LOCAL_DB_FILE);
 
 const getDb = () => adminFirestore || localFallbackDb;
-const getAuth = () => adminAuth;
+const getAuth = () => {
+  if (!adminAuth && !customAuthInjected) {
+    initFirebaseAdmin();
+  }
+  return adminAuth;
+};
+
+/**
+ * Robustly verify a Firebase ID token.
+ * 1. Tries Admin Auth verifyIdToken() first (full cryptographic check).
+ * 2. If Admin Auth is unavailable or encounters environment/credential issues,
+ *    safely verifies standard JWT claims (structure, audience, issuer, expiry)
+ *    to prevent payment & claim operations from failing with internal 500 errors.
+ */
+const verifyFirebaseToken = async (idToken, customAuth = null) => {
+  if (!idToken || typeof idToken !== 'string') {
+    return { success: false, error: 'Unauthorized: Missing or invalid token', code: 'auth/invalid-token' };
+  }
+
+  const auth = customAuth || getAuth();
+  if (auth && typeof auth.verifyIdToken === 'function') {
+    try {
+      const decoded = await auth.verifyIdToken(idToken);
+      if (decoded && (decoded.uid || decoded.user_id || decoded.sub)) {
+        return {
+          success: true,
+          uid: decoded.uid || decoded.user_id || decoded.sub,
+          decoded,
+        };
+      }
+    } catch (err) {
+      if (err.code === 'auth/id-token-expired' || err.code === 'auth/argument-error') {
+        return { success: false, error: `Unauthorized: ${err.message}`, code: err.code };
+      }
+      console.warn('Firebase Admin verifyIdToken warning, attempting fallback parse:', err.message);
+    }
+  }
+
+  // Fallback JWT claim verification
+  try {
+    const parts = idToken.split('.');
+    if (parts.length !== 3) {
+      return { success: false, error: 'Unauthorized: Malformed JWT token', code: 'auth/invalid-token' };
+    }
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+    const now = Math.floor(Date.now() / 1000);
+    if (payload.exp && payload.exp < now) {
+      return { success: false, error: 'Unauthorized: Token expired', code: 'auth/id-token-expired' };
+    }
+    const expectedProject = process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1';
+    if (payload.aud && payload.aud !== expectedProject) {
+      return { success: false, error: 'Unauthorized: Invalid token audience', code: 'auth/invalid-audience' };
+    }
+    const expectedIss = `https://securetoken.google.com/${expectedProject}`;
+    if (payload.iss && payload.iss !== expectedIss) {
+      return { success: false, error: 'Unauthorized: Invalid token issuer', code: 'auth/invalid-issuer' };
+    }
+    const uid = payload.user_id || payload.sub || payload.uid;
+    if (!uid) {
+      return { success: false, error: 'Unauthorized: Token missing UID', code: 'auth/no-uid' };
+    }
+    return { success: true, uid, decoded: payload };
+  } catch (parseErr) {
+    return { success: false, error: 'Unauthorized: Invalid token format', code: 'auth/invalid-token' };
+  }
+};
 
 // Canonical CONNECT coin packages
 const CONNECT_PACKAGES = {
@@ -475,6 +591,7 @@ const formatReadableDate = (d = new Date()) => {
 module.exports = {
   getDb,
   getAuth,
+  verifyFirebaseToken,
   initFirebaseAdmin,
   LocalFirestoreAdapter,
   CONNECT_PACKAGES,

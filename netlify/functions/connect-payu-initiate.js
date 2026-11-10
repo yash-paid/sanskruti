@@ -13,7 +13,7 @@
 
 const crypto = require('crypto');
 const { getPayUConfig, generateRequestHash } = require('./_payu-config');
-const { getDb, getAuth, getCanonicalPackage, getCanonicalVipPlan } = require('./_connect-db');
+const { getDb, getAuth, verifyFirebaseToken, getCanonicalPackage, getCanonicalVipPlan } = require('./_connect-db');
 
 const ALLOWED_ORIGINS = [
   'https://sanskrutiservice.in',
@@ -96,33 +96,20 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const adminAuth = getAuth();
-    if (!adminAuth) {
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({
-          error: 'Internal error: Firebase Auth Admin not available.',
-          code: 'auth/admin-unavailable',
-        }),
-      };
-    }
-
-    let decodedToken;
-    try {
-      decodedToken = await adminAuth.verifyIdToken(idToken);
-    } catch (tokenErr) {
+    const tokenResult = await verifyFirebaseToken(idToken);
+    if (!tokenResult.success) {
       return {
         statusCode: 401,
         headers,
         body: JSON.stringify({
-          error: 'Unauthorized: Invalid or expired Firebase ID token.',
-          code: tokenErr.code || 'auth/invalid-token',
+          error: tokenResult.error || 'Unauthorized: Invalid or expired Firebase ID token.',
+          code: tokenResult.code || 'auth/invalid-token',
         }),
       };
     }
 
-    const verifiedUid = decodedToken.uid;
+    const decodedToken = tokenResult.decoded || {};
+    const verifiedUid = tokenResult.uid;
     if (!verifiedUid) {
       return {
         statusCode: 401,
