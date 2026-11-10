@@ -155,22 +155,6 @@ export default function VideoCallScreen({
   const callRate = isTopExpert ? 65 : (Number(expert?.price) || 30);
   const numericCoins = Number(coins) || 0;
 
-  // Strict Hard Guard: If user has 0 coins or less than callRate, call must never connect
-  useEffect(() => {
-    if (numericCoins < callRate) {
-      onToast?.(`⚠️ Insufficient coins! You need at least ${callRate} Coins to start a call.`);
-      if (onInsufficientCoins) {
-        onInsufficientCoins();
-      } else {
-        onEndCall?.(0);
-      }
-    }
-  }, [numericCoins, callRate]);
-
-  if (numericCoins < callRate) {
-    return null;
-  }
-
   const hasDeductedFirstMinuteRef = useRef(false);
   const coinsRef = useRef(numericCoins);
 
@@ -915,6 +899,50 @@ export default function VideoCallScreen({
               <span className="record-red-dot" />
               <span className="timer-text">{formatTime(callDuration)}</span>
             </div>
+
+            {/* Low Coin Warning Alert Banner - Prompts user to recharge without screen going black */}
+            {numericCoins < callRate && !isDemo && (
+              <div
+                className="call-low-balance-banner"
+                onClick={() => onOpenRecharge?.()}
+                style={{
+                  position: 'absolute',
+                  top: '64px',
+                  left: '12px',
+                  right: '12px',
+                  background: 'linear-gradient(90deg, rgba(255, 42, 141, 0.95), rgba(180, 20, 100, 0.95))',
+                  borderRadius: '14px',
+                  padding: '7px 12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  zIndex: 25,
+                  boxShadow: '0 4px 18px rgba(255, 42, 141, 0.55)',
+                  cursor: 'pointer',
+                  border: '1px solid rgba(255, 215, 0, 0.5)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fff', fontSize: '11.5px', fontWeight: 600 }}>
+                  <span style={{ fontSize: '14px' }}>⚠️</span>
+                  <span>Low Coins ({numericCoins}) • Need {callRate} for next min</span>
+                </div>
+                <button
+                  type="button"
+                  style={{
+                    background: 'linear-gradient(90deg, #ffd700, #ffae00)',
+                    color: '#1a0026',
+                    fontWeight: 800,
+                    fontSize: '11px',
+                    border: 'none',
+                    borderRadius: '9999px',
+                    padding: '3px 10px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  + Recharge
+                </button>
+              </div>
+            )}
 
             {/* Top Right: User Camera Preview (Picture-in-Picture) */}
             <div className="user-cam-pip" onClick={toggleCameraFlip} title="Tap to flip camera">
