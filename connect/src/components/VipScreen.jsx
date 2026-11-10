@@ -15,10 +15,11 @@ import {
   Heart,
   ArrowRight,
   Plus,
+  Lock,
 } from 'lucide-react';
 import heartLogoImg from '../../assets/images/heart-logo-transparent.png';
 import { useLanguage } from '../context/LanguageContext';
-import { getKolkataDateString } from '../firebase/rewardService';
+import { getKolkataDateString, getStoredVipEntitlement } from '../firebase/rewardService';
 import {
   fetchUserVipEntitlement,
   claimUserVipBonus,
@@ -50,7 +51,7 @@ const VIP_PLANS = [
     id: 'gold',
     name: 'Gold VIP',
     badge: '👑 Most Popular',
-    price: 399,
+    price: 299,
     days: 15,
     durationText: '15 Days',
     tagline: 'Best Selling VIP Experience',
@@ -71,7 +72,7 @@ const VIP_PLANS = [
     id: 'diamond',
     name: 'Diamond VIP',
     badge: '💎 Best Value',
-    price: 1,
+    price: 399,
     days: 30,
     durationText: '30 Days (1 Month)',
     tagline: 'Ultimate Elite Privilege & Max Benefits',
@@ -107,6 +108,7 @@ export default function VipScreen({
   coins = 0,
   uid,
   userProfile,
+  vipEntitlement: propVipEntitlement,
   onBack,
   onNavigateTab,
   onOpenWallet,
@@ -116,42 +118,87 @@ export default function VipScreen({
   onToast,
 }) {
   const { t } = useLanguage();
-  const [selectedPlanId, setSelectedPlanId] = useState('gold');
-  const [claimingVipBonus, setClaimingVipBonus] = useState(false);
-  const [vipBonusClaimedToday, setVipBonusClaimedToday] = useState(false);
+  const [activeVip, setActiveVip] = useState(() => {
+    return propVipEntitlement || getStoredVipEntitlement(uid);
+  });
+  const [isLoadingVip, setIsLoadingVip] = useState(false);
 
-  const [activeVip, setActiveVip] = useState(null);
-  const [isLoadingVip, setIsLoadingVip] = useState(true);
+  const isVipExpired = (vip) => {
+    if (!vip) return true;
+    if (!vip.active && vip.status !== 'active') return true;
+    if (vip.expiryDate) {
+      try {
+        const expDate = new Date(vip.expiryDate);
+        if (!isNaN(expDate.getTime()) && expDate < new Date()) {
+          return true;
+        }
+      } catch (e) {}
+    }
+    return false;
+  };
+
+  const isCurrentActivePlan = (planId) => {
+    if (!activeVip || isVipExpired(activeVip)) return false;
+    const currentId = String(activeVip.planId || '').toLowerCase();
+    const currentName = String(activeVip.planName || '').toLowerCase();
+    const targetId = String(planId || '').toLowerCase();
+    return currentId === targetId || currentName.includes(targetId);
+  };
+
+  const [selectedPlanId, setSelectedPlanId] = useState(() => {
+    const currentActive = propVipEntitlement || getStoredVipEntitlement(uid);
+    if (currentActive && (currentActive.active || currentActive.status === 'active')) {
+      return currentActive.planId || 'diamond';
+    }
+    return 'gold';
+  });
+
+  const [claimingVipBonus, setClaimingVipBonus] = useState(false);
+  const today = getKolkataDateString();
+  const [vipBonusClaimedToday, setVipBonusClaimedToday] = useState(() => {
+    try {
+      return localStorage.getItem(`connect_vip_claimed_${today}_${uid}`) === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+
+  useEffect(() => {
+    if (propVipEntitlement && propVipEntitlement.active) {
+      setActiveVip(propVipEntitlement);
+    }
+  }, [propVipEntitlement]);
 
   useEffect(() => {
     let isMounted = true;
+    const handleVipUpdate = (e) => {
+      if (e?.detail) setActiveVip(e.detail);
+      else if (uid) setActiveVip(getStoredVipEntitlement(uid));
+    };
+    window.addEventListener('connect_vip_updated', handleVipUpdate);
+
     if (uid) {
-      setIsLoadingVip(true);
       fetchUserVipEntitlement(uid)
         .then((res) => {
           if (isMounted) {
-            if (res?.entitlement && res.entitlement.active) {
-              setActiveVip(res.entitlement);
-            } else {
-              setActiveVip(null);
+            const serverEnt = res?.entitlement && res.entitlement.active ? res.entitlement : null;
+            const localEnt = getStoredVipEntitlement(uid);
+            setActiveVip(serverEnt || localEnt || null);
+            if (res?.vipBonusClaimedToday) {
+              setVipBonusClaimedToday(true);
             }
-            setVipBonusClaimedToday(Boolean(res?.vipBonusClaimedToday));
-            setIsLoadingVip(false);
           }
         })
-        .catch((err) => {
-          console.warn('Error fetching user VIP entitlement:', err);
-          if (isMounted) {
-            setActiveVip(null);
-            setIsLoadingVip(false);
+        .catch(() => {
+          if (isMounted && uid) {
+            setActiveVip(getStoredVipEntitlement(uid));
           }
         });
-    } else {
-      setActiveVip(null);
-      setIsLoadingVip(false);
     }
+
     return () => {
       isMounted = false;
+      window.removeEventListener('connect_vip_updated', handleVipUpdate);
     };
   }, [uid]);
 
@@ -159,12 +206,20 @@ export default function VipScreen({
 
   const handleSelectPlan = (plan) => {
     setSelectedPlanId(plan.id);
-    onToast?.(`Selected ${plan.name} (₹${plan.price} / ${plan.durationText})`);
+    if (isCurrentActivePlan(plan.id)) {
+      onToast?.(`🔒 ${plan.name} is already purchased & active till ${activeVip?.expiryDate || '30 Days'}`);
+    } else {
+      onToast?.(`Selected ${plan.name} (₹${plan.price} / ${plan.durationText})`);
+    }
   };
 
   const handleSubscribe = async () => {
     if (!uid) {
       onToast?.('Please log in to upgrade to VIP.');
+      return;
+    }
+    if (isCurrentActivePlan(selectedPlan.id)) {
+      onToast?.(`⚠️ You already have an active ${selectedPlan.name} membership valid till ${activeVip?.expiryDate}. It cannot be repurchased until expired.`);
       return;
     }
     if (onInitiateVipPayment) {
@@ -182,13 +237,15 @@ export default function VipScreen({
     try {
       const res = await claimUserVipBonus(uid);
       if (typeof res?.newBalance === 'number' && onRewardClaimed) {
-        // Server already added bonus coins to wallet. Sync new balance without calling onAddCoins!
         onRewardClaimed(res.bonusAmount, res.newBalance);
       } else if (typeof res?.newBalance !== 'number') {
         onAddCoins?.(res.bonusAmount);
       }
       setVipBonusClaimedToday(true);
-      onToast?.(`👑 Claimed ${activeVip.planName} Daily Bonus: +${res.bonusAmount} Coins!`);
+      try {
+        localStorage.setItem(`connect_vip_claimed_${today}_${uid}`, 'true');
+      } catch (e) {}
+      onToast?.(`👑 Claimed ${activeVip.planName} Daily Bonus: +${res.bonusAmount || 1200} Coins!`);
     } catch (serverErr) {
       if (serverErr.code === 'VIP_BONUS_ALREADY_CLAIMED_TODAY' || serverErr.message?.includes('already claimed')) {
         setVipBonusClaimedToday(true);
@@ -249,32 +306,55 @@ export default function VipScreen({
       {/* ── Scrollable Body ── */}
       <div className="vip-content">
         {/* ── 2. Hero Status Card ── */}
-        <div className={`vip-hero-card ${activeVip ? 'active-vip-hero' : ''}`}>
+        <div className={`vip-hero-card ${activeVip && (activeVip.active || activeVip.status === 'active') ? 'active-vip-hero' : ''}`}>
           <div className="vip-hero-sparkle" />
           <div className="vip-hero-crown-circle">
-            <Crown size={36} color="#FFD700" />
+            <Crown size={36} color={activeVip && (activeVip.active || activeVip.status === 'active') ? '#00e5ff' : '#FFD700'} />
           </div>
 
           <div className="vip-hero-meta">
-            <div className="vip-hero-badge-pill">
-              <Sparkles size={13} color="#FFD700" />
-              <span>{activeVip ? activeVip.planName : 'VIP PRIVILEGE CLUB'}</span>
+            <div
+              className="vip-hero-badge-pill"
+              style={
+                activeVip && (activeVip.active || activeVip.status === 'active')
+                  ? { background: '#00e5ff', color: '#05010a', fontWeight: 900 }
+                  : {}
+              }
+            >
+              <Sparkles size={13} color={activeVip && (activeVip.active || activeVip.status === 'active') ? '#05010a' : '#FFD700'} />
+              <span>
+                {activeVip && (activeVip.active || activeVip.status === 'active')
+                  ? `${activeVip.planName || 'Diamond VIP'} ACTIVATED`
+                  : 'VIP PRIVILEGE CLUB'}
+              </span>
             </div>
             <h1 className="vip-hero-title">
-              {activeVip ? 'Active VIP Membership' : t('vip_hero_title', 'Upgrade to CONNECT VIP')}
+              {activeVip && (activeVip.active || activeVip.status === 'active')
+                ? 'Active VIP Membership'
+                : t('vip_hero_title', 'Upgrade to CONNECT VIP')}
             </h1>
+
+            {activeVip && (activeVip.active || activeVip.status === 'active') && (
+              <div className="vip-active-till-banner">
+                <span style={{ fontSize: '14px' }}>🟢</span>
+                <span>
+                  Active till: <strong>{activeVip.expiryDate || '30 Days'}</strong>
+                </span>
+              </div>
+            )}
+
             <p className="vip-hero-desc">
-              {activeVip
+              {activeVip && (activeVip.active || activeVip.status === 'active')
                 ? `Valid until ${activeVip.expiryDate} • Priority Visibility & Bonus Coins Active`
                 : t('vip_hero_desc', 'Get highlighted call requests, 10% bonus coins, exclusive recharge deals & weekly VIP gifts.')}
             </p>
 
-            {activeVip && (
+            {activeVip && (activeVip.active || activeVip.status === 'active') && (
               <div className="vip-daily-bonus-action-row" style={{ marginTop: 12 }}>
                 {vipBonusClaimedToday ? (
                   <div className="vip-bonus-claimed-pill">
                     <Check size={14} color="#4ade80" />
-                    <span>Today's VIP Bonus (+{activeVip.dailyBonusCoins || 500} Coins) Claimed</span>
+                    <span>Today's VIP Bonus (+{activeVip.dailyBonusCoins || 1200} Coins) Claimed</span>
                   </div>
                 ) : (
                   <button
@@ -287,7 +367,7 @@ export default function VipScreen({
                     <span>
                       {claimingVipBonus
                         ? 'Claiming...'
-                        : `Collect VIP Daily Bonus (+${activeVip.dailyBonusCoins || 500} Coins)`}
+                        : `Collect VIP Daily Bonus (+${activeVip.dailyBonusCoins || 1200} Coins)`}
                     </span>
                   </button>
                 )}
@@ -305,32 +385,51 @@ export default function VipScreen({
         <div className="vip-plans-container">
           {VIP_PLANS.map((plan) => {
             const isSelected = selectedPlanId === plan.id;
+            const isPlanActive = isCurrentActivePlan(plan.id);
+
             return (
               <div
                 key={plan.id}
                 className={`vip-plan-card ${isSelected ? 'selected' : ''} ${
                   plan.isPopular ? 'popular-card' : ''
-                }`}
+                } ${isPlanActive ? 'plan-already-purchased-locked' : ''}`}
                 onClick={() => handleSelectPlan(plan)}
                 style={{
-                  '--accent': plan.accentColor,
-                  '--glow': plan.glowColor,
+                  '--accent': isPlanActive ? '#00e5ff' : plan.accentColor,
+                  '--glow': isPlanActive ? 'rgba(0, 229, 255, 0.45)' : plan.glowColor,
                 }}
               >
                 {/* Floating Top Badge */}
-                {plan.badge && (
+                {isPlanActive ? (
+                  <div className="vip-plan-floating-badge active-purchased-badge">
+                    🔒 ALREADY PURCHASED • ACTIVE TILL {activeVip.expiryDate || '30 Days'}
+                  </div>
+                ) : plan.badge ? (
                   <div className={`vip-plan-floating-badge ${plan.id}`}>
                     {plan.badge}
                   </div>
-                )}
+                ) : null}
 
                 <div className="vip-plan-head">
                   <div>
-                    <h3 className="vip-plan-name">{plan.name}</h3>
-                    <span className="vip-plan-tagline">{plan.tagline}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <h3 className="vip-plan-name">{plan.name}</h3>
+                      {isPlanActive && (
+                        <span className="vip-active-lock-pill">
+                          🔒 ACTIVE
+                        </span>
+                      )}
+                    </div>
+                    <span className="vip-plan-tagline">
+                      {isPlanActive ? `Valid & active till ${activeVip.expiryDate || '30 Days'}` : plan.tagline}
+                    </span>
                   </div>
                   <div className="vip-radio-circle">
-                    {isSelected && <div className="vip-radio-dot" />}
+                    {isPlanActive ? (
+                      <span style={{ fontSize: '12px' }}>🔒</span>
+                    ) : isSelected ? (
+                      <div className="vip-radio-dot" />
+                    ) : null}
                   </div>
                 </div>
 
@@ -340,6 +439,11 @@ export default function VipScreen({
                     <span className="vip-price-val">{plan.price}</span>
                   </div>
                   <span className="vip-duration-tag">/ {plan.durationText}</span>
+                  {isPlanActive && (
+                    <span className="vip-locked-tag">
+                      ✓ Current Active Plan
+                    </span>
+                  )}
                 </div>
 
                 <div className="vip-perks-list">
@@ -357,22 +461,54 @@ export default function VipScreen({
           })}
         </div>
 
-        {/* ── 4. Prominent Subscribe / Upgrade CTA Button ── */}
-        <div className="vip-cta-card">
-          <div className="vip-cta-info">
-            <span className="vip-cta-plan-name">{selectedPlan.name}</span>
-            <span className="vip-cta-plan-price">₹{selectedPlan.price} for {selectedPlan.durationText}</span>
+        {/* ── 4. Prominent Subscribe / Upgrade CTA Section ── */}
+        <div
+          className={`vip-cta-card ${isCurrentActivePlan(selectedPlan.id) ? 'locked-cta-card' : ''}`}
+          style={{
+            '--plan-accent': isCurrentActivePlan(selectedPlan.id) ? '#00e5ff' : selectedPlan.accentColor || '#ff2a8d',
+            '--plan-glow': isCurrentActivePlan(selectedPlan.id) ? 'rgba(0, 229, 255, 0.45)' : selectedPlan.glowColor || 'rgba(255, 42, 141, 0.4)',
+          }}
+        >
+          <div className="vip-cta-card-header">
+            <div className="vip-cta-header-left">
+              <span className="vip-cta-badge-pill">
+                {isCurrentActivePlan(selectedPlan.id) ? 'CURRENT ACTIVE PLAN' : selectedPlan.badge || 'SELECTED PLAN'}
+              </span>
+              <h3 className="vip-cta-plan-title">{selectedPlan.name}</h3>
+            </div>
+            <div className="vip-cta-header-right">
+              <div className="vip-cta-price-stack">
+                <span className="vip-cta-price-amount">₹{selectedPlan.price}</span>
+                <span className="vip-cta-price-sub">/ {selectedPlan.durationText}</span>
+              </div>
+            </div>
           </div>
-          <button
-            type="button"
-            className="vip-activate-btn"
-            onClick={handleSubscribe}
-          >
-            <span>Pay ₹{selectedPlan.price} • Activate VIP (PayU)</span>
-            <ArrowRight size={18} />
-          </button>
-          <div style={{ textAlign: 'center', fontSize: 11, color: '#c9b4d5', marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-            <span>🔒 100% Secure Checkout via PayU (UPI, Cards, NetBanking)</span>
+
+          <div className="vip-cta-action-wrap">
+            {isCurrentActivePlan(selectedPlan.id) ? (
+              <button
+                type="button"
+                className="vip-activate-btn locked-plan-btn"
+                disabled
+                title="This membership is already active and locked. It cannot be repurchased until it expires."
+              >
+                <Lock size={17} />
+                <span>Already Active • Valid till {activeVip.expiryDate}</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="vip-activate-btn action-glow-btn"
+                onClick={handleSubscribe}
+              >
+                <span>
+                  {activeVip && (activeVip.active || activeVip.status === 'active')
+                    ? `Upgrade to ${selectedPlan.name}`
+                    : `Get ${selectedPlan.name}`} • ₹{selectedPlan.price}
+                </span>
+                <ArrowRight size={18} />
+              </button>
+            )}
           </div>
         </div>
 

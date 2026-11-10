@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Check, Flame, Sparkles, Clock } from 'lucide-react';
-import { DAILY_REWARDS, claimDailyReward, getDailyRewardStatus } from '../firebase/rewardService';
+import { Calendar, Check, Flame, Sparkles, Clock, Crown } from 'lucide-react';
+import {
+  DAILY_REWARDS,
+  claimDailyReward,
+  getDailyRewardStatus,
+  getKolkataTimeRemainingToday,
+} from '../firebase/rewardService';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function ProfileDailyRewardCalendar({
@@ -65,82 +70,105 @@ export default function ProfileDailyRewardCalendar({
     }
   };
 
-  const currentStreak = rewardStatus?.currentStreak || 0;
+  const currentStreak = rewardStatus?.currentStreak || 1;
   const claimedToday = rewardStatus?.claimedToday || false;
   const activeDay = rewardStatus?.nextDayNumber || 1;
   const claimedDayNumber = currentStreak > 0 ? ((currentStreak - 1) % 7) + 1 : activeDay;
   const claimedCoins = DAILY_REWARDS.find((r) => r.day === claimedDayNumber)?.coins || 10;
+  const nextUnlockTime = rewardStatus?.timeUntilNextClaim || getKolkataTimeRemainingToday();
 
   return (
     <div className="profile-reward-calendar-card">
-      {/* Header */}
+      {/* ── Header Row ── */}
       <div className="profile-calendar-header">
         <div className="profile-calendar-title-wrap">
-          <Calendar size={18} color="#FFD700" />
-          <h3 className="profile-calendar-title">Daily Login Rewards</h3>
-          {claimedToday && (
-            <span className="profile-already-claimed-pill">
-              <Check size={11} strokeWidth={3} /> Already Claimed
-            </span>
-          )}
+          <Calendar size={22} color="#ffd700" className="profile-calendar-icon" />
+          <h3 className="profile-calendar-title">
+            Daily Login<br />Rewards
+          </h3>
         </div>
 
-        <div className="profile-calendar-streak-chip">
-          <Flame size={13} color="#ff2a8d" fill="#ff2a8d" />
-          <span>{currentStreak} Day Streak</span>
+        <div className="profile-calendar-header-pills">
+          {claimedToday ? (
+            <span className="profile-status-pill claimed">
+              <Check size={11} strokeWidth={3.5} /> ALREADY CLAIMED
+            </span>
+          ) : (
+            <button
+              type="button"
+              className="profile-status-pill claim-now"
+              onClick={handleCollect}
+              disabled={isClaiming || loading}
+            >
+              {isClaiming ? 'CLAIMING...' : 'CLAIM REWARD'}
+            </button>
+          )}
+
+          <div className="profile-streak-pill">
+            <Flame size={12} color="#fff" fill="#ff2a8d" />
+            <span>
+              {currentStreak} Day<br />Streak
+            </span>
+          </div>
         </div>
       </div>
 
+      {/* ── Subtitle ── */}
       <p className="profile-calendar-desc">
         Claim free coins every day. Complete all 7 days to earn bonus coins!
       </p>
 
-      {/* 7-Day Horizontal Scroll Strip */}
-      <div className="profile-calendar-strip">
+      {/* ── 7 Equal Day Cards Grid ── */}
+      <div className="profile-calendar-grid">
         {DAILY_REWARDS.map((item) => {
           const isCompleted = item.day < activeDay || (item.day === activeDay && claimedToday);
           const isToday = item.day === activeDay && !claimedToday;
-          const isBig = item.day === 7;
+          const isDay7 = item.day === 7;
 
           return (
             <div
               key={item.day}
-              className={`calendar-day-chip ${isCompleted ? 'completed' : ''} ${
+              className={`calendar-day-box ${isCompleted ? 'completed' : ''} ${
                 isToday ? 'active-today' : ''
-              } ${isBig ? 'big-chip' : ''}`}
+              } ${isDay7 ? 'day-7-crown' : ''}`}
+              onClick={isToday ? handleCollect : undefined}
             >
-              <div className="chip-day-label">D{item.day}</div>
-              <div className="chip-icon-box">
+              <div className="day-box-label">D{item.day}</div>
+              <div className="day-box-icon">
                 {isCompleted ? (
-                  <Check size={14} color="#4ade80" strokeWidth={3} />
+                  <Check size={15} color="#00e676" strokeWidth={3.5} />
+                ) : isDay7 ? (
+                  <Crown size={16} color="#ffd700" fill="#ffd700" />
                 ) : (
-                  <span>{isBig ? '👑' : '🪙'}</span>
+                  <span className="day-coin-stack">🪙</span>
                 )}
               </div>
-              <div className="chip-coin-val">+{item.coins}</div>
+              <div className="day-box-coins">+{item.coins}</div>
             </div>
           );
         })}
       </div>
 
-      {/* Collect Button & Next Info */}
+      {/* ── Bottom Status / Collect Box ── */}
       <div className="profile-calendar-bottom">
         {claimedToday ? (
-          <div className="profile-calendar-already-claimed-card">
-            <div className="already-claimed-top-row">
-              <div className="already-claimed-check-wrap">
-                <Check size={16} color="#4ade80" strokeWidth={3} />
+          <div className="profile-claimed-box">
+            <div className="claimed-box-top">
+              <div className="claimed-check-circle">
+                <Check size={14} color="#00e676" strokeWidth={3.5} />
               </div>
-              <div className="already-claimed-info">
-                <span className="already-claimed-title">Already Claimed Today ✅</span>
-                <span className="already-claimed-desc">
+              <div className="claimed-text-group">
+                <span className="claimed-title">Already Claimed Today ✔</span>
+                <span className="claimed-subtitle">
                   Day {claimedDayNumber} (+{claimedCoins} Coins) collected • Next reward tomorrow!
                 </span>
               </div>
             </div>
-            <div className="already-claimed-timer-bar">
-              <Clock size={12} color="#ffd700" />
-              <span>Next reward unlocks in <strong>{rewardStatus?.timeUntilNextClaim || 'a few hours'}</strong></span>
+            <div className="claimed-countdown-bar">
+              <Clock size={13} color="#ffd700" />
+              <span>
+                Next reward unlocks in <strong>{nextUnlockTime}</strong>
+              </span>
             </div>
           </div>
         ) : (
@@ -154,7 +182,7 @@ export default function ProfileDailyRewardCalendar({
             <span>
               {isClaiming
                 ? 'Collecting...'
-                : `Collect Day ${activeDay} (+${
+                : `Claim Day ${activeDay} Reward (+${
                     DAILY_REWARDS.find((r) => r.day === activeDay)?.coins || 10
                   } Coins)`}
             </span>
@@ -164,4 +192,3 @@ export default function ProfileDailyRewardCalendar({
     </div>
   );
 }
-

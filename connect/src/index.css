@@ -2650,20 +2650,48 @@ html, body {
   width: 0;
 }
 
-/* ── 1. User Hero Card ── */
+/* ── 1. User Hero Card (Matches Reference Image) ── */
 .profile-hero-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 16px;
-  background: linear-gradient(135deg, rgba(38, 8, 54, 0.9) 0%, rgba(18, 2, 28, 0.95) 100%);
-  border: 1.5px solid rgba(255, 65, 165, 0.4);
-  border-radius: 22px;
-  padding: 18px 16px;
-  margin-bottom: 16px;
+  background: linear-gradient(135deg, rgba(28, 4, 38, 0.95) 0%, rgba(13, 1, 20, 0.98) 100%);
+  border: 1.5px solid #ff2a8d;
+  border-radius: 24px;
+  padding: 16px;
+  margin-bottom: 14px;
   box-shadow: 
     0 8px 24px rgba(0, 0, 0, 0.6),
-    0 0 20px rgba(255, 42, 141, 0.2),
+    0 0 16px rgba(255, 42, 141, 0.25),
     inset 0 1px 1px rgba(255, 255, 255, 0.12);
+}
+
+.profile-vip-header-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 215, 0, 0.06);
+  border: 1.5px solid #ffd700;
+  border-radius: 9999px;
+  padding: 5px 12px;
+  color: #ffd700;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.25);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  z-index: 2;
+}
+
+.profile-vip-header-badge:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.45);
 }
 
 .profile-avatar-outer {
@@ -2675,8 +2703,8 @@ html, body {
   width: 82px;
   height: 82px;
   border-radius: 50%;
-  border: 2.5px solid var(--primary-pink);
-  box-shadow: 0 0 16px rgba(255, 42, 141, 0.45);
+  border: 2.5px solid #ff2a8d;
+  box-shadow: 0 0 14px rgba(255, 42, 141, 0.5);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -2696,7 +2724,7 @@ html, body {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ff2a8d, #ff5eb0);
+  background: #ff2a8d;
   border: 2px solid #14021d;
   display: flex;
   align-items: center;
@@ -2715,19 +2743,23 @@ html, body {
   flex-direction: column;
   gap: 4px;
   min-width: 0;
+  flex: 1;
+  padding-right: 84px; /* Space for top-right gold VIP badge */
 }
 
 .profile-name-row {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-wrap: wrap;
 }
 
 .profile-display-name {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 800;
   color: #fff;
   letter-spacing: 0.2px;
+  line-height: 1.2;
 }
 
 .verified-badge-icon {
@@ -2735,44 +2767,36 @@ html, body {
 }
 
 .profile-username-tag {
-  font-size: 12.5px;
+  font-size: 13px;
   color: #c9b4d5;
   font-weight: 500;
 }
 
-.profile-badge-row {
-  margin-top: 2px;
-  margin-bottom: 3px;
-}
-
-.premium-vip-pill {
-  display: inline-block;
-  background: linear-gradient(90deg, #993d00, #e8a000);
+.profile-dob-tag {
+  font-size: 13.5px;
   color: #ffffff;
-  font-size: 10.5px;
   font-weight: 700;
-  padding: 2px 10px;
-  border-radius: 9999px;
-  letter-spacing: 0.3px;
-  box-shadow: 0 2px 8px rgba(210, 130, 0, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
-/* User ID Chip */
 .profile-userid-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(30, 6, 42, 0.75);
-  border: 1px solid rgba(255, 65, 165, 0.3);
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 9999px;
   padding: 3px 10px;
   width: fit-content;
   cursor: pointer;
+  margin-top: 2px;
   transition: border-color 0.2s ease;
 }
 
 .profile-userid-chip:hover {
-  border-color: var(--primary-pink);
+  border-color: #ff2a8d;
 }
 
 .userid-label {
@@ -2799,38 +2823,252 @@ html, body {
 
 /* VIP Active User ID Chip & Badges */
 .profile-userid-chip.vip-active-chip {
-  background: linear-gradient(135deg, rgba(50, 18, 5, 0.9) 0%, rgba(30, 8, 40, 0.95) 100%);
+  background: rgba(0, 0, 0, 0.65);
   border: 1.5px solid #FFD700;
-  box-shadow: 0 0 16px rgba(255, 215, 0, 0.4);
+  box-shadow: 0 0 12px rgba(255, 215, 0, 0.35);
 }
 
 .userid-vip-tag {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-  color: #12011b;
+  background: #FFD700;
+  color: #0a0112;
   font-size: 9.5px;
-  font-weight: 800;
-  padding: 1px 6px;
+  font-weight: 900;
+  padding: 2px 7px;
   border-radius: 9999px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   text-transform: uppercase;
 }
 
-.profile-vip-crown-badge {
-  display: inline-flex;
+/* ── 2. Diamond VIP Card (Matches Reference Image) ── */
+.profile-vip-banner-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(3, 20, 44, 0.95) 0%, rgba(7, 2, 24, 0.98) 100%);
+  border: 1.5px solid #00e5ff;
+  border-radius: 24px;
+  padding: 16px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(0, 229, 255, 0.22);
+}
+
+.vip-ribbon-badge {
+  position: absolute;
+  top: 0;
+  right: 18px;
+  width: 34px;
+  height: 42px;
+  background: linear-gradient(180deg, #00c6ff 0%, #0072ff 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 82%, 50% 100%, 0 82%);
+  display: flex;
   align-items: center;
-  gap: 4px;
-  background: linear-gradient(135deg, rgba(255, 215, 0, 0.22) 0%, rgba(255, 165, 0, 0.3) 100%);
-  border: 1px solid rgba(255, 215, 0, 0.75);
-  padding: 2px 8px;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 114, 255, 0.5);
+  z-index: 2;
+}
+
+.vip-ribbon-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.vip-card-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vip-card-left {
+  flex: 0 0 44%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.vip-circle-crown {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00e5ff 0%, #0072ff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.55);
+  margin-bottom: 8px;
+}
+
+.vip-card-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.15;
+  margin: 0 0 6px 0;
+  white-space: pre-line;
+}
+
+.vip-status-pill {
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  padding: 3px 12px;
   border-radius: 9999px;
+  display: inline-block;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.vip-status-pill.activated {
+  background: #00e5ff;
+  color: #040814;
+}
+
+.vip-status-pill.upgrade {
+  background: linear-gradient(90deg, #00e5ff, #0072ff);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 229, 255, 0.4);
+}
+
+.vip-expiry-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 11.5px;
+  color: #a5f3fc;
+  line-height: 1.25;
+}
+
+.vip-expiry-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.vip-expiry-text span {
   font-size: 11px;
+  color: #a5f3fc;
+}
+
+.vip-expiry-text strong {
+  font-size: 12px;
+  color: #fff;
   font-weight: 700;
-  color: #FFD700;
-  margin-left: 6px;
-  box-shadow: 0 0 10px rgba(255, 215, 0, 0.35);
+}
+
+.vip-card-divider {
+  width: 1px;
+  background: rgba(0, 229, 255, 0.22);
+  align-self: stretch;
+  margin: 0 10px;
+}
+
+.vip-card-right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding-left: 2px;
+}
+
+.vip-benefits-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #ffd700;
+  font-size: 14.5px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.vip-benefits-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.vip-benefits-list li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #f0f9ff;
+  white-space: nowrap;
+}
+
+.vip-check-circle {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #00e676;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px rgba(0, 230, 118, 0.4);
+}
+
+.vip-claim-today-bar {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 229, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.vip-claim-today-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.vip-claim-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.vip-claim-sub {
+  font-size: 11px;
+  color: #a5f3fc;
+}
+
+.vip-collect-bonus-btn {
+  background: linear-gradient(90deg, #ffd700, #ffae00);
+  border: none;
+  color: #1a0026;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 3px 12px rgba(255, 215, 0, 0.45);
+  transition: transform 0.2s ease;
+}
+
+.vip-collect-bonus-btn:hover {
+  transform: scale(1.03);
+}
+
+.vip-claimed-badge {
+  background: rgba(74, 222, 128, 0.15);
+  border: 1px solid #4ade80;
+  color: #4ade80;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  white-space: nowrap;
 }
 
 .vip-badge-tag.active-gold {
@@ -4650,6 +4888,21 @@ html, body {
   line-height: 1.45;
 }
 
+.vip-active-till-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 229, 255, 0.15);
+  border: 1.5px solid #00e5ff;
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 13.5px;
+  font-weight: 800;
+  margin: 8px 0 10px 0;
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.35);
+}
+
 /* Plan Selector Cards */
 .vip-plans-header-row {
   display: flex;
@@ -4717,6 +4970,42 @@ html, body {
 .vip-plan-floating-badge.silver {
   background: linear-gradient(90deg, #c0c0c0, #909090);
   color: #0c0112;
+}
+
+.vip-plan-floating-badge.active-purchased-badge {
+  background: linear-gradient(90deg, #00e5ff 0%, #0072ff 100%) !important;
+  color: #05010a !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 10px rgba(0, 229, 255, 0.5);
+}
+
+.vip-plan-card.plan-already-purchased-locked {
+  border: 2px solid #00e5ff !important;
+  background: linear-gradient(135deg, rgba(0, 229, 255, 0.1) 0%, rgba(20, 4, 32, 0.96) 100%) !important;
+  box-shadow: 0 0 22px rgba(0, 229, 255, 0.4) !important;
+}
+
+.vip-active-lock-pill {
+  background: rgba(0, 229, 255, 0.2);
+  border: 1px solid #00e5ff;
+  color: #00e5ff;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  letter-spacing: 0.3px;
+}
+
+.vip-locked-tag {
+  background: rgba(74, 222, 128, 0.15);
+  border: 1px solid #4ade80;
+  color: #4ade80;
+  font-size: 10.5px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  margin-left: auto;
 }
 
 .vip-plan-head {
@@ -4824,52 +5113,121 @@ html, body {
 
 /* CTA Card */
 .vip-cta-card {
-  background: linear-gradient(135deg, rgba(38, 7, 52, 0.98) 0%, rgba(18, 2, 26, 0.98) 100%);
-  border: 1.5px solid var(--primary-pink);
-  border-radius: 20px;
-  padding: 16px;
+  background: linear-gradient(135deg, rgba(32, 6, 44, 0.98) 0%, rgba(14, 2, 22, 0.99) 100%);
+  border: 1.5px solid var(--plan-accent, #ff2a8d);
+  border-radius: 22px;
+  padding: 16px 18px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 25px var(--plan-glow, rgba(255, 42, 141, 0.35));
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.vip-cta-card.locked-cta-card {
+  border-color: #00e5ff !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 229, 255, 0.3) !important;
+}
+
+.vip-cta-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 42, 141, 0.35);
+  gap: 12px;
 }
 
-.vip-cta-info {
+.vip-cta-header-left {
   display: flex;
   flex-direction: column;
+  gap: 3px;
 }
 
-.vip-cta-plan-name {
-  font-size: 15px;
+.vip-cta-badge-pill {
+  font-size: 10px;
   font-weight: 800;
-  color: #fff;
+  letter-spacing: 0.5px;
+  color: var(--plan-accent, #ff2a8d);
+  text-transform: uppercase;
 }
 
-.vip-cta-plan-price {
-  font-size: 12px;
-  color: #FFD700;
+.vip-cta-plan-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+.vip-cta-header-right {
+  display: flex;
+  align-items: center;
+}
+
+.vip-cta-price-stack {
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+}
+
+.vip-cta-price-amount {
+  font-size: 24px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+
+.vip-cta-price-sub {
+  font-size: 11.5px;
   font-weight: 600;
+  color: #c9b4d5;
+}
+
+.vip-cta-action-wrap {
+  width: 100%;
 }
 
 .vip-activate-btn {
+  width: 100%;
   background: linear-gradient(90deg, #ff2a8d 0%, #ff5eb0 100%);
   border: none;
   border-radius: 9999px;
-  padding: 12px 22px;
+  padding: 13px 20px;
   color: #fff;
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 800;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 8px;
   cursor: pointer;
-  box-shadow: 0 4px 18px rgba(255, 42, 141, 0.6);
+  box-shadow: 0 4px 20px rgba(255, 42, 141, 0.6);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .vip-activate-btn:hover {
-  transform: scale(1.04);
-  box-shadow: 0 6px 24px rgba(255, 42, 141, 0.85);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 26px rgba(255, 42, 141, 0.85);
+}
+
+.vip-activate-btn.action-glow-btn {
+  background: linear-gradient(90deg, #ff2a8d 0%, #e0267d 60%, #a855f7 100%);
+  box-shadow: 0 4px 22px rgba(255, 42, 141, 0.65);
+}
+
+.vip-activate-btn.locked-plan-btn {
+  background: rgba(0, 229, 255, 0.1) !important;
+  border: 1.5px solid rgba(0, 229, 255, 0.5) !important;
+  color: #00e5ff !important;
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+  opacity: 0.95;
+}
+
+.vip-activate-btn.locked-plan-btn:hover {
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 /* Benefits Grid */
@@ -6508,22 +6866,24 @@ html, body {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   PART 2: PROFILE DAILY REWARD 7-DAY CALENDAR CARD
+   PART 2: PROFILE DAILY REWARD 7-DAY CALENDAR CARD (Matches Reference Image)
    ══════════════════════════════════════════════════════════════ */
 .profile-reward-calendar-card {
-  background: linear-gradient(135deg, rgba(34, 7, 48, 0.9) 0%, rgba(16, 2, 24, 0.95) 100%);
-  border: 1px solid rgba(255, 42, 141, 0.28);
-  border-radius: 20px;
-  padding: 16px 14px 14px 14px;
-  margin-bottom: 16px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), 0 0 12px rgba(255, 42, 141, 0.12);
+  background: linear-gradient(135deg, rgba(26, 4, 34, 0.95) 0%, rgba(12, 1, 18, 0.98) 100%);
+  border: 1.5px solid #ff2a8d;
+  border-radius: 24px;
+  padding: 16px;
+  margin-bottom: 14px;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.6),
+    0 0 16px rgba(255, 42, 141, 0.2);
 }
 
 .profile-calendar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 4px;
+  gap: 8px;
 }
 
 .profile-calendar-title-wrap {
@@ -6532,162 +6892,161 @@ html, body {
   gap: 8px;
 }
 
+.profile-calendar-icon {
+  flex-shrink: 0;
+}
+
 .profile-calendar-title {
-  font-size: 14.5px;
+  font-size: 17px;
   font-weight: 800;
   color: #ffffff;
+  line-height: 1.15;
   margin: 0;
 }
 
-.profile-calendar-streak-chip {
+.profile-calendar-header-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.profile-status-pill {
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 9999px;
   display: flex;
   align-items: center;
   gap: 4px;
-  background: rgba(255, 42, 141, 0.16);
-  border: 1px solid rgba(255, 42, 141, 0.4);
-  color: #ff5eb0;
-  font-size: 11px;
-  font-weight: 800;
-  padding: 2px 8px;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.profile-status-pill.claimed {
+  border: 1.5px solid #00e676;
+  color: #00e676;
+  background: rgba(0, 230, 118, 0.1);
+}
+
+.profile-status-pill.claim-now {
+  border: 1.5px solid #ff2a8d;
+  color: #fff;
+  background: linear-gradient(90deg, #ff2a8d, #a8117a);
+  cursor: pointer;
+}
+
+.profile-streak-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, rgba(255, 42, 141, 0.35), rgba(180, 20, 100, 0.45));
+  border: 1.5px solid #ff2a8d;
+  color: #fff;
   border-radius: 9999px;
+  padding: 4px 10px;
+  font-size: 9.5px;
+  font-weight: 800;
+  text-align: center;
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .profile-calendar-desc {
   font-size: 11.5px;
-  color: #a890b5;
-  margin: 0 0 12px 0;
+  color: #c9b4d5;
+  margin: 10px 0 14px 0;
   line-height: 1.4;
 }
 
-.profile-calendar-strip {
-  display: flex;
+.profile-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
   gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+  margin-bottom: 14px;
 }
 
-.profile-calendar-strip::-webkit-scrollbar {
-  display: none;
-}
-
-.calendar-day-chip {
-  flex: 1;
-  min-width: 44px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 12px;
-  padding: 8px 3px;
+.calendar-day-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 42, 141, 0.25);
+  border-radius: 12px;
+  padding: 8px 2px;
+  min-width: 0;
   transition: all 0.2s ease;
   user-select: none;
 }
 
-.calendar-day-chip.active-today {
-  border-color: #ff2a8d;
-  background: rgba(255, 42, 141, 0.2);
-  box-shadow: 0 0 12px rgba(255, 42, 141, 0.4);
-  transform: translateY(-2px);
+.calendar-day-box.completed {
+  border: 1.5px solid #00e676;
+  background: rgba(0, 230, 118, 0.08);
 }
 
-.calendar-day-chip.completed {
-  border-color: rgba(74, 222, 128, 0.4);
-  background: rgba(74, 222, 128, 0.1);
+.calendar-day-box.active-today {
+  border: 1.5px solid #ff2a8d;
+  background: rgba(255, 42, 141, 0.22);
+  box-shadow: 0 0 10px rgba(255, 42, 141, 0.45);
+  transform: translateY(-1px);
+  cursor: pointer;
 }
 
-.calendar-day-chip.big-chip {
-  background: rgba(255, 215, 0, 0.1);
-  border-color: rgba(255, 215, 0, 0.35);
+.calendar-day-box.day-7-crown {
+  border: 1.5px solid #ffd700;
+  background: rgba(255, 215, 0, 0.08);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.25);
 }
 
-.chip-day-label {
-  font-size: 9.5px;
+.day-box-label {
+  font-size: 10px;
   font-weight: 700;
-  color: #c9b4d5;
+  color: #fff;
+  margin-bottom: 4px;
 }
 
-.chip-icon-box {
+.day-box-icon {
   width: 22px;
   height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
 }
 
-.chip-coin-val {
+.day-coin-stack {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.day-box-coins {
   font-size: 11px;
   font-weight: 800;
   color: #ffd700;
+  margin-top: 4px;
 }
 
-.profile-calendar-bottom {
-  margin-top: 10px;
+.calendar-day-box.completed .day-box-coins {
+  color: #00e676;
 }
 
-.profile-calendar-collect-btn {
-  width: 100%;
-  height: 40px;
-  border-radius: 9999px;
-  background: linear-gradient(90deg, #ff2a8d 0%, #ff5eb0 100%);
-  border: none;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  box-shadow: 0 3px 14px rgba(255, 42, 141, 0.45);
-  transition: all 0.2s ease;
-}
-
-.profile-calendar-collect-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 18px rgba(255, 42, 141, 0.65);
-}
-
-.profile-already-claimed-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(74, 222, 128, 0.15);
-  border: 1px solid rgba(74, 222, 128, 0.4);
-  color: #4ade80;
-  font-size: 10.5px;
-  font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 9999px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.profile-calendar-already-claimed-card {
-  background: linear-gradient(135deg, rgba(74, 222, 128, 0.08) 0%, rgba(20, 4, 30, 0.6) 100%);
-  border: 1px solid rgba(74, 222, 128, 0.3);
+.profile-claimed-box {
+  background: rgba(0, 0, 0, 0.45);
+  border: 1.5px solid rgba(0, 230, 118, 0.5);
   border-radius: 16px;
-  padding: 10px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  padding: 12px 14px;
 }
 
-.already-claimed-top-row {
+.claimed-box-top {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.already-claimed-check-wrap {
-  width: 28px;
-  height: 28px;
+.claimed-check-circle {
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: rgba(74, 222, 128, 0.18);
+  background: rgba(74, 222, 128, 0.2);
   border: 1.5px solid #4ade80;
   display: flex;
   align-items: center;
@@ -6695,34 +7054,62 @@ html, body {
   flex-shrink: 0;
 }
 
-.already-claimed-info {
+.claimed-text-group {
   display: flex;
   flex-direction: column;
 }
 
-.already-claimed-title {
-  font-size: 13px;
+.claimed-title {
+  font-size: 14px;
   font-weight: 800;
   color: #4ade80;
-  line-height: 1.2;
 }
 
-.already-claimed-desc {
-  font-size: 11px;
+.claimed-subtitle {
+  font-size: 11.5px;
   color: #c9b4d5;
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
-.already-claimed-timer-bar {
+.claimed-countdown-bar {
+  background: rgba(255, 215, 0, 0.05);
+  border: 1px dashed rgba(255, 215, 0, 0.4);
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-top: 10px;
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  font-size: 12px;
   color: #ffd700;
-  background: rgba(0, 0, 0, 0.25);
-  padding: 5px 10px;
-  border-radius: 8px;
-  border: 1px dashed rgba(255, 215, 0, 0.3);
+}
+
+.claimed-countdown-bar strong {
+  color: #ffd700;
+  font-weight: 800;
+}
+
+.profile-calendar-collect-btn {
+  width: 100%;
+  height: 44px;
+  border-radius: 9999px;
+  background: linear-gradient(90deg, #ff2a8d 0%, #ff5eb0 100%);
+  border: none;
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(255, 42, 141, 0.5);
+  transition: all 0.2s ease;
+}
+
+.profile-calendar-collect-btn:hover:not(:disabled) {
+  transform: scale(1.02);
+  box-shadow: 0 6px 22px rgba(255, 42, 141, 0.7);
 }
 
 .daily-reward-already-claimed-btn {
@@ -7716,6 +8103,164 @@ html, body {
   from { opacity: 0.4; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1.15); }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   PROFILE PAGE RESPONSIVE MEDIA QUERIES (320px, 375px, 390px, 430px)
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 430px) {
+  .profile-screen {
+    padding-bottom: 84px;
+  }
+}
+
+@media (max-width: 390px) {
+  .profile-hero-card {
+    padding: 14px;
+    gap: 12px;
+  }
+  .profile-user-info {
+    padding-right: 76px;
+  }
+  .profile-display-name {
+    font-size: 17px;
+  }
+  .vip-card-title {
+    font-size: 17px;
+  }
+  .vip-benefits-header {
+    font-size: 13.5px;
+  }
+  .vip-benefits-list li {
+    font-size: 11px;
+    gap: 6px;
+  }
+  .profile-calendar-title {
+    font-size: 15.5px;
+  }
+  .day-box-label {
+    font-size: 9.5px;
+  }
+  .day-box-coins {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 375px) {
+  .profile-avatar-frame {
+    width: 74px;
+    height: 74px;
+  }
+  .profile-vip-header-badge {
+    padding: 4px 10px;
+    font-size: 10px;
+    top: 12px;
+    right: 12px;
+  }
+  .profile-user-info {
+    padding-right: 70px;
+  }
+  .profile-display-name {
+    font-size: 16px;
+  }
+  .vip-circle-crown {
+    width: 46px;
+    height: 46px;
+  }
+  .vip-circle-crown svg {
+    width: 24px;
+    height: 24px;
+  }
+  .vip-card-title {
+    font-size: 16px;
+  }
+  .vip-benefits-list li {
+    font-size: 10.5px;
+  }
+  .profile-calendar-grid {
+    gap: 4px;
+  }
+}
+
+@media (max-width: 340px) {
+  .profile-hero-card {
+    padding: 12px 10px;
+    gap: 10px;
+  }
+  .profile-avatar-frame {
+    width: 64px;
+    height: 64px;
+  }
+  .profile-camera-badge {
+    width: 22px;
+    height: 22px;
+  }
+  .profile-vip-header-badge {
+    top: 10px;
+    right: 8px;
+    padding: 3px 8px;
+    font-size: 9.5px;
+  }
+  .profile-user-info {
+    padding-right: 60px;
+  }
+  .profile-display-name {
+    font-size: 15px;
+  }
+  .profile-dob-tag {
+    font-size: 12px;
+  }
+  .profile-userid-chip {
+    padding: 2px 7px;
+    gap: 4px;
+  }
+  .userid-label {
+    font-size: 10px;
+  }
+  .userid-value {
+    font-size: 10px;
+  }
+  .vip-card-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .vip-card-divider {
+    display: none;
+  }
+  .vip-card-left {
+    flex: auto;
+    width: 100%;
+  }
+  .vip-card-right {
+    width: 100%;
+    padding-left: 0;
+  }
+  .profile-calendar-grid {
+    gap: 3px;
+  }
+  .calendar-day-box {
+    padding: 6px 1px;
+    border-radius: 8px;
+  }
+  .day-box-label {
+    font-size: 9px;
+  }
+  .day-box-coins {
+    font-size: 9.5px;
+  }
+  .profile-calendar-title {
+    font-size: 14px;
+  }
+  .profile-status-pill {
+    font-size: 8.5px;
+    padding: 3px 6px;
+  }
+  .profile-streak-pill {
+    font-size: 8.5px;
+    padding: 3px 6px;
+  }
+}
+
 
 
 
