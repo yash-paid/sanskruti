@@ -304,6 +304,9 @@ export default function HomeScreen({
   const showTransactionsRef = useRef(showTransactions);
   showTransactionsRef.current = showTransactions;
 
+  const activeNavRef = useRef(activeNav);
+  activeNavRef.current = activeNav;
+
   const demoTimerRef = useRef(null);
 
   // Featured Demo Callers: Uma (video 2.mp4) & Simran (video 1.mp4)
@@ -336,49 +339,70 @@ export default function HomeScreen({
     try {
       const key = `connect_demo_session_${uid || 'guest'}`;
       const saved = sessionStorage.getItem(key);
-      if (!saved) return { callCount: 0, lastEndedAt: null };
+      if (!saved) {
+        const initial = { callCount: 0, enteredAt: Date.now(), lastEndedAt: null };
+        sessionStorage.setItem(key, JSON.stringify(initial));
+        return initial;
+      }
       const parsed = JSON.parse(saved);
       return {
         callCount: Number(parsed.callCount) || 0,
+        enteredAt: parsed.enteredAt ? Number(parsed.enteredAt) : Date.now(),
         lastEndedAt: parsed.lastEndedAt ? Number(parsed.lastEndedAt) : null,
       };
     } catch (e) {
-      return { callCount: 0, lastEndedAt: null };
+      return { callCount: 0, enteredAt: Date.now(), lastEndedAt: null };
     }
   };
 
-  const saveDemoSession = (callCount, lastEndedAt) => {
+  const saveDemoSession = (callCount, lastEndedAt, enteredAt) => {
     try {
       const key = `connect_demo_session_${uid || 'guest'}`;
-      sessionStorage.setItem(key, JSON.stringify({ callCount, lastEndedAt }));
+      const prev = getDemoSession();
+      sessionStorage.setItem(
+        key,
+        JSON.stringify({
+          callCount,
+          enteredAt: enteredAt || prev.enteredAt || Date.now(),
+          lastEndedAt,
+        })
+      );
     } catch (e) {}
   };
 
-  const scheduleNextDemo = (count, lastEnd) => {
+  const scheduleNextDemo = (count, lastEnd, entered) => {
     if (demoTimerRef.current) clearTimeout(demoTimerRef.current);
     if (count >= 3) return; // Strict maximum: 3 demo calls per session
 
-    let delayMs = 10000; // First call: 10s after entering Home
-    if (count === 1) {
-      // Second call: 2 minutes (120,000 ms) after first demo call ends
+    let delayMs = 60000; // 1st call: 1 minute (60,000 ms) after entering Home
+    if (count === 0) {
+      const entry = entered || Date.now();
+      const elapsed = Date.now() - entry;
+      delayMs = Math.max(0, 60000 - elapsed);
+    } else if (count === 1) {
+      // 2nd call: 2 minutes (120,000 ms) after first demo call ends
       const elapsed = lastEnd ? Date.now() - lastEnd : 120000;
-      delayMs = Math.max(3000, 120000 - elapsed);
+      delayMs = Math.max(0, 120000 - elapsed);
     } else if (count === 2) {
-      // Third call: 5 minutes (300,000 ms) after second demo call ends
+      // 3rd call: 5 minutes (300,000 ms) after second demo call ends
       const elapsed = lastEnd ? Date.now() - lastEnd : 300000;
-      delayMs = Math.max(3000, 300000 - elapsed);
+      delayMs = Math.max(0, 300000 - elapsed);
     }
 
     demoTimerRef.current = setTimeout(() => {
-      // Guard: Do not pop up over active real video call or modals
+      // Strict Guard: ONLY trigger when user is specifically on the CALL screen ('call') of Home screen
+      // AND not busy on an active video call or modal
       if (
+        activeNavRef.current !== 'call' ||
         callingExpertRef.current ||
         insufficientModalRef.current ||
         showDailyRewardRef.current ||
         showTransactionsRef.current
       ) {
-        // Retry in 5 seconds
-        scheduleNextDemo(count, lastEnd);
+        // Retry in 3 seconds if user is temporarily on Stars or Profile tab or busy
+        demoTimerRef.current = setTimeout(() => {
+          scheduleNextDemo(count, lastEnd, entered);
+        }, 3000);
         return;
       }
       const chosen = DEMO_CALLERS[Math.floor(Math.random() * DEMO_CALLERS.length)];
@@ -390,21 +414,32 @@ export default function HomeScreen({
   useEffect(() => {
     const session = getDemoSession();
     if (session.callCount < 3) {
-      scheduleNextDemo(session.callCount, session.lastEndedAt);
+      scheduleNextDemo(session.callCount, session.lastEndedAt, session.enteredAt);
     }
     return () => {
       if (demoTimerRef.current) clearTimeout(demoTimerRef.current);
     };
   }, [uid]);
 
+  // When activeNav changes, update ref and immediately re-evaluate demo call if user switched to 'call'
+  useEffect(() => {
+    activeNavRef.current = activeNav;
+    if (activeNav === 'call') {
+      const session = getDemoSession();
+      if (session.callCount < 3 && !callingExpertRef.current && !incomingDemoCall && !activeDemoCall) {
+        scheduleNextDemo(session.callCount, session.lastEndedAt, session.enteredAt);
+      }
+    }
+  }, [activeNav]);
+
   const handleDeclineDemo = () => {
     setIncomingDemoCall(null);
     const session = getDemoSession();
     const nextCount = session.callCount + 1;
     const now = Date.now();
-    saveDemoSession(nextCount, now);
+    saveDemoSession(nextCount, now, session.enteredAt);
     if (nextCount < 3) {
-      scheduleNextDemo(nextCount, now);
+      scheduleNextDemo(nextCount, now, session.enteredAt);
     }
   };
 
@@ -419,7 +454,7 @@ export default function HomeScreen({
     const session = getDemoSession();
     const nextCount = session.callCount + 1;
     const now = Date.now();
-    saveDemoSession(nextCount, now);
+    saveDemoSession(nextCount, now, session.enteredAt);
     // Show post-call wallet & recharge / call-back modal
     setDemoPostCall(caller);
   };
@@ -428,7 +463,7 @@ export default function HomeScreen({
     setDemoPostCall(null);
     const session = getDemoSession();
     if (session.callCount < 3) {
-      scheduleNextDemo(session.callCount, session.lastEndedAt);
+      scheduleNextDemo(session.callCount, session.lastEndedAt, session.enteredAt);
     }
   };
 
