@@ -153,8 +153,26 @@ export default function VideoCallScreen({
   // Per-minute coin rate (65 Coins/min for Uma & Simran, 30 Coins/min for all others)
   const isTopExpert = expert?.id === 'simran' || expert?.id === 'uma' || expert?.top;
   const callRate = isTopExpert ? 65 : (Number(expert?.price) || 30);
+  const numericCoins = Number(coins) || 0;
+
+  // Strict Hard Guard: If user has 0 coins or less than callRate, call must never connect
+  useEffect(() => {
+    if (numericCoins < callRate) {
+      onToast?.(`⚠️ Insufficient coins! You need at least ${callRate} Coins to start a call.`);
+      if (onInsufficientCoins) {
+        onInsufficientCoins();
+      } else {
+        onEndCall?.(0);
+      }
+    }
+  }, [numericCoins, callRate]);
+
+  if (numericCoins < callRate) {
+    return null;
+  }
+
   const hasDeductedFirstMinuteRef = useRef(false);
-  const coinsRef = useRef(Number(coins) || 0);
+  const coinsRef = useRef(numericCoins);
 
   useEffect(() => {
     coinsRef.current = Number(coins) || 0;

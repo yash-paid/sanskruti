@@ -446,6 +446,19 @@ export default function HomeScreen({
   const handleAcceptDemo = () => {
     const caller = incomingDemoCall;
     setIncomingDemoCall(null);
+    if (!caller) return;
+
+    // Strict Coin Check: Never allow call to start if user has 0 coins or less than required call rate
+    const isTop = caller?.id === 'simran' || caller?.id === 'uma' || caller?.top;
+    const callRate = isTop ? 65 : (Number(caller?.price) || 30);
+    const userCoins = Number(coins) || 0;
+    if (userCoins < callRate) {
+      setPendingCallExpert(caller);
+      setInsufficientModal(true);
+      onToast?.(`⚠️ You need at least ${callRate} Coins to attend call from ${caller?.name || 'Expert'}. Balance: ${userCoins}`);
+      return;
+    }
+
     setActiveDemoCall(caller);
   };
 
@@ -495,10 +508,19 @@ export default function HomeScreen({
   // Auto-launch call if returned from verified payment recharge
   useEffect(() => {
     if (initialCallingExpert) {
-      setCallingExpert(initialCallingExpert);
+      const isTop = initialCallingExpert?.id === 'simran' || initialCallingExpert?.id === 'uma' || initialCallingExpert?.top;
+      const callRate = isTop ? 65 : (Number(initialCallingExpert?.price) || 30);
+      const userCoins = Number(coins) || 0;
+      if (userCoins >= callRate) {
+        setCallingExpert(initialCallingExpert);
+      } else {
+        setPendingCallExpert(initialCallingExpert);
+        setInsufficientModal(true);
+        onToast?.(`⚠️ You need at least ${callRate} Coins to start call with ${initialCallingExpert?.name || 'Expert'}. Balance: ${userCoins}`);
+      }
       onClearAutoStartExpert?.();
     }
-  }, [initialCallingExpert, onClearAutoStartExpert]);
+  }, [initialCallingExpert, coins, onClearAutoStartExpert]);
 
   // Intercept call: verify guest status and coin balance
   const handleCall = (expert) => {
@@ -512,6 +534,7 @@ export default function HomeScreen({
     if (userCoins < callRate) {
       setPendingCallExpert(expert);
       setInsufficientModal(true);
+      onToast?.(`⚠️ You need at least ${callRate} Coins to start call with ${expert?.name || 'Expert'}. Balance: ${userCoins}`);
       return;
     }
     setCallingExpert(expert);
