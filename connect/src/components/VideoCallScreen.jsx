@@ -1044,22 +1044,6 @@ export default function VideoCallScreen({
                     <span className="gift-modal-title">{t('send_gift_to', 'Send a Gift to')} {expert.name}</span>
                     <div className="gift-balance-row">
                       <span className="gift-balance-sub">🪙 {t('your_balance_label', 'Your Balance:')} <strong>{coins} {t('coins', 'Coins')}</strong></span>
-                      {/* Local Test Coin Button */}
-                      <button
-                        type="button"
-                        className="gift-test-coin-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (onAddCoins) {
-                            onAddCoins(100);
-                          } else {
-                            onToast?.('Added 100 Coins for testing!');
-                          }
-                        }}
-                        title="Add 100 Coins for testing"
-                      >
-                        +100 🪙 Test
-                      </button>
                     </div>
                   </div>
                   <button
