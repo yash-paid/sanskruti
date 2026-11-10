@@ -29,6 +29,8 @@ import {
   fetchUserWallet,
   transactUserCoins,
   recordUserCall,
+  fetchUserVipEntitlement,
+  activateUserVip,
 } from './firebase/userService';
 
 const VALID_PAGES = ['login', 'setup-profile', 'home', 'wallet', 'profile', 'vip'];
@@ -136,9 +138,20 @@ export default function App() {
           }
         })
         .catch((err) => console.warn('fetchUserProfile error:', err));
+
+      fetchUserVipEntitlement(currentUid)
+        .then((res) => {
+          if (isMounted && res?.entitlement && res.entitlement.active) {
+            setVipEntitlement(res.entitlement);
+          } else if (isMounted) {
+            setVipEntitlement(null);
+          }
+        })
+        .catch((err) => console.warn('fetchUserVipEntitlement error:', err));
     } else {
       setCoins(0);
       coinsRef.current = 0;
+      setVipEntitlement(null);
     }
     return () => {
       isMounted = false;
@@ -177,6 +190,7 @@ export default function App() {
   };
 
   const [toastMessage, setToastMessage] = useState('');
+  const [vipEntitlement, setVipEntitlement] = useState(null);
 
   // Guest user status (Guests can browse but cannot call or buy coins without logging in)
   const [isGuest, setIsGuest] = useState(() => {
@@ -306,6 +320,15 @@ export default function App() {
       coinsRef.current = serverCoins;
 
       const serverProfile = await fetchUserProfile(uid);
+      try {
+        const vipRes = await fetchUserVipEntitlement(uid);
+        if (vipRes?.entitlement && vipRes.entitlement.active) {
+          setVipEntitlement(vipRes.entitlement);
+        } else {
+          setVipEntitlement(null);
+        }
+      } catch (err) {}
+
       if (serverProfile) {
         setUserProfile(serverProfile);
         if (!serverProfile.isProfileComplete) {
@@ -637,28 +660,68 @@ export default function App() {
               const data = await res.json();
               if (data.success && data.verified) {
                 const item = (data.items && data.items[0]) || {};
-                const COIN_MAP = {
-                  'connect-pack-19': 50,
-                  'connect-pack-49': 160,
-                  'connect-pack-99': 440,
-                  'connect-pack-149': 880,
-                  'connect-pack-199': 1250,
-                };
-                const coinsToAdd = COIN_MAP[item.id] || 440;
-                if (item.id) {
-                  markPackAsPurchased(item.id);
-                }
-                handleAddCoins(coinsToAdd);
-                showToast(`🎉 Verified payment! Added ${coinsToAdd} Coins.`);
+                const itemId = String(item.id || '');
+                const isVipPurchase = itemId.includes('vip') || itemId.startsWith('connect-vip-');
 
-                try {
-                  const pendingExpert = localStorage.getItem('connect_pending_call_expert');
-                  if (pendingExpert) {
-                    const expertObj = JSON.parse(pendingExpert);
-                    setAutoStartExpert(expertObj);
-                    localStorage.removeItem('connect_pending_call_expert');
+                if (isVipPurchase) {
+                  let planId = item.planId;
+                  if (!planId) {
+                    if (itemId.includes('diamond')) planId = 'diamond';
+                    else if (itemId.includes('gold')) planId = 'gold';
+                    else if (itemId.includes('silver')) planId = 'silver';
+                    else planId = 'gold';
                   }
-                } catch (e) {}
+
+                  const activeUid = currentUid || localStorage.getItem('connect_last_auth_uid') || '';
+                  if (activeUid) {
+                    try {
+                      const res = await activateUserVip(activeUid, planId);
+                      setVipEntitlement(res.entitlement);
+                      setUserProfile((prev) => ({
+                        ...prev,
+                        isVip: true,
+                        vipPlan: res.entitlement?.planName || 'VIP Member',
+                        vipExpiry: res.entitlement?.expiryDate,
+                      }));
+                      try {
+                        localStorage.setItem(`connect_vip_active_${activeUid}`, 'true');
+                      } catch (e) {}
+                      showToast(`👑 Payment Verified! You are now an active ${res.entitlement?.planName || 'VIP'} Member! 🎉`);
+                      goToPage('profile');
+                    } catch (vipErr) {
+                      console.warn('VIP activation error after payment:', vipErr);
+                      showToast('👑 Payment Verified! VIP Membership is now active.');
+                      goToPage('profile');
+                    }
+                  } else {
+                    showToast('👑 Payment Verified! VIP Membership purchased successfully.');
+                    goToPage('profile');
+                  }
+                } else {
+                  // Coin Pack Recharge
+                  const COIN_MAP = {
+                    'connect-pack-19': 50,
+                    'connect-pack-49': 160,
+                    'connect-pack-99': 440,
+                    'connect-pack-149': 880,
+                    'connect-pack-199': 1250,
+                  };
+                  const coinsToAdd = COIN_MAP[item.id] || 440;
+                  if (item.id) {
+                    markPackAsPurchased(item.id);
+                  }
+                  handleAddCoins(coinsToAdd);
+                  showToast(`🎉 Verified payment! Added ${coinsToAdd} Coins.`);
+
+                  try {
+                    const pendingExpert = localStorage.getItem('connect_pending_call_expert');
+                    if (pendingExpert) {
+                      const expertObj = JSON.parse(pendingExpert);
+                      setAutoStartExpert(expertObj);
+                      localStorage.removeItem('connect_pending_call_expert');
+                    }
+                  } catch (e) {}
+                }
               } else {
                 showToast(data.error || 'Payment verification failed server-side.');
               }
@@ -747,6 +810,95 @@ export default function App() {
     showToast('Redirecting to 100% Secure PayU Checkout...');
 
     // Build and submit hidden POST form to PayU Hosted Checkout endpoint
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = data.actionUrl;
+    form.style.display = 'none';
+
+    for (const [key, val] of Object.entries(data.params || {})) {
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = key;
+      hiddenInput.value = val;
+      form.appendChild(hiddenInput);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+  };
+
+  // ── Initiate PayU Checkout for VIP Membership ──
+  const handleInitiateVipPayment = async (plan) => {
+    if (!currentUid) {
+      showToast('Please log in first to purchase VIP membership.');
+      return;
+    }
+
+    const payload = {
+      itemType: 'connect',
+      itemId: `connect-vip-${plan.id}`,
+      name: userProfile?.name || 'CONNECT VIP User',
+      phone: (userProfile?.phone || '9876543210').replace(/[^0-9]/g, '').slice(-10),
+      email: `${(userProfile?.username || 'user').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'user'}@connect.local`,
+      source: 'connect-web',
+    };
+
+    let response;
+    try {
+      response = await fetch('/.netlify/functions/payu-initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (response.status === 404) {
+        response = await fetch('/api/payu-initiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+      }
+    } catch (netErr) {
+      // Local dev server fallback when Netlify Functions backend is offline
+      const res = await activateUserVip(currentUid, plan.id);
+      setVipEntitlement(res.entitlement);
+      setUserProfile((prev) => ({
+        ...prev,
+        isVip: true,
+        vipPlan: res.entitlement?.planName || 'VIP Member',
+        vipExpiry: res.entitlement?.expiryDate,
+      }));
+      showToast(`🎉 Preview Mode: Activated ${plan.name} for testing!`);
+      return;
+    }
+
+    if (!response || response.status === 404) {
+      const res = await activateUserVip(currentUid, plan.id);
+      setVipEntitlement(res.entitlement);
+      setUserProfile((prev) => ({
+        ...prev,
+        isVip: true,
+        vipPlan: res.entitlement?.planName || 'VIP Member',
+        vipExpiry: res.entitlement?.expiryDate,
+      }));
+      showToast(`🎉 Preview Mode: Activated ${plan.name} for testing!`);
+      return;
+    }
+
+    const contentType = response?.headers?.get('content-type') || '';
+    let data;
+    if (contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      const rawText = await response.text();
+      throw new Error(`Server returned status ${response?.status} (${rawText.slice(0, 100)})`);
+    }
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.error || 'Failed to initiate PayU payment.');
+    }
+
+    showToast(`Redirecting to 100% Secure PayU Checkout for ${plan.name}...`);
+
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = data.actionUrl;
@@ -901,6 +1053,8 @@ export default function App() {
           <VipScreen
             coins={coins}
             uid={currentUid}
+            userProfile={userProfile}
+            onInitiateVipPayment={handleInitiateVipPayment}
             onAddCoins={handleAddCoins}
             onBack={() => goToPage('profile')}
             onNavigateTab={(tab) => {
@@ -934,6 +1088,7 @@ export default function App() {
         <HomeScreen
           coins={coins}
           userProfile={userProfile}
+          vipEntitlement={vipEntitlement}
           uid={currentUid}
           isGuest={isGuest}
           initialTab={initialHomeTab}
@@ -943,6 +1098,7 @@ export default function App() {
           onAddCoins={handleAddCoins}
           onDeductCoins={handleDeductCoins}
           onOpenWallet={() => goToPage('wallet')}
+          onOpenVip={() => goToPage('vip')}
           onOpenProfile={() => goToPage('profile')}
           onInitiateRecharge={handleInitiateRecharge}
           onRequireLogin={handleRequireLogin}

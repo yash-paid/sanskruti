@@ -179,7 +179,15 @@ const SERVICES = {
   'connect-pack-49':   { id: 'connect-pack-49',   title: 'CONNECT 160 Coins Pack',                   price: 49,   coins: 160,    category: 'connect' },
   'connect-pack-99':   { id: 'connect-pack-99',   title: 'CONNECT 400 Coins Pack (+40 Bonus Coins)', price: 99,   coins: 440,    category: 'connect' },
   'connect-pack-149':  { id: 'connect-pack-149',  title: 'CONNECT 880 Coins Pack (+90 Bonus Coins)', price: 149,  coins: 880,    category: 'connect' },
-  'connect-pack-199':  { id: 'connect-pack-199',  title: 'CONNECT 1250 Coins Pack (+250 Bonus)',     price: 199,  coins: 1250,   category: 'connect' }
+  'connect-pack-199':  { id: 'connect-pack-199',  title: 'CONNECT 1250 Coins Pack (+250 Bonus)',     price: 199,  coins: 1250,   category: 'connect' },
+
+  // CONNECT VIP Membership Plans (/connect/)
+  'connect-vip-silver':  { id: 'connect-vip-silver',  title: 'CONNECT Silver VIP (7 Days)',   price: 199, planId: 'silver',  days: 7,  dailyBonusCoins: 200,  category: 'connect' },
+  'connect-vip-gold':    { id: 'connect-vip-gold',    title: 'CONNECT Gold VIP (15 Days)',    price: 399, planId: 'gold',    days: 15, dailyBonusCoins: 500,  category: 'connect' },
+  'connect-vip-diamond': { id: 'connect-vip-diamond', title: 'CONNECT Diamond VIP (30 Days)', price: 799, planId: 'diamond', days: 30, dailyBonusCoins: 1200, category: 'connect' },
+  'vip-silver':          { id: 'connect-vip-silver',  title: 'CONNECT Silver VIP (7 Days)',   price: 199, planId: 'silver',  days: 7,  dailyBonusCoins: 200,  category: 'connect' },
+  'vip-gold':            { id: 'connect-vip-gold',    title: 'CONNECT Gold VIP (15 Days)',    price: 399, planId: 'gold',    days: 15, dailyBonusCoins: 500,  category: 'connect' },
+  'vip-diamond':         { id: 'connect-vip-diamond', title: 'CONNECT Diamond VIP (30 Days)', price: 799, planId: 'diamond', days: 30, dailyBonusCoins: 1200, category: 'connect' }
 };
 
 /**

@@ -2710,6 +2710,69 @@ html, body {
   padding: 0;
 }
 
+/* VIP Active User ID Chip & Badges */
+.profile-userid-chip.vip-active-chip {
+  background: linear-gradient(135deg, rgba(50, 18, 5, 0.9) 0%, rgba(30, 8, 40, 0.95) 100%);
+  border: 1.5px solid #FFD700;
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.4);
+}
+
+.userid-vip-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  color: #12011b;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.profile-vip-crown-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.22) 0%, rgba(255, 165, 0, 0.3) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.75);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #FFD700;
+  margin-left: 6px;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.35);
+}
+
+.vip-badge-tag.active-gold {
+  background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+  color: #12011b;
+  font-weight: 800;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.45);
+}
+
+.home-vip-badge-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 165, 0, 0.28) 100%);
+  border: 1.2px solid #FFD700;
+  border-radius: 9999px;
+  padding: 3px 9px;
+  color: #FFD700;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.35);
+  transition: transform 0.2s ease;
+}
+
+.home-vip-badge-pill:hover {
+  transform: scale(1.05);
+}
+
 /* ── 2. Statistics Grid (3 Columns) ── */
 .profile-stats-grid {
   display: grid;

@@ -106,10 +106,12 @@ const COMPARISON_FEATURES = [
 export default function VipScreen({
   coins = 0,
   uid,
+  userProfile,
   onBack,
   onNavigateTab,
   onOpenWallet,
   onAddCoins,
+  onInitiateVipPayment,
   onToast,
 }) {
   const { t } = useLanguage();
@@ -162,6 +164,10 @@ export default function VipScreen({
   const handleSubscribe = async () => {
     if (!uid) {
       onToast?.('Please log in to upgrade to VIP.');
+      return;
+    }
+    if (onInitiateVipPayment) {
+      onInitiateVipPayment(selectedPlan);
       return;
     }
     try {
@@ -362,9 +368,12 @@ export default function VipScreen({
             className="vip-activate-btn"
             onClick={handleSubscribe}
           >
-            <span>Activate {selectedPlan.name}</span>
+            <span>Pay ₹{selectedPlan.price} • Activate VIP (PayU)</span>
             <ArrowRight size={18} />
           </button>
+          <div style={{ textAlign: 'center', fontSize: 11, color: '#c9b4d5', marginTop: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+            <span>🔒 100% Secure Checkout via PayU (UPI, Cards, NetBanking)</span>
+          </div>
         </div>
 
         {/* ── 5. Key VIP Benefits Grid ── */}

@@ -313,6 +313,12 @@ export default function ProfileScreen({
             <div className="profile-name-row">
               <h2 className="profile-display-name">{profileData.name}</h2>
               <CheckCircle2 size={16} fill="#2196f3" color="#fff" className="verified-badge-icon" />
+              {activeVip && activeVip.active && (
+                <span className="profile-vip-crown-badge" title={`${activeVip.planName} Active`}>
+                  <Crown size={12} color="#FFD700" fill="#FFD700" />
+                  <span>{activeVip.planName}</span>
+                </span>
+              )}
             </div>
             <span className="profile-username-tag">{profileData.username}</span>
             {profileData.dob && (
@@ -322,10 +328,20 @@ export default function ProfileScreen({
             )}
 
 
-            {/* Unique User ID with Copy Button */}
-            <div className="profile-userid-chip" onClick={handleCopyId} title="Click to copy ID">
+            {/* Unique User ID with Copy Button & VIP status */}
+            <div
+              className={`profile-userid-chip ${activeVip?.active ? 'vip-active-chip' : ''}`}
+              onClick={handleCopyId}
+              title={activeVip?.active ? `${activeVip.planName} Active • Click to copy ID` : 'Click to copy ID'}
+            >
               <span className="userid-label">{t('user_id', 'User ID:')}</span>
               <span className="userid-value">{profileData.userId}</span>
+              {activeVip?.active && (
+                <span className="userid-vip-tag">
+                  <Crown size={10} color="#12011b" fill="#12011b" />
+                  <span>VIP ACTIVE</span>
+                </span>
+              )}
               <button
                 type="button"
                 className="userid-copy-btn"
@@ -438,9 +454,15 @@ export default function ProfileScreen({
             </div>
             <div className="menu-text-wrap">
               <span className="menu-item-title">{t('vip_membership', 'VIP Membership')}</span>
-              <span className="menu-item-sub">{t('vip_membership_sub', 'Silver, Gold & Diamond plans')}</span>
+              <span className="menu-item-sub">
+                {activeVip?.active
+                  ? `👑 ${activeVip.planName} Active (Expires ${activeVip.expiryDate})`
+                  : t('vip_membership_sub', 'Silver, Gold & Diamond plans')}
+              </span>
             </div>
-            <span className="vip-badge-tag">VIP</span>
+            <span className={`vip-badge-tag ${activeVip?.active ? 'active-gold' : ''}`}>
+              {activeVip?.active ? 'ACTIVE' : 'VIP'}
+            </span>
             <ChevronRight size={18} className="menu-arrow" />
           </div>
 

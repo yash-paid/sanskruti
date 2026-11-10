@@ -276,12 +276,14 @@ function reconstructItemsFromUdf(udf1) {
       price: BOOKS[bId] ? BOOKS[bId].price : 0,
       category: 'ebook'
     }));
-  } else if ((type === 'service' || type === 'wavc' || type === 'meeting') && SERVICES[id]) {
+  } else if ((type === 'service' || type === 'wavc' || type === 'meeting' || type === 'connect') && SERVICES[id]) {
     return [{
       id: SERVICES[id].id,
       title: SERVICES[id].title,
       price: SERVICES[id].price,
-      category: SERVICES[id].category
+      category: SERVICES[id].category,
+      planId: SERVICES[id].planId || null,
+      coins: SERVICES[id].coins || 0
     }];
   }
   return [];

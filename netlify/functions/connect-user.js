@@ -637,6 +637,26 @@ exports.handler = async (event, context) => {
         activatedAt: new Date().toISOString(),
       };
 
+      if (!user.profile) user.profile = {};
+      user.profile.isVip = true;
+      user.profile.vipPlan = planName;
+      user.profile.vipPlanId = planId;
+      user.profile.vipExpiry = expiry.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+      if (!Array.isArray(user.ledger)) user.ledger = [];
+      user.ledger.unshift({
+        id: `TXN-VIP-${Date.now().toString(36).toUpperCase()}`,
+        type: 'vip_purchase',
+        title: `Purchased ${planName} (${days} Days)`,
+        coins: 0,
+        isCredit: true,
+        balanceAfter: user.wallet?.coins || 0,
+        status: 'Completed',
+        date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
+        timestamp: new Date().toISOString(),
+        metadata: { planId, planName, days, bonusCoins },
+      });
+
       saveStore(store);
 
       return {

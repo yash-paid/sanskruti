@@ -9,6 +9,7 @@ import {
   Star,
   Wallet,
   User,
+  Crown,
 } from 'lucide-react';
 import { TOP_EXPERTS, NORMAL_EXPERTS } from '../data/experts';
 import TransactionsModal from './TransactionsModal';
@@ -216,6 +217,7 @@ function StarsPage({ favourites, onCall, onFavToggle }) {
 export default function HomeScreen({
   coins = 0,
   userProfile,
+  vipEntitlement,
   uid,
   isGuest = false,
   initialTab = 'call',
@@ -225,6 +227,7 @@ export default function HomeScreen({
   onAddCoins,
   onDeductCoins,
   onOpenWallet,
+  onOpenVip,
   onOpenProfile,
   onInitiateRecharge,
   onRequireLogin,
@@ -359,6 +362,16 @@ export default function HomeScreen({
         </div>
 
         <div className="home-header-actions">
+          {vipEntitlement?.active && (
+            <div
+              className="home-vip-badge-pill"
+              onClick={onOpenVip}
+              title={`${vipEntitlement.planName} Active (Expires ${vipEntitlement.expiryDate})`}
+            >
+              <Crown size={12} color="#FFD700" fill="#FFD700" />
+              <span>{vipEntitlement.planName?.replace(' VIP', '') || 'VIP'}</span>
+            </div>
+          )}
           <div
             className="coin-wallet"
             onClick={() => {
