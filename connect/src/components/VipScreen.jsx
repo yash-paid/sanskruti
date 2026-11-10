@@ -71,7 +71,7 @@ const VIP_PLANS = [
     id: 'diamond',
     name: 'Diamond VIP',
     badge: '💎 Best Value',
-    price: 799,
+    price: 1,
     days: 30,
     durationText: '30 Days (1 Month)',
     tagline: 'Ultimate Elite Privilege & Max Benefits',

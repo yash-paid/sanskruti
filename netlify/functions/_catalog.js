@@ -203,10 +203,10 @@ const SERVICES = {
   // CONNECT VIP Membership Plans (/connect/)
   'connect-vip-silver':  { id: 'connect-vip-silver',  title: 'CONNECT Silver VIP (7 Days)',   price: 199, planId: 'silver',  days: 7,  dailyBonusCoins: 200,  category: 'connect' },
   'connect-vip-gold':    { id: 'connect-vip-gold',    title: 'CONNECT Gold VIP (15 Days)',    price: 399, planId: 'gold',    days: 15, dailyBonusCoins: 500,  category: 'connect' },
-  'connect-vip-diamond': { id: 'connect-vip-diamond', title: 'CONNECT Diamond VIP (30 Days)', price: 799, planId: 'diamond', days: 30, dailyBonusCoins: 1200, category: 'connect' },
+  'connect-vip-diamond': { id: 'connect-vip-diamond', title: 'CONNECT Diamond VIP (30 Days)', price: 1, planId: 'diamond', days: 30, dailyBonusCoins: 1200, category: 'connect' },
   'vip-silver':          { id: 'connect-vip-silver',  title: 'CONNECT Silver VIP (7 Days)',   price: 199, planId: 'silver',  days: 7,  dailyBonusCoins: 200,  category: 'connect' },
   'vip-gold':            { id: 'connect-vip-gold',    title: 'CONNECT Gold VIP (15 Days)',    price: 399, planId: 'gold',    days: 15, dailyBonusCoins: 500,  category: 'connect' },
-  'vip-diamond':         { id: 'connect-vip-diamond', title: 'CONNECT Diamond VIP (30 Days)', price: 799, planId: 'diamond', days: 30, dailyBonusCoins: 1200, category: 'connect' }
+  'vip-diamond':         { id: 'connect-vip-diamond', title: 'CONNECT Diamond VIP (30 Days)', price: 1, planId: 'diamond', days: 30, dailyBonusCoins: 1200, category: 'connect' }
 };
 
 /**
