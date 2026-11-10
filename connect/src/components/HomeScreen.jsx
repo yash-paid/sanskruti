@@ -308,32 +308,10 @@ export default function HomeScreen({
   activeNavRef.current = activeNav;
 
   const demoTimerRef = useRef(null);
+  const lastDemoCallerRef = useRef(null);
 
-  // Featured Demo Callers: Uma (video 2.mp4) & Simran (video 1.mp4)
-  const DEMO_CALLERS = [
-    {
-      id: 'uma',
-      name: 'Uma',
-      age: 24,
-      rating: 4.8,
-      price: 65,
-      photo: '/assets/profiles/7.jpg',
-      videoUrl: '/assets/videos/2.mp4',
-      verified: true,
-      top: true,
-    },
-    {
-      id: 'simran',
-      name: 'Simran',
-      age: 25,
-      rating: 4.9,
-      price: 65,
-      photo: '/assets/profiles/1.jpg',
-      videoUrl: '/assets/videos/1.mp4',
-      verified: true,
-      top: true,
-    },
-  ];
+  // All 23 Platform Experts can call dynamically (no longer fixed to only Uma/Simran)
+  const DEMO_CALLERS = ALL_EXPERTS;
 
   const getDemoSession = () => {
     try {
@@ -405,7 +383,11 @@ export default function HomeScreen({
         }, 3000);
         return;
       }
-      const chosen = DEMO_CALLERS[Math.floor(Math.random() * DEMO_CALLERS.length)];
+      // Random selection from all 23 girls, avoiding consecutive duplicates
+      const availableCallers = DEMO_CALLERS.filter((c) => c.id !== lastDemoCallerRef.current);
+      const pool = availableCallers.length > 0 ? availableCallers : DEMO_CALLERS;
+      const chosen = pool[Math.floor(Math.random() * pool.length)];
+      lastDemoCallerRef.current = chosen.id;
       setIncomingDemoCall(chosen);
     }, delayMs);
   };
