@@ -84,7 +84,7 @@ exports.handler = async (event, context) => {
     } else if (targetCategory === 'connect') {
       const base = `${config.siteUrl}/connect/`;
       if (status === 'success') {
-        return `${base}?status=success&txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&amount=${encodeURIComponent(amount)}&mihpayid=${encodeURIComponent(mihpayid)}#home`;
+        return `${base}?status=success&txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&amount=${encodeURIComponent(amount)}&mihpayid=${encodeURIComponent(mihpayid)}`;
       } else {
         return `${base}?status=${encodeURIComponent(status)}&txnid=${encodeURIComponent(txnid)}&msg=${encodeURIComponent(errorMsg)}#home`;
       }
@@ -210,12 +210,61 @@ exports.handler = async (event, context) => {
 
     // CONNECT Coin Recharge: Atomic Firestore Verification & Fulfilment
     if (category === 'connect') {
-      const { getDb, formatReadableDate } = require('./_connect-db');
+      const { getDb, formatReadableDate, getCanonicalPackage, getCanonicalVipPlan } = require('./_connect-db');
       const db = getDb();
       const orderDocRef = db.collection('connect_orders').doc(txnid);
       const orderSnap = await orderDocRef.get();
 
-      if (!orderSnap.exists) {
+      let orderData = orderSnap.exists ? orderSnap.data() : null;
+      if (!orderData) {
+        // Resilient fallback: reconstruct from cryptographically verified UDFs
+        const verifiedUid = udf1;
+        const targetPackage = getCanonicalPackage(udf2);
+        const targetVip = getCanonicalVipPlan(udf2);
+        if (verifiedUid && (targetPackage || targetVip)) {
+          orderData = targetVip
+            ? {
+                txnid,
+                uid: verifiedUid,
+                orderType: 'vip',
+                planId: targetVip.planId,
+                packageName: targetVip.title,
+                planName: targetVip.planName,
+                durationDays: targetVip.durationDays,
+                dailyBonusCoins: targetVip.dailyBonusCoins,
+                expectedAmount: Number(targetVip.price),
+                expectedCoins: 0,
+                status: 'pending',
+                fulfilled: false,
+                createdAt: new Date().toISOString(),
+                customerName: firstname || 'CONNECT VIP User',
+                customerPhone: phone || '',
+                customerEmail: email || '',
+                category: 'connect_vip',
+              }
+            : {
+                txnid,
+                uid: verifiedUid,
+                orderType: 'coins',
+                packageId: targetPackage.id,
+                packageName: targetPackage.title,
+                expectedAmount: Number(targetPackage.price),
+                expectedCoins: Number(targetPackage.coins),
+                status: 'pending',
+                fulfilled: false,
+                createdAt: new Date().toISOString(),
+                customerName: firstname || 'CONNECT User',
+                customerPhone: phone || '',
+                customerEmail: email || '',
+                category: 'connect',
+              };
+          try {
+            await orderDocRef.set(orderData);
+          } catch (e) {}
+        }
+      }
+
+      if (!orderData) {
         console.error('CONNECT Order not found in Firestore for txnid:', txnid);
         const failUrl = getRedirectUrl({
           targetCategory: 'connect',
@@ -226,7 +275,6 @@ exports.handler = async (event, context) => {
         return buildRedirectResponse(failUrl);
       }
 
-      const orderData = orderSnap.data();
       const receivedAmount = parseFloat(amount || 0);
       const expectedAmount = parseFloat(orderData.expectedAmount || 0);
 
@@ -254,10 +302,10 @@ exports.handler = async (event, context) => {
       try {
         fulfilmentResult = await db.runTransaction(async (transaction) => {
           const freshOrderSnap = await transaction.get(orderDocRef);
-          if (!freshOrderSnap.exists) {
-            throw new Error('Order document disappeared during transaction');
+          let freshOrder = freshOrderSnap.exists ? freshOrderSnap.data() : orderData;
+          if (!freshOrder) {
+            freshOrder = orderData;
           }
-          const freshOrder = freshOrderSnap.data();
 
           // Idempotency check: if order is already fulfilled, do not process again!
           if (freshOrder.fulfilled === true || freshOrder.status === 'success') {
@@ -485,8 +533,8 @@ exports.handler = async (event, context) => {
         mihpayid
       });
       const connectSuccessUrl = isVipOrder
-        ? `${baseSuccessUrl}&type=vip&plan=${encodeURIComponent(orderData.planId || 'gold')}`
-        : `${baseSuccessUrl}&coins=${fulfilmentResult.coinsCredited || orderData.expectedCoins}`;
+        ? `${baseSuccessUrl}&type=vip&plan=${encodeURIComponent(orderData.planId || 'gold')}#home`
+        : `${baseSuccessUrl}&coins=${fulfilmentResult.coinsCredited || orderData.expectedCoins}#home`;
       return buildRedirectResponse(connectSuccessUrl);
     }
 
