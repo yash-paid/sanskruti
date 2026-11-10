@@ -368,7 +368,7 @@ export default function WalletScreen({
 
       {/* ── 4. Transactions Modal Screen ── */}
       {showTransactions && (
-        <TransactionsModal uid={uid} onClose={() => setShowTransactions(false)} />
+        <TransactionsModal uid={uid} coins={coins} onClose={() => setShowTransactions(false)} />
       )}
 
       {/* ── Login Required Modal for Guests ── */}

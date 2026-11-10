@@ -1,4 +1,4 @@
-2// Netlify Function: Verify Order Status & Authenticate eBook Delivery
+// Netlify Function: Verify Order Status & Authenticate eBook Delivery
 const { getPayUConfig } = require('./_payu-config');
 const { verifyDeliveryToken, getOrder } = require('./_order-store');
 const { BOOKS } = require('./_catalog');

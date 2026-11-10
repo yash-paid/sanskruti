@@ -41,6 +41,9 @@ export default function ProfileScreen({
   coins = 0,
   userProfile,
   uid,
+  favCount: propFavCount,
+  favourites,
+  onFavToggle,
   onRewardClaimed,
   onUpdateProfile,
   onBack,
@@ -121,14 +124,42 @@ export default function ProfileScreen({
       ? `${Math.ceil(totalDurationSeconds / 60)}m`
       : `${(totalDurationSeconds / 3600).toFixed(1)} h`;
 
-  const favCount = (() => {
+  const [favCount, setFavCount] = useState(() => {
+    if (typeof propFavCount === 'number') return propFavCount;
     try {
-      const favs = JSON.parse(localStorage.getItem('connect_favourites') || '[]');
+      const key = uid ? `connect_favourites_${uid}` : 'connect_favourites';
+      const favs = JSON.parse(localStorage.getItem(key) || localStorage.getItem('connect_favourites') || '[]');
       return Array.isArray(favs) ? favs.length : 0;
     } catch (e) {
       return 0;
     }
-  })();
+  });
+
+  React.useEffect(() => {
+    if (typeof propFavCount === 'number') {
+      setFavCount(propFavCount);
+    }
+  }, [propFavCount]);
+
+  React.useEffect(() => {
+    const handleSync = (e) => {
+      if (Array.isArray(e?.detail)) {
+        setFavCount(e.detail.length);
+      } else {
+        try {
+          const key = uid ? `connect_favourites_${uid}` : 'connect_favourites';
+          const favs = JSON.parse(localStorage.getItem(key) || localStorage.getItem('connect_favourites') || '[]');
+          setFavCount(Array.isArray(favs) ? favs.length : 0);
+        } catch (err) {}
+      }
+    };
+    window.addEventListener('connect_favourites_updated', handleSync);
+    window.addEventListener('storage', handleSync);
+    return () => {
+      window.removeEventListener('connect_favourites_updated', handleSync);
+      window.removeEventListener('storage', handleSync);
+    };
+  }, [uid]);
 
   // Edit form state
   const [editForm, setEditForm] = useState({ ...profileData });
@@ -863,7 +894,7 @@ export default function ProfileScreen({
 
       {/* ── Transactions History Modal ── */}
       {showTransactions && (
-        <TransactionsModal uid={uid} onClose={() => setShowTransactions(false)} />
+        <TransactionsModal uid={uid} coins={coins} onClose={() => setShowTransactions(false)} />
       )}
 
       {/* ── Help & Support Modal ── */}

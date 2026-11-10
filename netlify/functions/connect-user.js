@@ -172,6 +172,7 @@ const getOrCreateUserRecord = (store, uid, initialData = {}) => {
         avatar: initialData.avatar || '/default-avatars/1.png',
         dob: initialData.dob || '2000-01-01',
         isProfileComplete: Boolean(initialData.isProfileComplete),
+        favourites: Array.isArray(initialData.favourites) ? initialData.favourites : [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -309,6 +310,9 @@ exports.handler = async (event, context) => {
       if (updates.email) user.profile.email = updates.email;
       if (updates.isProfileComplete !== undefined) {
         user.profile.isProfileComplete = Boolean(updates.isProfileComplete);
+      }
+      if (Array.isArray(updates.favourites)) {
+        user.profile.favourites = updates.favourites;
       }
       user.profile.updatedAt = new Date().toISOString();
 

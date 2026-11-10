@@ -149,13 +149,14 @@ export default function VideoCallScreen({
   const [connectingStage, setConnectingStage] = useState('Initializing Video...');
   const [callDuration, setCallDuration] = useState(0);
 
-  // Per-minute coin rate
-  const callRate = expert?.price || 30;
+  // Per-minute coin rate (65 Coins/min for Uma & Simran, 30 Coins/min for all others)
+  const isTopExpert = expert?.id === 'simran' || expert?.id === 'uma' || expert?.top;
+  const callRate = isTopExpert ? 65 : (Number(expert?.price) || 30);
   const hasDeductedFirstMinuteRef = useRef(false);
-  const coinsRef = useRef(coins);
+  const coinsRef = useRef(Number(coins) || 0);
 
   useEffect(() => {
-    coinsRef.current = coins;
+    coinsRef.current = Number(coins) || 0;
   }, [coins]);
 
   // Call Control Toggles
@@ -327,12 +328,14 @@ export default function VideoCallScreen({
   };
 
   /* ── 3. Active Call Duration Timer & Per-Minute Coin Deduction ── */
-  // A. Deduct Minute 1 immediately when video call successfully connects
+  // A. Deduct Minute 1 immediately in the starting 1 second when call starts
   useEffect(() => {
-    if (callState === 'active' && !hasDeductedFirstMinuteRef.current) {
+    if (!hasDeductedFirstMinuteRef.current) {
       hasDeductedFirstMinuteRef.current = true;
       (async () => {
-        if (coinsRef.current < callRate) {
+        const numericCoins = Number(coinsRef.current ?? coins) || 0;
+        const numericRate = Number(callRate) || 30;
+        if (numericCoins < numericRate) {
           onToast?.('⚠️ Insufficient coins to start call! Please recharge.');
           if (onInsufficientCoins) {
             onInsufficientCoins();
@@ -343,7 +346,7 @@ export default function VideoCallScreen({
         }
 
         const success = onDeductCoins
-          ? await onDeductCoins(callRate, {
+          ? await onDeductCoins(numericRate, {
               type: 'call',
               title: `Call with ${expert?.name || 'Expert'} (Min 1)`,
               expertId: expert?.id,
@@ -351,10 +354,9 @@ export default function VideoCallScreen({
             })
           : true;
 
-        if (success) {
-          onToast?.(`🪙 Deducted ${callRate} Coins (Minute 1 started)`);
-        } else if (coinsRef.current < callRate) {
-          onToast?.('⚠️ Insufficient coins to continue call!');
+        const updatedCoins = Number(coinsRef.current ?? coins) || 0;
+        if (!success && updatedCoins < numericRate) {
+          onToast?.('⚠️ Insufficient coins to start call! Please recharge.');
           if (onInsufficientCoins) {
             onInsufficientCoins();
           } else {
@@ -363,7 +365,7 @@ export default function VideoCallScreen({
         }
       })();
     }
-  }, [callState, callRate, onDeductCoins, onInsufficientCoins, onEndCall, onToast, expert]);
+  }, []);
 
   // B. Deduct subsequent minutes every 60 seconds (at 60s, 120s, 180s, etc.)
   useEffect(() => {
@@ -375,7 +377,9 @@ export default function VideoCallScreen({
           if (nextSec > 0 && nextSec % 60 === 0) {
             const nextMin = Math.floor(nextSec / 60) + 1;
             (async () => {
-              if (coinsRef.current < callRate) {
+              const numericCoins = Number(coinsRef.current ?? coins) || 0;
+              const numericRate = Number(callRate) || 30;
+              if (numericCoins < numericRate) {
                 onToast?.('Call ended: Coin balance exhausted!');
                 if (onInsufficientCoins) {
                   onInsufficientCoins();
@@ -386,7 +390,7 @@ export default function VideoCallScreen({
               }
 
               const success = onDeductCoins
-                ? await onDeductCoins(callRate, {
+                ? await onDeductCoins(numericRate, {
                     type: 'call',
                     title: `Call with ${expert?.name || 'Expert'} (Min ${nextMin})`,
                     expertId: expert?.id,
@@ -394,9 +398,8 @@ export default function VideoCallScreen({
                   })
                 : true;
 
-              if (success) {
-                onToast?.(`🪙 Deducted ${callRate} Coins (Minute ${nextMin} started)`);
-              } else if (coinsRef.current < callRate) {
+              const updatedCoins = Number(coinsRef.current ?? coins) || 0;
+              if (!success && updatedCoins < numericRate) {
                 // Out of coins! End call and immediately open recharge modal
                 onToast?.('Call ended: Coin balance exhausted!');
                 if (onInsufficientCoins) {

@@ -1,1 +1,89 @@
-{}
+{
+  "hWU2juol39SBwXfAuQuDNy7vwfx1": {
+    "profile": {
+      "uid": "hWU2juol39SBwXfAuQuDNy7vwfx1",
+      "userId": "CN-7VWFX1",
+      "name": "CONNECT User",
+      "username": "@user_wfx1",
+      "email": "",
+      "phone": "",
+      "avatar": "/default-avatars/1.png",
+      "dob": "2000-01-01",
+      "isProfileComplete": false,
+      "createdAt": "2026-11-10T10:59:58.810Z",
+      "updatedAt": "2026-11-10T11:19:39.814Z"
+    },
+    "wallet": {
+      "coins": 10,
+      "updatedAt": "2026-11-10T10:59:58.811Z"
+    },
+    "ledger": [
+      {
+        "id": "TXN-RWD-20261110-6873",
+        "type": "daily_reward",
+        "title": "Daily Login Reward - Day 1",
+        "coins": 10,
+        "isCredit": true,
+        "balanceAfter": 10,
+        "status": "Completed",
+        "date": "10 Nov 2026, 04:29 pm",
+        "timestamp": "2026-11-10T10:59:58.811Z"
+      }
+    ],
+    "daily_rewards": {
+      "state": {
+        "currentStreak": 1,
+        "lastClaimDate": "2026-11-10",
+        "cycleCount": 0,
+        "lastAwardedCoins": 10,
+        "updatedAt": "2026-11-10T10:59:58.811Z"
+      },
+      "claims": {
+        "2026-11-10": {
+          "date": "2026-11-10",
+          "dayNumber": 1,
+          "coinsAwarded": 10,
+          "claimedAt": "2026-11-10T10:59:58.811Z",
+          "type": "daily_login"
+        }
+      }
+    },
+    "vip": {
+      "entitlement": {
+        "planId": null,
+        "planName": null,
+        "status": "none",
+        "active": false,
+        "dailyBonusCoins": 0,
+        "expiryDate": null,
+        "activatedAt": null
+      },
+      "claims": {}
+    },
+    "calls": [
+      {
+        "id": "CALL-MWALOP1G",
+        "name": "Uma",
+        "type": "Video",
+        "duration": "11s",
+        "durationSeconds": 11,
+        "coins": 65,
+        "time": "10 Nov 2026, 04:52 pm",
+        "timestamp": "2026-11-10T11:22:10.757Z",
+        "status": "Completed"
+      },
+      {
+        "id": "CALL-MWALOEFC",
+        "name": "Simran",
+        "type": "Video",
+        "duration": "2s",
+        "durationSeconds": 2,
+        "coins": 65,
+        "time": "10 Nov 2026, 04:51 pm",
+        "timestamp": "2026-11-10T11:21:57.001Z",
+        "status": "Completed"
+      }
+    ],
+    "payments": []
+  }
+}

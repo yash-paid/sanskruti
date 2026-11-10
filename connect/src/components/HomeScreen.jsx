@@ -50,6 +50,7 @@ function ExpertImage({ src, alt, name, className }) {
       src={src}
       alt={alt || name}
       className={className}
+      draggable="false"
       onError={() => setHasError(true)}
     />
   );
@@ -220,11 +221,14 @@ export default function HomeScreen({
   vipEntitlement,
   uid,
   isGuest = false,
+  favourites: propFavourites,
+  onFavToggle: propOnFavToggle,
   initialTab = 'call',
   initialCallingExpert = null,
   onClearAutoStartExpert,
   onLogout,
   onAddCoins,
+  onRewardClaimed,
   onDeductCoins,
   onOpenWallet,
   onOpenVip,
@@ -236,7 +240,42 @@ export default function HomeScreen({
 }) {
   const { t } = useLanguage();
   const [activeFilter, setActiveFilter] = useState('all');
-  const [favourites, setFavourites] = useState(new Set());
+  const [favourites, setFavourites] = useState(() => {
+    if (propFavourites instanceof Set) return propFavourites;
+    try {
+      const key = uid ? `connect_favourites_${uid}` : 'connect_favourites';
+      const saved = localStorage.getItem(key) || localStorage.getItem('connect_favourites');
+      return new Set(saved ? JSON.parse(saved) : []);
+    } catch (e) {
+      return new Set();
+    }
+  });
+
+  useEffect(() => {
+    if (propFavourites instanceof Set) {
+      setFavourites(propFavourites);
+    }
+  }, [propFavourites]);
+
+  const toggleFav = (id) => {
+    if (propOnFavToggle) {
+      propOnFavToggle(id);
+      return;
+    }
+    setFavourites((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      try {
+        const arr = Array.from(next);
+        const key = uid ? `connect_favourites_${uid}` : 'connect_favourites';
+        localStorage.setItem(key, JSON.stringify(arr));
+        localStorage.setItem('connect_favourites', JSON.stringify(arr));
+        window.dispatchEvent(new CustomEvent('connect_favourites_updated', { detail: arr }));
+      } catch (e) {}
+      return next;
+    });
+  };
+
   const [activeNav, setActiveNav] = useState(initialTab);
   const [callingExpert, setCallingExpert] = useState(null);
   const [insufficientModal, setInsufficientModal] = useState(false);
@@ -273,22 +312,16 @@ export default function HomeScreen({
     }
   }, [initialCallingExpert, onClearAutoStartExpert]);
 
-  const toggleFav = (id) => {
-    setFavourites((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
-
   // Intercept call: verify guest status and coin balance
   const handleCall = (expert) => {
     if (isGuest) {
       setLoginReqAction('call');
       return;
     }
-    const callRate = expert.price || 30;
-    if (coins < callRate) {
+    const isTop = expert?.id === 'simran' || expert?.id === 'uma' || expert?.top;
+    const callRate = isTop ? 65 : (Number(expert?.price) || 30);
+    const userCoins = Number(coins) || 0;
+    if (userCoins < callRate) {
       setPendingCallExpert(expert);
       setInsufficientModal(true);
       return;
@@ -310,12 +343,14 @@ export default function HomeScreen({
       const formatted = m > 0 ? `${m}m ${s}s` : `${s}s`;
       onToast?.(`Call ended • Duration: ${formatted}`);
       if (uid && expert) {
+        const isTop = expert.id === 'simran' || expert.id === 'uma' || expert.top;
+        const rate = isTop ? 65 : (expert.price || 30);
         recordUserCall(uid, {
           name: expert.name,
           type: 'Video',
           duration: formatted,
           durationSeconds: duration,
-          coins: expert.pricePerMin || 0,
+          coins: Math.max(1, Math.ceil(duration / 60)) * rate,
         }).catch(() => { });
       }
     }
@@ -581,9 +616,11 @@ export default function HomeScreen({
           onAddCoins={onAddCoins}
           onInsufficientCoins={() => {
             // Guard: If user has sufficient coins (>= call rate), NEVER interrupt the call
-            const rate = callingExpert?.price || 30;
-            if (coins >= rate) {
-              console.warn('Blocked opening insufficient modal because balance is sufficient:', coins);
+            const isTop = callingExpert?.id === 'simran' || callingExpert?.id === 'uma' || callingExpert?.top;
+            const rate = isTop ? 65 : (Number(callingExpert?.price) || 30);
+            const userCoins = Number(coins) || 0;
+            if (userCoins >= rate) {
+              console.warn('Blocked opening insufficient modal because balance is sufficient:', userCoins);
               return;
             }
             const exp = callingExpert;
@@ -600,7 +637,7 @@ export default function HomeScreen({
 
       {/* ── Transactions History Modal ── */}
       {showTransactions && (
-        <TransactionsModal uid={uid} onClose={() => setShowTransactions(false)} />
+        <TransactionsModal uid={uid} coins={coins} onClose={() => setShowTransactions(false)} />
       )}
 
       {/* ── Daily Login Reward Popup Modal (PART 1) ── */}
@@ -608,8 +645,14 @@ export default function HomeScreen({
         isOpen={showDailyReward}
         uid={uid}
         onClose={() => setShowDailyReward(false)}
-        onRewardClaimed={(awarded) => {
-          onAddCoins?.(awarded);
+        onRewardClaimed={(awarded, newBalance) => {
+          // If server returned newBalance, sync the wallet state directly.
+          // NEVER re-credit awarded coins via onAddCoins, otherwise user gets 2x coins!
+          if (onRewardClaimed) {
+            onRewardClaimed(awarded, newBalance);
+          } else if (typeof newBalance !== 'number') {
+            onAddCoins?.(awarded);
+          }
         }}
         onToast={onToast}
       />

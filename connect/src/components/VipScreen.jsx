@@ -111,6 +111,7 @@ export default function VipScreen({
   onNavigateTab,
   onOpenWallet,
   onAddCoins,
+  onRewardClaimed,
   onInitiateVipPayment,
   onToast,
 }) {
@@ -186,7 +187,12 @@ export default function VipScreen({
     setClaimingVipBonus(true);
     try {
       const res = await claimUserVipBonus(uid);
-      onAddCoins?.(res.bonusAmount);
+      if (typeof res?.newBalance === 'number' && onRewardClaimed) {
+        // Server already added bonus coins to wallet. Sync new balance without calling onAddCoins!
+        onRewardClaimed(res.bonusAmount, res.newBalance);
+      } else if (typeof res?.newBalance !== 'number') {
+        onAddCoins?.(res.bonusAmount);
+      }
       setVipBonusClaimedToday(true);
       onToast?.(`👑 Claimed ${activeVip.planName} Daily Bonus: +${res.bonusAmount} Coins!`);
     } catch (serverErr) {

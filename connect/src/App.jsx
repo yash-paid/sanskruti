@@ -35,6 +35,48 @@ import {
 
 const VALID_PAGES = ['login', 'setup-profile', 'home', 'wallet', 'profile', 'vip'];
 
+// ── Clean Slate Wipe for Fresh ID Creation ──
+const CLEAN_SLATE_KEY = 'connect_v3_fresh_reset';
+try {
+  if (typeof window !== 'undefined' && localStorage.getItem(CLEAN_SLATE_KEY) !== 'done') {
+    const lang = localStorage.getItem('connect_lang');
+    localStorage.clear();
+    if (lang) localStorage.setItem('connect_lang', lang);
+    localStorage.setItem(CLEAN_SLATE_KEY, 'done');
+    localStorage.setItem('connect_current_page', 'login');
+    try {
+      logOut();
+    } catch (e) {}
+  }
+} catch (e) {}
+
+// Helper to determine if a user has already completed initial profile setup
+const isProfileSetupDone = (uid, profile = null) => {
+  if (!uid) return false;
+  try {
+    if (localStorage.getItem(`connect_profile_setup_done_${uid}`) === 'true') {
+      return true;
+    }
+  } catch (e) {}
+  if (profile?.isProfileComplete === true) {
+    return true;
+  }
+  return false;
+};
+
+// Helper to retrieve persisted favourites for a given user or guest
+const getStoredFavourites = (uid) => {
+  try {
+    const key = uid ? `connect_favourites_${uid}` : 'connect_favourites';
+    const saved = localStorage.getItem(key) || localStorage.getItem('connect_favourites');
+    if (!saved) return [];
+    const parsed = JSON.parse(saved);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (e) {
+    return [];
+  }
+};
+
 const getPageFromUrl = () => {
   try {
     const pathname = window.location.pathname || '';
@@ -67,8 +109,26 @@ const getInitialPage = () => {
       return false;
     }
   })();
-  const hasPhoneSession = Boolean(getStoredPhoneUser());
+  const storedPhone = getStoredPhoneUser();
+  const hasPhoneSession = Boolean(storedPhone);
   const hasAuth = Boolean(auth.currentUser) || hasPhoneSession || isGuest;
+  const currentUid = auth.currentUser?.uid || storedPhone?.uid;
+
+  // Strict check: if this user has already completed profile setup, never allow setup-profile
+  if (currentUid && isProfileSetupDone(currentUid)) {
+    if (urlPage === 'setup-profile') {
+      try {
+        localStorage.setItem('connect_current_page', 'home');
+        window.history.replaceState({ page: 'home' }, '', '/connect/');
+      } catch (e) {}
+      return 'home';
+    }
+    try {
+      if (localStorage.getItem('connect_current_page') === 'setup-profile') {
+        localStorage.setItem('connect_current_page', 'home');
+      }
+    } catch (e) {}
+  }
 
   if (urlPage) {
     // Protected pages require authentication
@@ -82,8 +142,11 @@ const getInitialPage = () => {
   try {
     const savedPage = localStorage.getItem('connect_current_page');
     if (savedPage && VALID_PAGES.includes(savedPage)) {
-      if (!hasAuth && (savedPage === 'wallet' || savedPage === 'profile' || savedPage === 'vip')) {
+      if (!hasAuth && (savedPage === 'wallet' || savedPage === 'profile' || savedPage === 'vip' || savedPage === 'setup-profile')) {
         return 'login';
+      }
+      if (savedPage === 'setup-profile' && currentUid && isProfileSetupDone(currentUid)) {
+        return 'home';
       }
       return savedPage;
     }
@@ -222,12 +285,66 @@ export default function App() {
     }
   });
 
+  // ── Shared Persistent Favourites Set (Never lost across screen transitions) ──
+  const [favourites, setFavourites] = useState(() => {
+    const initialUid = auth.currentUser?.uid || getStoredPhoneUser()?.uid || null;
+    return new Set(getStoredFavourites(initialUid));
+  });
+
+  // Keep favourites in sync whenever user logs in, switches accounts, or profile loads
+  useEffect(() => {
+    if (currentUid) {
+      const stored = getStoredFavourites(currentUid);
+      if (Array.isArray(userProfile?.favourites) && userProfile.favourites.length > 0) {
+        const merged = Array.from(new Set([...stored, ...userProfile.favourites]));
+        setFavourites(new Set(merged));
+        try {
+          localStorage.setItem(`connect_favourites_${currentUid}`, JSON.stringify(merged));
+          localStorage.setItem('connect_favourites', JSON.stringify(merged));
+        } catch (e) {}
+      } else {
+        setFavourites(new Set(stored));
+      }
+    }
+  }, [currentUid, userProfile?.favourites]);
+
+  const handleToggleFav = (expertId) => {
+    if (!expertId) return;
+    setFavourites((prev) => {
+      const next = new Set(prev);
+      if (next.has(expertId)) {
+        next.delete(expertId);
+      } else {
+        next.add(expertId);
+      }
+      const arr = Array.from(next);
+      try {
+        const key = currentUid ? `connect_favourites_${currentUid}` : 'connect_favourites';
+        localStorage.setItem(key, JSON.stringify(arr));
+        localStorage.setItem('connect_favourites', JSON.stringify(arr));
+        window.dispatchEvent(new CustomEvent('connect_favourites_updated', { detail: arr }));
+      } catch (e) {}
+
+      if (currentUid) {
+        saveUserProfile(currentUid, { favourites: arr }).catch(() => {});
+      }
+      return next;
+    });
+  };
+
   // Expert queued to auto-call after a successful recharge
   const [autoStartExpert, setAutoStartExpert] = useState(null);
 
   // Navigate to any page and persist across reloads (NEVER sets auth state)
   const goToPage = (newPage) => {
     if (!VALID_PAGES.includes(newPage)) return;
+    // Guard: If user has already completed profile setup, NEVER allow navigating to setup-profile
+    if (newPage === 'setup-profile') {
+      const uid = auth.currentUser?.uid || getStoredPhoneUser()?.uid;
+      if (uid && isProfileSetupDone(uid, userProfile)) {
+        newPage = 'home';
+      }
+    }
     setPage(newPage);
     try {
       localStorage.setItem('connect_current_page', newPage);
@@ -265,6 +382,11 @@ export default function App() {
         targetPage = hasAuth ? 'home' : 'login';
       } else if (!hasAuth && (targetPage === 'wallet' || targetPage === 'profile' || targetPage === 'vip' || targetPage === 'setup-profile')) {
         targetPage = 'login';
+      } else if (targetPage === 'setup-profile' && (auth.currentUser?.uid || getStoredPhoneUser()?.uid)) {
+        const uid = auth.currentUser?.uid || getStoredPhoneUser()?.uid;
+        if (isProfileSetupDone(uid)) {
+          targetPage = 'home';
+        }
       }
 
       setPage(targetPage);
@@ -338,11 +460,22 @@ export default function App() {
         }
       } catch (err) {}
 
+      const alreadyDone = isProfileSetupDone(uid, serverProfile);
+
       if (serverProfile) {
-        setUserProfile(serverProfile);
-        if (!serverProfile.isProfileComplete) {
+        const fullProfile = {
+          ...serverProfile,
+          isProfileComplete: alreadyDone || Boolean(serverProfile.isProfileComplete),
+        };
+        setUserProfile(fullProfile);
+
+        // Open setup-profile if user has never completed initial profile setup
+        if (!alreadyDone) {
           goToPage('setup-profile');
         } else {
+          try {
+            localStorage.setItem(`connect_profile_setup_done_${uid}`, 'true');
+          } catch (e) {}
           setPage((prevPage) => {
             if (prevPage === 'login' || prevPage === 'setup-profile') {
               try {
@@ -360,6 +493,7 @@ export default function App() {
       console.warn('Backend loadProfileForUid error:', e);
     }
 
+    const alreadyDone = isProfileSetupDone(uid, null);
     const displayName = fallbackData.name || 'CONNECT User';
     const newProfile = {
       uid,
@@ -368,19 +502,48 @@ export default function App() {
       username:
         fallbackData.username ||
         '@' +
-        (displayName
+        (displayName && displayName !== 'CONNECT User'
           ? displayName.toLowerCase().replace(/[^a-z0-9]/g, '_')
           : 'user_' + uid.slice(-4)),
       phone: fallbackData.phone || '',
       email: fallbackData.email || '',
       avatar: fallbackData.avatar || '/default-avatars/1.png',
       dob: '2000-01-01',
-      isProfileComplete: false,
+      isProfileComplete: alreadyDone,
     };
 
     setUserProfile(newProfile);
-    goToPage('setup-profile');
+
+    // Open setup-profile if user has never completed initial profile setup
+    if (!alreadyDone) {
+      goToPage('setup-profile');
+    } else {
+      try {
+        localStorage.setItem(`connect_profile_setup_done_${uid}`, 'true');
+        localStorage.setItem('connect_current_page', 'home');
+        window.history.replaceState({ page: 'home' }, '', getUrlForPage('home'));
+      } catch (e) {}
+      setPage((prevPage) => {
+        if (prevPage === 'login' || prevPage === 'setup-profile') {
+          return 'home';
+        }
+        return prevPage;
+      });
+    }
   };
+
+  // Guard: if current user already completed profile setup, NEVER let them stay on setup-profile
+  useEffect(() => {
+    if (page === 'setup-profile' && currentUid) {
+      if (isProfileSetupDone(currentUid, userProfile)) {
+        setPage('home');
+        try {
+          localStorage.setItem('connect_current_page', 'home');
+          window.history.replaceState({ page: 'home' }, '', getUrlForPage('home'));
+        } catch (e) {}
+      }
+    }
+  }, [page, currentUid, userProfile]);
 
   // Listen to real Firebase authentication state (onAuthStateChanged) + phone session
   useEffect(() => {
@@ -480,6 +643,7 @@ export default function App() {
             name: result.name || 'CONNECT User',
             username: result.username,
             phone: result.phone,
+            isBrandNewRegistration: true,
           });
           showToast(`🎉 Account created! Welcome, ${result.name || result.phone}!`);
         } else {
@@ -493,6 +657,7 @@ export default function App() {
             name: result.name || 'CONNECT User',
             username: result.username,
             phone: result.phone,
+            isBrandNewRegistration: false,
           });
           showToast(`✅ Welcome back, ${result.name || result.phone}!`);
         }
@@ -505,6 +670,14 @@ export default function App() {
             formData.password,
             formData.name
           );
+          if (userCred?.user) {
+            loadProfileForUid(userCred.user.uid, {
+              name: formData.name || userCred.user.displayName || 'CONNECT User',
+              email: userCred.user.email || '',
+              avatar: userCred.user.photoURL || '/default-avatars/1.png',
+              isBrandNewRegistration: true,
+            });
+          }
           showToast(`🎉 Account created! Welcome, ${formData.name || rawIdentifier}!`);
         } else {
           showToast('Signing in with Firebase...');
@@ -512,6 +685,14 @@ export default function App() {
             rawIdentifier,
             formData.password
           );
+          if (userCred?.user) {
+            loadProfileForUid(userCred.user.uid, {
+              name: userCred.user.displayName || 'CONNECT User',
+              email: userCred.user.email || '',
+              avatar: userCred.user.photoURL || '/default-avatars/1.png',
+              isBrandNewRegistration: false,
+            });
+          }
           showToast(`✅ Welcome back, ${userCred.user?.displayName || rawIdentifier}!`);
         }
       }
@@ -574,13 +755,16 @@ export default function App() {
 
   // Called when user clicks "Confirm & Continue" on SetProfileScreen
   const handleProfileConfirm = async (updatedProfile) => {
-    setUserProfile(updatedProfile);
+    const finalProfile = { ...updatedProfile, isProfileComplete: true };
+    setUserProfile(finalProfile);
     const storedPhone = getStoredPhoneUser();
     const uid = auth.currentUser?.uid || storedPhone?.uid;
     if (uid) {
       try {
-        await saveUserProfile(uid, { ...updatedProfile, isProfileComplete: true });
         localStorage.setItem(`connect_profile_setup_done_${uid}`, 'true');
+        localStorage.setItem('connect_current_page', 'home');
+        window.history.replaceState({ page: 'home' }, '', getUrlForPage('home'));
+        await saveUserProfile(uid, finalProfile);
       } catch (e) {
         console.warn('saveUserProfile error:', e);
       }
@@ -645,6 +829,9 @@ export default function App() {
     }
   };
 
+  // Ref to track processed payment transaction IDs and prevent double coin execution in StrictMode
+  const processedTxnsRef = useRef(new Set());
+
   // ── Server-Side PayU Verification Callback Handler ──
   useEffect(() => {
     try {
@@ -654,7 +841,26 @@ export default function App() {
       const token = params.get('token');
 
       if (status && txnid) {
+        // Prevent 2x execution: if this transaction ID was already processed, ignore!
+        if (processedTxnsRef.current.has(txnid)) {
+          return;
+        }
+        try {
+          if (localStorage.getItem(`connect_processed_txn_${txnid}`) === 'true') {
+            return;
+          }
+        } catch (e) {}
+
+        // Clean query parameters from URL immediately to prevent re-execution on re-render/popstate
+        const cleanUrl = window.location.pathname + window.location.hash;
+        window.history.replaceState(null, '', cleanUrl);
+
         if (status === 'success' && token) {
+          processedTxnsRef.current.add(txnid);
+          try {
+            localStorage.setItem(`connect_processed_txn_${txnid}`, 'true');
+          } catch (e) {}
+
           showToast('Verifying payment server-side...');
           const verifyPayment = async () => {
             try {
@@ -755,17 +961,12 @@ export default function App() {
               }
             } catch (err) {
               showToast('Could not verify payment with server.');
-            } finally {
-              const cleanUrl = window.location.pathname + window.location.hash;
-              window.history.replaceState(null, '', cleanUrl);
             }
           };
           verifyPayment();
         } else if (status === 'failure' || status === 'cancel') {
           const msg = params.get('msg') || 'Payment was cancelled or failed.';
           showToast(`❌ ${msg}`);
-          const cleanUrl = window.location.pathname + window.location.hash;
-          window.history.replaceState(null, '', cleanUrl);
         }
       }
     } catch (e) {}
@@ -1038,6 +1239,9 @@ export default function App() {
             coins={coins}
             userProfile={userProfile}
             uid={currentUid}
+            favCount={favourites.size}
+            favourites={favourites}
+            onFavToggle={handleToggleFav}
             onRewardClaimed={(awarded, newBalance) => {
               if (typeof newBalance === 'number') {
                 setCoins(newBalance);
@@ -1092,6 +1296,14 @@ export default function App() {
             userProfile={userProfile}
             onInitiateVipPayment={handleInitiateVipPayment}
             onAddCoins={handleAddCoins}
+            onRewardClaimed={(awarded, newBalance) => {
+              if (typeof newBalance === 'number') {
+                setCoins(newBalance);
+                coinsRef.current = newBalance;
+              } else {
+                handleAddCoins(awarded);
+              }
+            }}
             onBack={() => goToPage('profile')}
             onNavigateTab={(tab) => {
               if (tab === 'call') {
@@ -1127,11 +1339,21 @@ export default function App() {
           vipEntitlement={vipEntitlement}
           uid={currentUid}
           isGuest={isGuest}
+          favourites={favourites}
+          onFavToggle={handleToggleFav}
           initialTab={initialHomeTab}
           initialCallingExpert={autoStartExpert}
           onClearAutoStartExpert={() => setAutoStartExpert(null)}
           onLogout={handleLogout}
           onAddCoins={handleAddCoins}
+          onRewardClaimed={(awarded, newBalance) => {
+            if (typeof newBalance === 'number') {
+              setCoins(newBalance);
+              coinsRef.current = newBalance;
+            } else {
+              handleAddCoins(awarded);
+            }
+          }}
           onDeductCoins={handleDeductCoins}
           onOpenWallet={() => goToPage('wallet')}
           onOpenVip={() => goToPage('vip')}

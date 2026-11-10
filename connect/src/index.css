@@ -24,6 +24,22 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ── Global Image & Media Drag Lock ── */
+img,
+svg,
+picture,
+video {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 html, body {
   width: 100%;
   min-height: 100vh;
@@ -2278,6 +2294,77 @@ html, body {
   font-weight: 700;
   color: #fff;
   letter-spacing: 0.2px;
+}
+
+/* ── Passbook Summary Banner ── */
+.txn-summary-banner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  background: rgba(36, 8, 48, 0.75);
+  border: 1px solid rgba(255, 65, 165, 0.25);
+  border-radius: 12px;
+  padding: 10px 8px;
+  margin-bottom: 12px;
+}
+
+.txn-summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2px;
+}
+
+.txn-summary-lbl {
+  font-size: 10px;
+  color: #c9b4d5;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.txn-summary-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.txn-summary-val.highlight {
+  color: #FFD700;
+}
+
+.txn-summary-val.credit {
+  color: #4ade80;
+}
+
+.txn-summary-val.debit {
+  color: #f87171;
+}
+
+/* ── Running Balance & Category Badges ── */
+.txn-category-badge {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  font-size: 9.5px;
+  font-weight: 600;
+  background: rgba(255, 42, 141, 0.15);
+  border: 1px solid rgba(255, 42, 141, 0.3);
+  color: #ff9ed2;
+  margin-top: 2px;
+}
+
+.txn-balance-after-pill {
+  font-size: 10px;
+  font-weight: 600;
+  color: #ffd54f;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-top: 3px;
+  white-space: nowrap;
 }
 
 .txn-filter-row {

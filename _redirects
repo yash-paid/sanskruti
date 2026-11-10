@@ -19,18 +19,27 @@ https://connect.sanskrutiservice.in/default-avatars/*  /connect/dist/default-ava
 https://connect.sanskrutiservice.in/*                 /connect/dist/index.html             200!
 https://connect.sanskrutiservice.in                   /connect/dist/index.html             200!
 
+# ==============================================================================
 # CONNECT Path on main domain: sanskrutiservice.in/connect
-/connect                                              /connect/                            301!
-/connect/                                             /connect/dist/index.html             200!
+# ==============================================================================
+
+# 1. Connect static assets (MUST precede redirects and SPA wildcard)
 /connect/assets/*                                     /connect/dist/assets/:splat          200!
 /connect/default-avatars/*                            /connect/dist/default-avatars/:splat 200!
 /connect/dist/assets/*                                /connect/dist/assets/:splat          200!
 /connect/dist/default-avatars/*                       /connect/dist/default-avatars/:splat 200!
-/connect/dist/*                                       /connect/dist/index.html             200!
-/connect/dist                                         /connect/dist/index.html             200!
-/connect/*                                            /connect/dist/index.html             200!
 /assets/*                                             /connect/dist/assets/:splat          200!
 /default-avatars/*                                    /connect/dist/default-avatars/:splat 200!
+
+# 2. Canonical redirect: Prevent public exposure of /connect/dist paths
+/connect/dist/index.html                              /connect/                            301!
+/connect/dist/                                        /connect/                            301!
+/connect/dist                                         /connect/                            301!
+
+# 3. CONNECT SPA Rewrites (Direct 200 to dist/index.html)
+/connect                                              /connect/dist/index.html             200!
+/connect/                                             /connect/dist/index.html             200!
+/connect/*                                            /connect/dist/index.html             200!
 
 # 3. EBOOK LEGAL & UTILITY PAGES
 /payment-status.html                      /payment-status.html                      200

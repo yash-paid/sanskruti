@@ -6,6 +6,7 @@ import {
   COIN_PACKAGES,
   getPurchasedPackIds,
   markPackAsPurchased,
+  ONE_TIME_PURCHASE_PACK_IDS,
 } from '../data/packages';
 
 // Graphic matching the reference image: gold coins stack + sparkles + pink exclamation badge
@@ -124,9 +125,23 @@ export default function InsufficientCoinsModal({
   }, []);
 
   // Filter out any packs that have already been purchased and take the next 3 available packs
-  const availablePacks = COIN_PACKAGES.filter(
+  // Strictly: only 19, 49, 99 disappear after purchase. All other packs (149, 199, 499, 999...) remain permanently visible.
+  let availablePacks = COIN_PACKAGES.filter(
     (p) => !purchasedPackIds.includes(p.id)
   ).slice(0, 3);
+
+  // Fallback safeguard: If all 3 one-time packs were purchased or availablePacks is empty,
+  // show the recurring recharge packs (₹149, ₹199, ₹499, etc.)
+  if (availablePacks.length === 0) {
+    availablePacks = COIN_PACKAGES.filter(
+      (p) => !ONE_TIME_PURCHASE_PACK_IDS.includes(p.id)
+    ).slice(0, 3);
+  }
+
+  // Safety fallback: NEVER show an empty list
+  if (availablePacks.length === 0) {
+    availablePacks = COIN_PACKAGES.slice(0, 3);
+  }
 
   // Compute default selection: popular pack if available, or first pack
   const defaultPackId =
@@ -192,11 +207,22 @@ export default function InsufficientCoinsModal({
 
         {/* ── Heading & Subtitle ── */}
         <h2 className="insufficient-title">
-          {t('insufficient_title_prefix', "You don't have enough")}{' '}
-          <span className="pink-highlight">{t('insufficient_title_coins', 'Coins')}</span>!
+          {Number(coins) < (expert?.price || 30) ? (
+            <>
+              {t('insufficient_title_prefix', "You don't have enough")}{' '}
+              <span className="pink-highlight">{t('insufficient_title_coins', 'Coins')}</span>!
+            </>
+          ) : (
+            <>
+              {t('recharge_coins_title', 'Recharge More')}{' '}
+              <span className="pink-highlight">{t('insufficient_title_coins', 'Coins')}</span>
+            </>
+          )}
         </h2>
         <p className="insufficient-subtitle">
-          {t('insufficient_subtitle', 'Recharge your wallet to make a call.')}
+          {Number(coins) < (expert?.price || 30)
+            ? t('insufficient_subtitle', 'Recharge your wallet to make a call.')
+            : t('recharge_subtitle_active', 'Top up your wallet to continue calls & send gifts.')}
         </p>
 
         {/* ── Dynamic Balance Pill ── */}
