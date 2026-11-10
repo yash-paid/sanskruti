@@ -36,10 +36,18 @@ import { useLanguage } from '../context/LanguageContext';
 import heartLogoImg from '../../assets/images/heart-logo-transparent.png';
 import { DEFAULT_AVATARS } from '../data/defaultAvatars';
 import { fetchUserCallHistory, fetchUserVipEntitlement, saveUserProfile, redeemPromoCode } from '../firebase/userService';
+import {
+  getLocalCallHistory,
+  getStoredVipEntitlement,
+  saveStoredVipEntitlement,
+  claimVipDailyBonus,
+  getKolkataDateString,
+} from '../firebase/rewardService';
 
 export default function ProfileScreen({
   coins = 0,
   userProfile,
+  vipEntitlement: propVipEntitlement,
   uid,
   favCount: propFavCount,
   favourites,
@@ -81,9 +89,59 @@ export default function ProfileScreen({
   const [promoCodeInput, setPromoCodeInput] = useState('');
   const [isRedeeming, setIsRedeeming] = useState(false);
 
-  const [callHistory, setCallHistory] = useState([]);
+  const [callHistory, setCallHistory] = useState(() => getLocalCallHistory(uid));
   const [isLoadingCalls, setIsLoadingCalls] = useState(false);
-  const [activeVip, setActiveVip] = useState(null);
+  const [activeVip, setActiveVip] = useState(() => {
+    return propVipEntitlement || getStoredVipEntitlement(uid);
+  });
+
+  const today = getKolkataDateString();
+  const [isVipBonusClaimedToday, setIsVipBonusClaimedToday] = useState(() => {
+    try {
+      return localStorage.getItem(`connect_vip_claimed_${today}_${uid}`) === 'true';
+    } catch (e) {
+      return false;
+    }
+  });
+  const [isClaimingVipBonus, setIsClaimingVipBonus] = useState(false);
+
+  const handleClaimVipBonus = async () => {
+    if (!activeVip || !activeVip.active || isVipBonusClaimedToday || isClaimingVipBonus) return;
+    setIsClaimingVipBonus(true);
+    try {
+      const res = await claimVipDailyBonus(uid);
+      const bonus = res.bonusAmount || activeVip.dailyBonusCoins || 1200;
+      setIsVipBonusClaimedToday(true);
+      onRewardClaimed?.(bonus, res.newBalance);
+      onToast?.(`👑 Claimed ${activeVip.planName} Daily Bonus: +${bonus} Coins! 🎉`);
+    } catch (err) {
+      console.warn('VIP bonus claim error:', err);
+      onToast?.(err.message || 'Could not claim VIP daily bonus.');
+    } finally {
+      setIsClaimingVipBonus(false);
+    }
+  };
+
+  React.useEffect(() => {
+    if (propVipEntitlement && propVipEntitlement.active) {
+      setActiveVip(propVipEntitlement);
+    }
+  }, [propVipEntitlement]);
+
+  React.useEffect(() => {
+    const handleVipUpdate = (e) => {
+      if (e?.detail) setActiveVip(e.detail);
+    };
+    const handleCallUpdate = () => {
+      setCallHistory(getLocalCallHistory(uid));
+    };
+    window.addEventListener('connect_vip_updated', handleVipUpdate);
+    window.addEventListener('connect_call_history_updated', handleCallUpdate);
+    return () => {
+      window.removeEventListener('connect_vip_updated', handleVipUpdate);
+      window.removeEventListener('connect_call_history_updated', handleCallUpdate);
+    };
+  }, [uid]);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -92,7 +150,23 @@ export default function ProfileScreen({
       fetchUserCallHistory(uid)
         .then((calls) => {
           if (isMounted) {
-            setCallHistory(calls || []);
+            const local = getLocalCallHistory(uid);
+            const seen = new Set();
+            const merged = [];
+            for (const c of calls || []) {
+              if (c.id && !seen.has(c.id)) {
+                seen.add(c.id);
+                merged.push(c);
+              }
+            }
+            for (const c of local) {
+              if (c.id && !seen.has(c.id)) {
+                seen.add(c.id);
+                merged.push(c);
+              }
+            }
+            merged.sort((a, b) => new Date(b.timestamp || b.time) - new Date(a.timestamp || a.time));
+            setCallHistory(merged);
             setIsLoadingCalls(false);
           }
         })
@@ -104,11 +178,20 @@ export default function ProfileScreen({
         .then((res) => {
           if (isMounted && res?.entitlement && res.entitlement.active) {
             setActiveVip(res.entitlement);
+            saveStoredVipEntitlement(uid, res.entitlement);
           } else if (isMounted) {
-            setActiveVip(null);
+            const cached = getStoredVipEntitlement(uid);
+            if (cached && cached.active) {
+              setActiveVip(cached);
+            }
           }
         })
-        .catch(() => {});
+        .catch(() => {
+          if (isMounted) {
+            const cached = getStoredVipEntitlement(uid);
+            if (cached && cached.active) setActiveVip(cached);
+          }
+        });
     }
     return () => {
       isMounted = false;
@@ -392,36 +475,185 @@ export default function ProfileScreen({
           </div>
         </div>
 
-        {/* ── Prominent VIP Membership Banner / Button ── */}
-        <div className="profile-vip-banner-card" onClick={onOpenVip}>
-          <div className="vip-banner-left">
-            <div className="vip-crown-icon-wrap">
-              <Crown size={22} color="#FFD700" />
-            </div>
-            <div className="vip-banner-text">
-              <div className="vip-banner-title-row">
-                <span className="vip-banner-title">{activeVip ? activeVip.planName : t('vip_membership', 'VIP Membership')}</span>
-                <span className="vip-exclusive-pill">{activeVip ? 'ACTIVE' : 'EXCLUSIVE'}</span>
-              </div>
-              <p className="vip-banner-subtitle">
-                {activeVip
-                  ? `Valid until ${activeVip.expiryDate} • Priority Visibility & Daily Bonus Active`
-                  : 'No active membership • Priority calls, 10% bonus coins & weekly deals'}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="vip-view-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenVip?.();
+        {/* ── Prominent VIP Membership Banner / Hub ── */}
+        {activeVip && (activeVip.active || activeVip.status === 'active') ? (
+          <div
+            className="profile-vip-banner-card active-vip-card"
+            style={{
+              background: 'radial-gradient(circle at 50% 0%, rgba(0, 229, 255, 0.22), rgba(20, 2, 32, 0.95) 75%)',
+              border: '1.5px solid rgba(0, 229, 255, 0.55)',
+              boxShadow: '0 0 25px rgba(0, 229, 255, 0.3)',
+              borderRadius: '24px',
+              padding: '18px 16px',
+              marginBottom: '16px',
             }}
           >
-            <span>{activeVip ? 'View Plan' : t('upgrade_btn', 'Upgrade')}</span>
-            <ChevronRight size={16} />
-          </button>
-        </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #00e5ff, #0072ff)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 0 15px rgba(0, 229, 255, 0.6)',
+                  }}
+                >
+                  <Crown size={22} color="#fff" />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <h3 style={{ fontSize: '17px', fontWeight: 800, color: '#fff', margin: 0 }}>
+                      {activeVip.planName || 'Diamond VIP'}
+                    </h3>
+                    <span
+                      style={{
+                        background: '#00e5ff',
+                        color: '#05010a',
+                        fontSize: '10px',
+                        fontWeight: 900,
+                        padding: '2px 8px',
+                        borderRadius: '9999px',
+                        letterSpacing: '0.5px',
+                      }}
+                    >
+                      ACTIVATED
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#a5f3fc', marginTop: '2px' }}>
+                    🟢 Active till {activeVip.expiryDate || '30 Days'}
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onOpenVip}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(0, 229, 255, 0.45)',
+                  color: '#00e5ff',
+                  borderRadius: '9999px',
+                  padding: '5px 12px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                VIP Club ›
+              </button>
+            </div>
+
+            {/* Daily VIP Bonus Claim Bar */}
+            <div
+              style={{
+                background: 'rgba(0, 0, 0, 0.4)',
+                border: '1px solid rgba(255, 215, 0, 0.4)',
+                borderRadius: '16px',
+                padding: '12px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '12px',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#ffd700' }}>
+                  🪙 Daily VIP Coins Benefit
+                </div>
+                <div style={{ fontSize: '11.5px', color: '#c9b4d5', marginTop: '1px' }}>
+                  +{activeVip.dailyBonusCoins || 1200} Free Coins every day
+                </div>
+              </div>
+              {isVipBonusClaimedToday ? (
+                <span
+                  style={{
+                    background: 'rgba(74, 222, 128, 0.15)',
+                    border: '1px solid #4ade80',
+                    color: '#4ade80',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                    padding: '6px 12px',
+                    borderRadius: '9999px',
+                  }}
+                >
+                  ✓ Claimed Today
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleClaimVipBonus}
+                  disabled={isClaimingVipBonus}
+                  style={{
+                    background: 'linear-gradient(90deg, #ffd700, #ffae00)',
+                    border: 'none',
+                    color: '#1a0026',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    padding: '7px 14px',
+                    borderRadius: '9999px',
+                    cursor: isClaimingVipBonus ? 'wait' : 'pointer',
+                    boxShadow: '0 3px 12px rgba(255, 215, 0, 0.45)',
+                  }}
+                >
+                  {isClaimingVipBonus ? 'Claiming...' : `Collect +${activeVip.dailyBonusCoins || 1200}`}
+                </button>
+              )}
+            </div>
+
+            {/* Active VIP Benefits Badges */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: '8px',
+              }}
+            >
+              <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '6px 10px', borderRadius: '10px', fontSize: '11px', color: '#e0f2fe' }}>
+                ✓ 10% Extra Bonus Coins
+              </div>
+              <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '6px 10px', borderRadius: '10px', fontSize: '11px', color: '#e0f2fe' }}>
+                ✓ Priority Call Visibility
+              </div>
+              <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '6px 10px', borderRadius: '10px', fontSize: '11px', color: '#e0f2fe' }}>
+                ✓ VIP Glowing Profile Crown
+              </div>
+              <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '6px 10px', borderRadius: '10px', fontSize: '11px', color: '#e0f2fe' }}>
+                ✓ Exclusive Video Call Deals
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="profile-vip-banner-card" onClick={onOpenVip}>
+            <div className="vip-banner-left">
+              <div className="vip-crown-icon-wrap">
+                <Crown size={22} color="#FFD700" />
+              </div>
+              <div className="vip-banner-text">
+                <div className="vip-banner-title-row">
+                  <span className="vip-banner-title">{t('vip_membership', 'VIP Membership')}</span>
+                  <span className="vip-exclusive-pill">EXCLUSIVE</span>
+                </div>
+                <p className="vip-banner-subtitle">
+                  No active membership • Priority calls, 10% bonus coins & weekly deals
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              className="vip-view-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenVip?.();
+              }}
+            >
+              <span>{t('upgrade_btn', 'Upgrade')}</span>
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
 
         {/* ── 1.5 7-Day Daily Login Reward Calendar (PART 2) ── */}
         <ProfileDailyRewardCalendar

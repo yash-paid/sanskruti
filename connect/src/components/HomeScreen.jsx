@@ -22,6 +22,7 @@ import DemoPostCallModal from './DemoPostCallModal';
 import heartLogoImg from '../../assets/images/heart-logo-transparent.png';
 import { useLanguage } from '../context/LanguageContext';
 import { recordUserCall } from '../firebase/userService';
+import { recordLocalCall, recordLocalTransaction } from '../firebase/rewardService';
 
 const ALL_EXPERTS = [...TOP_EXPERTS, ...NORMAL_EXPERTS];
 
@@ -538,12 +539,27 @@ export default function HomeScreen({
       if (uid && expert) {
         const isTop = expert.id === 'simran' || expert.id === 'uma' || expert.top;
         const rate = isTop ? 65 : (expert.price || 30);
+        const coinsSpent = Math.max(1, Math.ceil(duration / 60)) * rate;
+        recordLocalCall(uid, {
+          name: expert.name,
+          type: 'Video',
+          duration: formatted,
+          durationSeconds: duration,
+          coins: coinsSpent,
+        });
+        recordLocalTransaction(uid, {
+          type: 'call',
+          title: `Video Call with ${expert.name} (${formatted})`,
+          amount: coinsSpent,
+          isCredit: false,
+          metadata: { expertId: expert.id, expertName: expert.name, durationSeconds: duration },
+        });
         recordUserCall(uid, {
           name: expert.name,
           type: 'Video',
           duration: formatted,
           durationSeconds: duration,
-          coins: Math.max(1, Math.ceil(duration / 60)) * rate,
+          coins: coinsSpent,
         }).catch(() => { });
       }
     }

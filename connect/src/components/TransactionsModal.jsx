@@ -16,11 +16,99 @@ import {
 import { fetchUserLedger } from '../firebase/rewardService';
 import { useLanguage } from '../context/LanguageContext';
 
+const PACK_META = {
+  'pack-19': { coins: 50, price: 19, title: 'Coins Recharged - 50 Coins (₹19)' },
+  'pack-49': { coins: 160, price: 49, title: 'Coins Recharged - 160 Coins (₹49)' },
+  'pack-99': { coins: 440, price: 99, title: 'Coins Recharged - 440 Coins (₹99)' },
+  'pack-149': { coins: 880, price: 149, title: 'Coins Recharged - 880 Coins (₹149)' },
+  'pack-199': { coins: 1250, price: 199, title: 'Coins Recharged - 1,250 Coins (₹199)' },
+  'pack-499': { coins: 2400, price: 499, title: 'Coins Recharged - 2,400 Coins (₹499)' },
+  'pack-999': { coins: 5000, price: 999, title: 'Coins Recharged - 5,000 Coins (₹999)' },
+  'pack-1999': { coins: 11000, price: 1999, title: 'Coins Recharged - 11,000 Coins (₹1,999)' },
+  'pack-4999': { coins: 30000, price: 4999, title: 'Coins Recharged - 30,000 Coins (₹4,999)' },
+  'pack-9999': { coins: 66000, price: 9999, title: 'Coins Recharged - 66,000 Coins (₹9,999)' },
+};
+
 const getLocalLedger = (userId) => {
   if (!userId) return [];
   try {
     const raw = localStorage.getItem(`connect_local_ledger_${userId}`);
-    return raw ? JSON.parse(raw) : [];
+    const list = raw ? JSON.parse(raw) : [];
+
+    // Reconcile any purchased packs from connect_purchased_packs if not in ledger
+    try {
+      const purchased = JSON.parse(localStorage.getItem('connect_purchased_packs') || '[]');
+      if (Array.isArray(purchased)) {
+        purchased.forEach((packId) => {
+          const cleanId = packId.replace(/^connect-/, '');
+          const info = PACK_META[cleanId] || PACK_META[`pack-${cleanId}`];
+          const exists = list.some((item) => item.metadata?.packId === cleanId || item.title?.includes(cleanId));
+          if (!exists && info) {
+            list.push({
+              id: `TXN-PACK-${cleanId}`,
+              type: 'purchase',
+              title: info.title,
+              coins: info.coins,
+              isCredit: true,
+              balanceAfter: info.coins,
+              status: 'Completed',
+              date: 'Recent',
+              timestamp: new Date().toISOString(),
+              metadata: { packId: cleanId, price: info.price },
+            });
+          }
+        });
+      }
+    } catch (_) {}
+
+    // Reconcile call history into debits if not in ledger
+    try {
+      const calls = JSON.parse(localStorage.getItem(`connect_call_history_${userId}`) || '[]');
+      if (Array.isArray(calls)) {
+        calls.forEach((call) => {
+          const exists = list.some((item) => item.id === `TXN-${call.id}` || item.metadata?.callId === call.id);
+          if (!exists && call.coins) {
+            list.push({
+              id: `TXN-${call.id}`,
+              type: 'call',
+              title: `Video Call with ${call.name || 'Expert'}`,
+              coins: call.coins,
+              isCredit: false,
+              balanceAfter: 0,
+              status: 'Completed',
+              date: call.time || 'Recent',
+              timestamp: call.timestamp || new Date().toISOString(),
+              metadata: { callId: call.id, expertName: call.name, duration: call.duration },
+            });
+          }
+        });
+      }
+    } catch (_) {}
+
+    // Reconcile VIP membership purchase
+    try {
+      const vipActive = localStorage.getItem(`connect_vip_active_${userId}`) === 'true';
+      const vipEntitlement = JSON.parse(localStorage.getItem(`connect_vip_entitlement_${userId}`) || 'null');
+      if (vipActive || (vipEntitlement && vipEntitlement.active)) {
+        const planName = vipEntitlement?.planName || 'Diamond VIP';
+        const exists = list.some((item) => item.type === 'vip_purchase' || item.title?.includes('VIP'));
+        if (!exists) {
+          list.push({
+            id: `TXN-VIP-${userId}`,
+            type: 'vip_purchase',
+            title: `${planName} Membership Activated (30 Days)`,
+            coins: 0,
+            isCredit: true,
+            status: 'Completed',
+            date: vipEntitlement?.expiryDate ? `Active till ${vipEntitlement.expiryDate}` : 'Active',
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+    } catch (_) {}
+
+    list.sort((a, b) => new Date(b.timestamp || b.date) - new Date(a.timestamp || a.date));
+    return list;
   } catch (e) {
     return [];
   }
