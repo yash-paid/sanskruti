@@ -165,6 +165,11 @@ export default function App() {
       return false;
     }
 
+    // Immediately update UI balance optimistically
+    const nextLocal = Math.max(0, coinsRef.current - amount);
+    coinsRef.current = nextLocal;
+    setCoins(nextLocal);
+
     if (currentUid) {
       try {
         const res = await transactUserCoins(currentUid, {
@@ -174,18 +179,22 @@ export default function App() {
           title: metadata.title || 'Video Call Coins',
           metadata,
         });
-        setCoins(res.newBalance);
-        coinsRef.current = res.newBalance;
+        if (typeof res?.newBalance === 'number') {
+          setCoins(res.newBalance);
+          coinsRef.current = res.newBalance;
+        }
         return true;
       } catch (err) {
+        console.error('transactUserCoins debit error:', err);
+        // Rollback on server error
+        const rolledBack = coinsRef.current + amount;
+        coinsRef.current = rolledBack;
+        setCoins(rolledBack);
         showToast(`⚠️ ${err.message || 'Transaction failed'}`);
         return false;
       }
     }
 
-    const next = Math.max(0, coinsRef.current - amount);
-    coinsRef.current = next;
-    setCoins(next);
     return true;
   };
 

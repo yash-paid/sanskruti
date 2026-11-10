@@ -217,9 +217,17 @@ exports.handler = async (event, context) => {
 
     let body = {};
     if (event.body) {
-      try {
-        body = JSON.parse(event.body);
-      } catch (e) {}
+      if (typeof event.body === 'object') {
+        body = event.body;
+      } else if (typeof event.body === 'string') {
+        try {
+          body = JSON.parse(event.body);
+        } catch (e) {
+          try {
+            body = JSON.parse(Buffer.from(event.body, event.isBase64Encoded ? 'base64' : 'utf8').toString());
+          } catch (e2) {}
+        }
+      }
     }
 
     // Target UID specified in query or body
@@ -314,8 +322,9 @@ exports.handler = async (event, context) => {
     // ─────────────────────────────────────────────────────────────
     if (action === 'transact_coins' && event.httpMethod === 'POST') {
       const user = getOrCreateUserRecord(store, effectiveUid);
-      const amount = parseInt(body.amount, 10);
-      const isCredit = Boolean(body.isCredit);
+      const rawAmount = body.amount !== undefined ? body.amount : urlParams.amount;
+      const amount = parseInt(rawAmount, 10);
+      const isCredit = body.isCredit !== undefined ? Boolean(body.isCredit) : (urlParams.isCredit === 'true');
       const type = body.type || (isCredit ? 'purchase' : 'call');
       const title = body.title || (isCredit ? 'Coins Recharged' : 'Video Call Spend');
 

@@ -20,17 +20,17 @@ https://connect.sanskrutiservice.in/*                 /connect/dist/index.html  
 https://connect.sanskrutiservice.in                   /connect/dist/index.html             200!
 
 # CONNECT Path on main domain: sanskrutiservice.in/connect
+/connect                                              /connect/                            301!
+/connect/                                             /connect/dist/index.html             200!
+/connect/assets/*                                     /connect/dist/assets/:splat          200!
+/connect/default-avatars/*                            /connect/dist/default-avatars/:splat 200!
 /connect/dist/assets/*                                /connect/dist/assets/:splat          200!
 /connect/dist/default-avatars/*                       /connect/dist/default-avatars/:splat 200!
 /connect/dist/*                                       /connect/dist/index.html             200!
 /connect/dist                                         /connect/dist/index.html             200!
-/connect/assets/*                                     /connect/dist/assets/:splat          200!
-/connect/default-avatars/*                            /connect/dist/default-avatars/:splat 200!
 /connect/*                                            /connect/dist/index.html             200!
-/connect                                              /connect/dist/index.html             200!
-/connect/                                             /connect/dist/index.html             200!
-/assets/*                                             /connect/dist/assets/:splat          200
-/default-avatars/*                                    /connect/dist/default-avatars/:splat 200
+/assets/*                                             /connect/dist/assets/:splat          200!
+/default-avatars/*                                    /connect/dist/default-avatars/:splat 200!
 
 # 3. EBOOK LEGAL & UTILITY PAGES
 /payment-status.html                      /payment-status.html                      200

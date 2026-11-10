@@ -152,6 +152,11 @@ export default function VideoCallScreen({
   // Per-minute coin rate
   const callRate = expert?.price || 30;
   const hasDeductedFirstMinuteRef = useRef(false);
+  const coinsRef = useRef(coins);
+
+  useEffect(() => {
+    coinsRef.current = coins;
+  }, [coins]);
 
   // Call Control Toggles
   const [isMuted, setIsMuted] = useState(false);
@@ -326,21 +331,39 @@ export default function VideoCallScreen({
   useEffect(() => {
     if (callState === 'active' && !hasDeductedFirstMinuteRef.current) {
       hasDeductedFirstMinuteRef.current = true;
-      const success = onDeductCoins ? onDeductCoins(callRate) : true;
-      if (success) {
-        onToast?.(`🪙 Deducted ${callRate} Coins (Minute 1 started)`);
-      } else {
-        setTimeout(() => {
-          onToast?.('Insufficient coins to continue call!');
+      (async () => {
+        if (coinsRef.current < callRate) {
+          onToast?.('⚠️ Insufficient coins to start call! Please recharge.');
           if (onInsufficientCoins) {
             onInsufficientCoins();
           } else {
             onEndCall?.(0);
           }
-        }, 50);
-      }
+          return;
+        }
+
+        const success = onDeductCoins
+          ? await onDeductCoins(callRate, {
+              type: 'call',
+              title: `Call with ${expert?.name || 'Expert'} (Min 1)`,
+              expertId: expert?.id,
+              expertName: expert?.name,
+            })
+          : true;
+
+        if (success) {
+          onToast?.(`🪙 Deducted ${callRate} Coins (Minute 1 started)`);
+        } else {
+          onToast?.('⚠️ Insufficient coins to continue call!');
+          if (onInsufficientCoins) {
+            onInsufficientCoins();
+          } else {
+            onEndCall?.(0);
+          }
+        }
+      })();
     }
-  }, [callState, callRate, onDeductCoins, onInsufficientCoins, onEndCall, onToast]);
+  }, [callState, callRate, onDeductCoins, onInsufficientCoins, onEndCall, onToast, expert]);
 
   // B. Deduct subsequent minutes every 60 seconds (at 60s, 120s, 180s, etc.)
   useEffect(() => {
@@ -350,21 +373,39 @@ export default function VideoCallScreen({
           const nextSec = prev + 1;
           // Every 60 seconds of conversation, deduct coins for the next minute
           if (nextSec > 0 && nextSec % 60 === 0) {
-            const success = onDeductCoins ? onDeductCoins(callRate) : true;
-            if (success) {
-              const nextMin = Math.floor(nextSec / 60) + 1;
-              onToast?.(`🪙 Deducted ${callRate} Coins (Minute ${nextMin} started)`);
-            } else {
-              // Out of coins! End call and immediately open recharge modal
-              setTimeout(() => {
+            const nextMin = Math.floor(nextSec / 60) + 1;
+            (async () => {
+              if (coinsRef.current < callRate) {
                 onToast?.('Call ended: Coin balance exhausted!');
                 if (onInsufficientCoins) {
                   onInsufficientCoins();
                 } else {
                   onEndCall?.(nextSec);
                 }
-              }, 50);
-            }
+                return;
+              }
+
+              const success = onDeductCoins
+                ? await onDeductCoins(callRate, {
+                    type: 'call',
+                    title: `Call with ${expert?.name || 'Expert'} (Min ${nextMin})`,
+                    expertId: expert?.id,
+                    expertName: expert?.name,
+                  })
+                : true;
+
+              if (success) {
+                onToast?.(`🪙 Deducted ${callRate} Coins (Minute ${nextMin} started)`);
+              } else {
+                // Out of coins! End call and immediately open recharge modal
+                onToast?.('Call ended: Coin balance exhausted!');
+                if (onInsufficientCoins) {
+                  onInsufficientCoins();
+                } else {
+                  onEndCall?.(nextSec);
+                }
+              }
+            })();
           }
           return nextSec;
         });
@@ -376,7 +417,7 @@ export default function VideoCallScreen({
     return () => {
       if (durationTimerRef.current) clearInterval(durationTimerRef.current);
     };
-  }, [callState, callRate, onDeductCoins, onInsufficientCoins, onEndCall, onToast]);
+  }, [callState, callRate, onDeductCoins, onInsufficientCoins, onEndCall, onToast, expert]);
 
   /* ── 4. User Camera & Mic (PiP) Setup ── */
   const setupUserCamera = async (isFront = isFrontCamera) => {
@@ -627,11 +668,12 @@ export default function VideoCallScreen({
     });
   };
 
-  const handleSendGift = (gift) => {
+  const handleSendGift = async (gift) => {
+    const currentBalance = coinsRef.current !== undefined ? coinsRef.current : coins;
     // 1. Check if user has sufficient coins for this specific gift
-    if (coins < gift.cost) {
+    if (currentBalance < gift.cost) {
       setShowGiftModal(false);
-      onToast?.(`⚠️ You need ${gift.cost} Coins to send ${gift.name}! Your balance: ${coins} Coins. Please recharge.`);
+      onToast?.(`⚠️ You need ${gift.cost} Coins to send ${gift.name}! Your balance: ${currentBalance} Coins. Please recharge.`);
       if (onOpenRecharge) {
         onOpenRecharge();
       }
@@ -639,11 +681,23 @@ export default function VideoCallScreen({
     }
 
     // 2. User has enough coins -> attempt deduction
-    const success = onDeductCoins ? onDeductCoins(gift.cost) : false;
+    const success = onDeductCoins
+      ? await onDeductCoins(gift.cost, {
+          type: 'gift',
+          title: `Gift: ${gift.name} (${gift.emoji}) to ${expert?.name || 'Expert'}`,
+          giftKey: gift.key,
+          giftName: gift.name,
+          giftEmoji: gift.emoji,
+          cost: gift.cost,
+          expertId: expert?.id,
+          expertName: expert?.name,
+        })
+      : true;
+
     if (success) {
       setShowGiftModal(false);
       setActiveGiftAnim(gift);
-      onToast?.(`🎁 Sent ${gift.name} (${gift.emoji}) to ${expert.name}! (-${gift.cost} Coins)`);
+      onToast?.(`🎁 Sent ${gift.name} (${gift.emoji}) to ${expert?.name || 'Expert'}! (-${gift.cost} Coins)`);
     } else {
       setShowGiftModal(false);
       onToast?.(`⚠️ Insufficient coins! Please recharge to send ${gift.name}.`);
