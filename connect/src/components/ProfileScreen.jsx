@@ -25,6 +25,7 @@ import {
   Crown,
   Sparkles,
   Upload,
+  Gift,
 } from 'lucide-react';
 import { CoinStackGraphic } from './CoinGraphic';
 import TransactionsModal from './TransactionsModal';
@@ -34,7 +35,7 @@ import { calculateAge, getMaxDobFor18Plus, isAtLeast18 } from '../utils/dateUtil
 import { useLanguage } from '../context/LanguageContext';
 import heartLogoImg from '../../assets/images/heart-logo-transparent.png';
 import { DEFAULT_AVATARS } from '../data/defaultAvatars';
-import { fetchUserCallHistory, fetchUserVipEntitlement, saveUserProfile } from '../firebase/userService';
+import { fetchUserCallHistory, fetchUserVipEntitlement, saveUserProfile, redeemPromoCode } from '../firebase/userService';
 
 export default function ProfileScreen({
   coins = 0,
@@ -73,6 +74,9 @@ export default function ProfileScreen({
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const [showLanguageModal, setShowLanguageModal] = useState(false);
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [isRedeeming, setIsRedeeming] = useState(false);
 
   const [callHistory, setCallHistory] = useState([]);
   const [isLoadingCalls, setIsLoadingCalls] = useState(false);
@@ -433,20 +437,46 @@ export default function ProfileScreen({
               {coins.toLocaleString()} <span>{t('coins', 'Coins')}</span>
             </div>
           </div>
-          <button
-            type="button"
-            className="p-wallet-buy-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              onOpenWallet();
-            }}
-          >
-            {t('buy_coins', 'Buy Coins')}
-          </button>
+          <div className="p-wallet-btn-group">
+            <button
+              type="button"
+              className="p-wallet-claim-coins-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowClaimModal(true);
+              }}
+              title="Claim 50 Coins with code YASH"
+            >
+              🎁 Claim Coins
+            </button>
+            <button
+              type="button"
+              className="p-wallet-buy-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenWallet();
+              }}
+            >
+              {t('buy_coins', 'Buy Coins')}
+            </button>
+          </div>
         </div>
 
         {/* ── 4. Profile Menu List ── */}
         <div className="profile-menu-container">
+          {/* Claim Coins (Promo Code) Item */}
+          <div className="profile-menu-item promo-claim-menu-item" onClick={() => setShowClaimModal(true)}>
+            <div className="menu-icon-wrap promo-gift">
+              <Gift size={18} color="#FFD700" />
+            </div>
+            <div className="menu-text-wrap">
+              <span className="menu-item-title">Claim Coins (Promo Code)</span>
+              <span className="menu-item-sub">Use secret code YASH to claim 50 Free Coins</span>
+            </div>
+            <span className="promo-claim-pill">CLAIM 50</span>
+            <ChevronRight size={18} className="menu-arrow" />
+          </div>
+
           {/* VIP Membership Item */}
           <div className="profile-menu-item vip-highlight-item" onClick={onOpenVip}>
             <div className="menu-icon-wrap vip">
@@ -896,6 +926,93 @@ export default function ProfileScreen({
           onClose={() => setShowLanguageModal(false)}
           onToast={onToast}
         />
+      )}
+
+      {/* ── Claim Coins / Redeem Promo Code Modal ── */}
+      {showClaimModal && (
+        <div className="transactions-modal-overlay" role="dialog" aria-modal="true" onClick={() => setShowClaimModal(false)}>
+          <div className="transactions-modal-container claim-coins-modal-box" onClick={(e) => e.stopPropagation()}>
+            <div className="transactions-modal-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 22 }}>🎁</span>
+                <h2 className="txn-modal-title">Claim Free Coins</h2>
+              </div>
+              <button
+                className="txn-back-btn"
+                onClick={() => setShowClaimModal(false)}
+                aria-label="Close"
+              >
+                <X size={18} color="#fff" />
+              </button>
+            </div>
+
+            <div className="claim-coins-modal-body">
+              <div className="claim-coins-icon-circle">
+                <span className="claim-coins-emoji">🪙</span>
+              </div>
+              <h3 className="claim-coins-heading">Redeem Bonus Coins</h3>
+              <p className="claim-coins-sub">
+                Enter your secret promo code below to instantly get free coins added to your wallet!
+              </p>
+
+              <div className="claim-input-wrapper">
+                <input
+                  type="text"
+                  className="claim-promo-input"
+                  placeholder="Enter Code (e.g. YASH)"
+                  value={promoCodeInput}
+                  onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase().trim())}
+                  maxLength={15}
+                  autoFocus
+                />
+              </div>
+
+              <div className="claim-code-hint">
+                <Sparkles size={14} color="#ffd700" />
+                <span>Tip: Use secret code <strong>YASH</strong> for 50 Free Coins!</span>
+              </div>
+
+              <button
+                type="button"
+                className="claim-submit-btn"
+                disabled={isRedeeming || !promoCodeInput.trim()}
+                onClick={async () => {
+                  const code = promoCodeInput.trim().toUpperCase();
+                  if (!code) {
+                    onToast?.('Please enter a valid code');
+                    return;
+                  }
+                  setIsRedeeming(true);
+                  try {
+                    if (uid) {
+                      const res = await redeemPromoCode(uid, code);
+                      onRewardClaimed?.(res.coinsAwarded, res.newBalance);
+                      onToast?.(`🎉 Success! 50 Coins credited to your wallet with code ${code}!`);
+                      setShowClaimModal(false);
+                      setPromoCodeInput('');
+                    } else {
+                      // Guest or preview mode
+                      if (code === 'YASH') {
+                        onRewardClaimed?.(50);
+                        onToast?.('🎉 Success! 50 Coins credited to your wallet with code YASH!');
+                        setShowClaimModal(false);
+                        setPromoCodeInput('');
+                      } else {
+                        onToast?.('❌ Invalid code! Please enter correct code.');
+                      }
+                    }
+                  } catch (err) {
+                    onToast?.(err.message || 'Failed to redeem code.');
+                  } finally {
+                    setIsRedeeming(false);
+                  }
+                }}
+              >
+                {isRedeeming ? 'Claiming 50 Coins...' : 'Claim 50 Coins Now ⚡'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

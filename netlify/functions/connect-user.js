@@ -722,6 +722,88 @@ exports.handler = async (event, context) => {
     }
 
     // ─────────────────────────────────────────────────────────────
+    // 12.5 REDEEM PROMO CODE (e.g. Code "YASH" -> 50 Coins)
+    // ─────────────────────────────────────────────────────────────
+    if (action === 'redeem_code' && event.httpMethod === 'POST') {
+      const user = getOrCreateUserRecord(store, effectiveUid);
+      const rawCode = String(body.code || urlParams.code || '').trim().toUpperCase();
+
+      if (!rawCode) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: 'Promo code is required.' }),
+        };
+      }
+
+      if (!user.redeemed_codes) {
+        user.redeemed_codes = {};
+      }
+
+      if (user.redeemed_codes[rawCode]) {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({
+            error: `Code "${rawCode}" has already been claimed on this account.`,
+            alreadyRedeemed: true,
+          }),
+        };
+      }
+
+      let coinsAwarded = 0;
+      let promoTitle = '';
+
+      if (rawCode === 'YASH') {
+        coinsAwarded = 50;
+        promoTitle = 'Promo Code Redeemed (YASH)';
+      } else {
+        return {
+          statusCode: 400,
+          headers,
+          body: JSON.stringify({ error: 'Invalid promo code. Please enter a valid code.' }),
+        };
+      }
+
+      // Credit wallet atomically
+      user.wallet.coins += coinsAwarded;
+      user.wallet.updatedAt = new Date().toISOString();
+      user.redeemed_codes[rawCode] = {
+        claimedAt: new Date().toISOString(),
+        coinsAwarded,
+      };
+
+      // Ledger entry
+      const txnId = `TXN-PROMO-${Date.now().toString(36).toUpperCase()}`;
+      const ledgerEntry = {
+        id: txnId,
+        type: 'promo_code',
+        title: promoTitle,
+        coins: coinsAwarded,
+        isCredit: true,
+        balanceAfter: user.wallet.coins,
+        status: 'Completed',
+        date: getKolkataFormattedDateTime(),
+        timestamp: new Date().toISOString(),
+        metadata: { code: rawCode },
+      };
+      user.ledger.unshift(ledgerEntry);
+      saveStore(store);
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          code: rawCode,
+          coinsAwarded,
+          newBalance: user.wallet.coins,
+          message: `🎉 Success! 50 Coins added to your wallet with code ${rawCode}!`,
+        }),
+      };
+    }
+
+    // ─────────────────────────────────────────────────────────────
     // 13. CONTROLLED TEST CREDIT (Required for TEST A & TEST B)
     // ─────────────────────────────────────────────────────────────
     if (action === 'test_credit_coins' && event.httpMethod === 'POST') {

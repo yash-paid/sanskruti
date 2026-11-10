@@ -32,6 +32,7 @@ export default function WalletScreen({
   onNavigateTab,
   onOpenVip,
   onAddCoins,
+  onInitiateRecharge,
   onRequireLogin,
   onGoogleLogin,
   onToast,
@@ -74,17 +75,25 @@ export default function WalletScreen({
     onToast?.(`Selected ${pkg.coins} Coins Pack for ₹${pkg.price}`);
   };
 
-  const handleBuyPack = (e, pkg) => {
-    e.stopPropagation();
+  const handleBuyPack = async (e, pkg) => {
+    e?.stopPropagation?.();
     if (isGuest) {
       setShowLoginRequired(true);
       return;
     }
-    markPackAsPurchased(pkg.id);
-    setPurchasedPackIds(getPurchasedPackIds());
     setSelectedPackId(pkg.id);
-    onAddCoins?.(pkg.coins);
-    onToast?.(`🎉 Success! Added ${pkg.coins} Coins to your balance.`);
+    if (onInitiateRecharge) {
+      try {
+        await onInitiateRecharge(pkg);
+      } catch (err) {
+        onToast?.(err.message || 'Payment initiation failed.');
+      }
+    } else {
+      markPackAsPurchased(pkg.id);
+      setPurchasedPackIds(getPurchasedPackIds());
+      onAddCoins?.(pkg.coins);
+      onToast?.(`🎉 Success! Added ${pkg.coins} Coins to your balance.`);
+    }
   };
 
   return (

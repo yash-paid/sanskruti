@@ -174,6 +174,18 @@ export const recordUserCall = async (uid, callData) => {
 };
 
 /**
+ * Redeem promo code (e.g. YASH -> 50 Coins)
+ */
+export const redeemPromoCode = async (uid, code) => {
+  if (!uid) throw new Error('Authentication required');
+  return await apiCall('redeem_code', {
+    uid,
+    method: 'POST',
+    body: { code },
+  });
+};
+
+/**
  * Controlled test credit operation for verification
  */
 export const testCreditCoins = async (uid, amount) => {

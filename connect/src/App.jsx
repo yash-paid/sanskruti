@@ -714,8 +714,27 @@ export default function App() {
                     'connect-pack-99': 440,
                     'connect-pack-149': 880,
                     'connect-pack-199': 1250,
+                    'connect-pack-499': 2400,
+                    'connect-pack-999': 5000,
+                    'connect-pack-1999': 11000,
+                    'connect-pack-4999': 30000,
+                    'connect-pack-9999': 66000,
+                    'connect-pack-14999': 100000,
+                    'connect-pack-29999': 200000,
+                    'pack-19': 50,
+                    'pack-49': 160,
+                    'pack-99': 440,
+                    'pack-149': 880,
+                    'pack-199': 1250,
+                    'pack-499': 2400,
+                    'pack-999': 5000,
+                    'pack-1999': 11000,
+                    'pack-4999': 30000,
+                    'pack-9999': 66000,
+                    'pack-14999': 100000,
+                    'pack-29999': 200000,
                   };
-                  const coinsToAdd = COIN_MAP[item.id] || 440;
+                  const coinsToAdd = item.coins || COIN_MAP[item.id] || COIN_MAP[itemId] || 440;
                   if (item.id) {
                     markPackAsPurchased(item.id);
                   }
@@ -994,6 +1013,7 @@ export default function App() {
               }
             }}
             onAddCoins={handleAddCoins}
+            onInitiateRecharge={handleInitiateRecharge}
             onOpenVip={() => goToPage('vip')}
             onRequireLogin={handleRequireLogin}
             onGoogleLogin={handleGoogleLogin}
