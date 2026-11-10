@@ -3,6 +3,13 @@
 .env.local
 .env.production
 .env.development
+*.pem
+*.key
+*.p8
+*.p12
+*service-account*.json
+*serviceAccount*.json
+*credentials*.json
 
 # Node dependencies
 node_modules/

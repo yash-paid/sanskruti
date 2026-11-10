@@ -96,10 +96,10 @@ export const claimVipDailyBonus = async (uid) => {
 /**
  * Fetches real transaction history from user ledger.
  */
-export const fetchUserLedger = async (uid) => {
+export const fetchUserLedger = async (uid, options = {}) => {
   if (!uid) return [];
   try {
-    return await fetchUserTransactions(uid);
+    return await fetchUserTransactions(uid, options);
   } catch (err) {
     console.warn('fetchUserLedger error:', err);
     return [];

@@ -48,7 +48,10 @@ exports.handler = async (event, context) => {
   if (!itemsPurchased || itemsPurchased.length === 0) {
     itemsPurchased = reconstructItemsFromUdf(udf1);
   }
-  const category = (itemsPurchased && itemsPurchased[0] && itemsPurchased[0].category) || existingOrder.productCategory || 'ebook';
+  let category = (itemsPurchased && itemsPurchased[0] && itemsPurchased[0].category) || existingOrder.productCategory || 'ebook';
+  if (udf5 === 'connect' || String(txnid).startsWith('CN_')) {
+    category = 'connect';
+  }
 
   /**
    * Helper to construct category-specific status and return URLs
@@ -114,6 +117,19 @@ exports.handler = async (event, context) => {
       productCategory: category
     });
 
+    if (category === 'connect') {
+      try {
+        const { getDb } = require('./_connect-db');
+        const db = getDb();
+        await db.collection('connect_orders').doc(txnid).update({
+          status: 'tampered',
+          tamperDetails: 'Reverse SHA-512 hash mismatch',
+          rawStatus: status,
+          updatedAt: new Date().toISOString()
+        });
+      } catch (e) {}
+    }
+
     const tamperedUrl = getRedirectUrl({
       targetCategory: category,
       status: 'tampered',
@@ -172,6 +188,17 @@ exports.handler = async (event, context) => {
         failureReason: 'Server verification returned non-success status',
         productCategory: category
       });
+      if (category === 'connect') {
+        try {
+          const { getDb } = require('./_connect-db');
+          const db = getDb();
+          await db.collection('connect_orders').doc(txnid).update({
+            status: 'failed',
+            failureReason: 'Server verification returned non-success status',
+            updatedAt: new Date().toISOString()
+          });
+        } catch (e) {}
+      }
       const failUrl = getRedirectUrl({
         targetCategory: category,
         status: 'failed',
@@ -181,7 +208,287 @@ exports.handler = async (event, context) => {
       return buildRedirectResponse(failUrl);
     }
 
-    // Update and record verified order
+    // CONNECT Coin Recharge: Atomic Firestore Verification & Fulfilment
+    if (category === 'connect') {
+      const { getDb, formatReadableDate } = require('./_connect-db');
+      const db = getDb();
+      const orderDocRef = db.collection('connect_orders').doc(txnid);
+      const orderSnap = await orderDocRef.get();
+
+      if (!orderSnap.exists) {
+        console.error('CONNECT Order not found in Firestore for txnid:', txnid);
+        const failUrl = getRedirectUrl({
+          targetCategory: 'connect',
+          status: 'failed',
+          txnid,
+          errorMsg: 'Order record not found in system.'
+        });
+        return buildRedirectResponse(failUrl);
+      }
+
+      const orderData = orderSnap.data();
+      const receivedAmount = parseFloat(amount || 0);
+      const expectedAmount = parseFloat(orderData.expectedAmount || 0);
+
+      // Verify amount matches expected package price
+      if (Math.abs(receivedAmount - expectedAmount) > 0.01) {
+        console.error(`CONNECT Amount mismatch for txnid ${txnid}: received ${receivedAmount}, expected ${expectedAmount}`);
+        await orderDocRef.update({
+          status: 'amount_mismatch',
+          receivedAmount,
+          expectedAmount,
+          updatedAt: new Date().toISOString()
+        });
+        const mismatchUrl = getRedirectUrl({
+          targetCategory: 'connect',
+          status: 'failed',
+          txnid,
+          errorMsg: 'Security verification failed: payment amount mismatch.'
+        });
+        return buildRedirectResponse(mismatchUrl);
+      }
+
+      // Atomic wallet credit or VIP activation, ledger record, and order status update
+      const isVipOrder = orderData.orderType === 'vip' || orderData.category === 'connect_vip' || Boolean(orderData.planId);
+      let fulfilmentResult;
+      try {
+        fulfilmentResult = await db.runTransaction(async (transaction) => {
+          const freshOrderSnap = await transaction.get(orderDocRef);
+          if (!freshOrderSnap.exists) {
+            throw new Error('Order document disappeared during transaction');
+          }
+          const freshOrder = freshOrderSnap.data();
+
+          // Idempotency check: if order is already fulfilled, do not process again!
+          if (freshOrder.fulfilled === true || freshOrder.status === 'success') {
+            return {
+              alreadyFulfilled: true,
+              isVip: isVipOrder,
+              planId: freshOrder.planId,
+              coinsCredited: freshOrder.expectedCoins || 0,
+              uid: freshOrder.uid
+            };
+          }
+
+          const userDocRef = db.collection('users').doc(freshOrder.uid);
+          const userSnap = await transaction.get(userDocRef);
+          let userData;
+          if (!userSnap.exists) {
+            userData = {
+              profile: {
+                uid: freshOrder.uid,
+                name: freshOrder.customerName || 'CONNECT User',
+                phone: freshOrder.customerPhone || '',
+                email: freshOrder.customerEmail || '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+              wallet: { coins: 0, updatedAt: new Date().toISOString() },
+              ledger: [],
+              favourites: [],
+              purchasedPacks: [],
+            };
+            transaction.set(userDocRef, userData);
+          } else {
+            userData = userSnap.data();
+          }
+
+          const existingLedger = Array.isArray(userData.ledger) ? userData.ledger : [];
+
+          if (isVipOrder) {
+            // ── VIP Entitlement Fulfilment ──
+            const nowMs = Date.now();
+            const durationMs = Number(freshOrder.durationDays || 30) * 24 * 60 * 60 * 1000;
+            const existingExpiryMs = userData.vip?.entitlement?.expiryDateMs ||
+              (userData.vip?.entitlement?.expiryDate ? new Date(userData.vip.entitlement.expiryDate).getTime() : 0);
+
+            // Extend if currently active; otherwise start from now
+            const baseMs = (existingExpiryMs && existingExpiryMs > nowMs) ? existingExpiryMs : nowMs;
+            const newExpiryMs = baseMs + durationMs;
+            const newExpiryDate = new Date(newExpiryMs).toLocaleDateString('en-IN', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric'
+            });
+            const newExpiryIso = new Date(newExpiryMs).toISOString();
+
+            const planName = freshOrder.planName ||
+              (freshOrder.planId === 'silver' ? 'Silver VIP' : freshOrder.planId === 'diamond' ? 'Diamond VIP' : 'Gold VIP');
+
+            const entitlement = {
+              planId: freshOrder.planId,
+              planName,
+              status: 'active',
+              active: true,
+              durationDays: freshOrder.durationDays,
+              dailyBonusCoins: freshOrder.dailyBonusCoins,
+              activatedAtMs: nowMs,
+              activatedAt: new Date(nowMs).toISOString(),
+              expiryDateMs: newExpiryMs,
+              expiryDate: newExpiryDate,
+              expiryDateIso: newExpiryIso,
+              paymentRef: {
+                txnid,
+                mihpayid: mihpayid || '',
+                bank_ref_num: bank_ref_num || '',
+                amountPaid: expectedAmount,
+                paidAt: new Date().toISOString(),
+              },
+            };
+
+            const ledgerEntry = {
+              id: `TXN-VIP-${txnid}`,
+              type: 'vip_purchase',
+              title: `Purchased ${planName} (${freshOrder.durationDays} Days)`,
+              description: `PayU payment confirmed for ${planName}`,
+              coins: 0,
+              amount: 0,
+              isCredit: true,
+              balanceAfter: Number(userData.wallet?.coins || 0),
+              status: 'Completed',
+              date: formatReadableDate(new Date()),
+              timestamp: new Date().toISOString(),
+              metadata: {
+                txnid,
+                mihpayid: mihpayid || '',
+                bank_ref_num: bank_ref_num || '',
+                planId: freshOrder.planId,
+                planName,
+                amountPaid: expectedAmount,
+                durationDays: freshOrder.durationDays,
+              },
+            };
+
+            // Atomic Subcollection Ledger Reference & Idempotency Check
+            const ledgerDocRef = userDocRef.collection('ledger').doc(`TXN-VIP-${txnid}`);
+            const existingTxnSnap = await transaction.get(ledgerDocRef);
+            if (existingTxnSnap.exists || existingLedger.some(e => e.id === `TXN-VIP-${txnid}` || e.metadata?.txnid === txnid)) {
+              return { alreadyFulfilled: true, isVip: true, planId: freshOrder.planId, uid: freshOrder.uid };
+            }
+
+            transaction.update(userDocRef, {
+              'vip.entitlement': entitlement,
+              'profile.isVip': true,
+              'profile.vipPlan': planName,
+              'profile.vipPlanId': freshOrder.planId,
+              'profile.vipExpiry': entitlement.expiryDate,
+              'profile.vipExpiryMs': entitlement.expiryDateMs,
+              updatedAt: new Date().toISOString(),
+            });
+
+            // Atomically write immutable transaction into users/{uid}/ledger/{txnId}
+            transaction.set(ledgerDocRef, ledgerEntry);
+
+            transaction.update(orderDocRef, {
+              status: 'success',
+              fulfilled: true,
+              fulfilledAt: new Date().toISOString(),
+              mihpayid: mihpayid || '',
+              bank_ref_num: bank_ref_num || '',
+              entitlement,
+              updatedAt: new Date().toISOString(),
+            });
+
+            return { success: true, isVip: true, planId: freshOrder.planId, planName, uid: freshOrder.uid };
+          } else {
+            // ── Coin Recharge Fulfilment ──
+            const currentCoins = Number(userData.wallet?.coins || 0);
+            const coinsToAdd = Number(freshOrder.expectedCoins || 0);
+            const newBalance = currentCoins + coinsToAdd;
+
+            const ledgerEntry = {
+              id: `TXN-PAYU-${txnid}`,
+              type: 'purchase',
+              title: `Coin Recharge - ${coinsToAdd} Coins (₹${expectedAmount})`,
+              description: `PayU payment confirmed for ${freshOrder.packageName || 'Coin Pack'}`,
+              amount: coinsToAdd,
+              coins: coinsToAdd,
+              isCredit: true,
+              balanceAfter: newBalance,
+              status: 'Completed',
+              date: formatReadableDate(new Date()),
+              timestamp: new Date().toISOString(),
+              metadata: {
+                txnid,
+                mihpayid: mihpayid || '',
+                bank_ref_num: bank_ref_num || '',
+                packageId: freshOrder.packageId,
+                amountPaid: expectedAmount,
+              },
+            };
+
+            // Atomic Subcollection Ledger Reference & Idempotency Check
+            const ledgerDocRef = userDocRef.collection('ledger').doc(`TXN-PAYU-${txnid}`);
+            const existingTxnSnap = await transaction.get(ledgerDocRef);
+            if (existingTxnSnap.exists || existingLedger.some(e => e.id === `TXN-PAYU-${txnid}` || e.metadata?.txnid === txnid)) {
+              return { alreadyFulfilled: true, isVip: false, coinsCredited: coinsToAdd, uid: freshOrder.uid };
+            }
+
+            const existingPacks = Array.isArray(userData.purchasedPacks) ? userData.purchasedPacks : [];
+            const updatedPacks = freshOrder.packageId && !existingPacks.includes(freshOrder.packageId)
+              ? [...existingPacks, freshOrder.packageId]
+              : existingPacks;
+
+            transaction.update(userDocRef, {
+              'wallet.coins': newBalance,
+              'wallet.updatedAt': new Date().toISOString(),
+              purchasedPacks: updatedPacks,
+              updatedAt: new Date().toISOString(),
+            });
+
+            // Atomically write immutable transaction into users/{uid}/ledger/{txnId}
+            transaction.set(ledgerDocRef, ledgerEntry);
+
+            transaction.update(orderDocRef, {
+              status: 'success',
+              fulfilled: true,
+              fulfilledAt: new Date().toISOString(),
+              mihpayid: mihpayid || '',
+              bank_ref_num: bank_ref_num || '',
+              coinsCredited: coinsToAdd,
+              balanceAfter: newBalance,
+              updatedAt: new Date().toISOString(),
+            });
+
+            return { success: true, isVip: false, coinsCredited: coinsToAdd, newBalance, uid: freshOrder.uid };
+          }
+        });
+      } catch (txErr) {
+        console.error('Firestore fulfilment error:', txErr);
+        const failUrl = getRedirectUrl({
+          targetCategory: 'connect',
+          status: 'failed',
+          txnid,
+          errorMsg: 'Transaction fulfilment failed. Please contact support.'
+        });
+        return buildRedirectResponse(failUrl);
+      }
+
+      recordOrder(txnid, {
+        txnid,
+        status: 'success',
+        amount: amount || expectedAmount,
+        mihpayid,
+        bank_ref_num,
+        productCategory: isVipOrder ? 'connect_vip' : 'connect',
+        fulfilled: true,
+        paidAt: new Date().toISOString()
+      });
+
+      const baseSuccessUrl = getRedirectUrl({
+        targetCategory: 'connect',
+        status: 'success',
+        txnid,
+        amount,
+        mihpayid
+      });
+      const connectSuccessUrl = isVipOrder
+        ? `${baseSuccessUrl}&type=vip&plan=${encodeURIComponent(orderData.planId || 'gold')}`
+        : `${baseSuccessUrl}&coins=${fulfilmentResult.coinsCredited || orderData.expectedCoins}`;
+      return buildRedirectResponse(connectSuccessUrl);
+    }
+
+    // Update and record verified order (eBooks, Services, etc.)
     const updatedOrder = recordOrder(txnid, {
       txnid,
       status: 'success',
@@ -250,6 +557,19 @@ exports.handler = async (event, context) => {
       error_Message: errorMsg,
       productCategory: category
     });
+
+    if (category === 'connect') {
+      try {
+        const { getDb } = require('./_connect-db');
+        const db = getDb();
+        await db.collection('connect_orders').doc(txnid).update({
+          status: failureStatus,
+          error_Message: errorMsg,
+          mihpayid: mihpayid || '',
+          updatedAt: new Date().toISOString()
+        });
+      } catch (e) {}
+    }
 
     redirectUrl = getRedirectUrl({
       targetCategory: category,

@@ -5,6 +5,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithCustomToken,
+  signInAnonymously,
   updateProfile,
   signOut,
   onAuthStateChanged,
@@ -44,6 +45,10 @@ export const getAuthErrorMessage = (error) => {
       return 'Please enter a valid email address.';
     case 'auth/network-request-failed':
       return 'Network connection error. Please check your internet connection.';
+    case 'auth/operation-not-allowed':
+      return 'Anonymous guest sign-in is not enabled in Firebase Console.';
+    case 'auth/admin-restricted-operation':
+      return 'Anonymous sign-in is currently restricted by administrator.';
     case 'auth/too-many-requests':
       return 'Too many failed login attempts. Please try again later or reset password.';
     default:
@@ -168,17 +173,13 @@ export const detectIdentifierType = (input) => {
 const PHONE_AUTH_STORAGE_KEY = 'connect_phone_auth_session';
 
 export const getStoredPhoneUser = () => {
-  try {
-    const raw = localStorage.getItem(PHONE_AUTH_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    return null;
-  }
+  return null;
 };
 
-export const savePhoneAuthSession = (userRecord) => {
+export const savePhoneAuthSession = () => {
+  // Deprecated: Production security requires authentic Firebase sessions only
   try {
-    localStorage.setItem(PHONE_AUTH_STORAGE_KEY, JSON.stringify(userRecord));
+    localStorage.removeItem(PHONE_AUTH_STORAGE_KEY);
   } catch (e) {}
 };
 
@@ -190,6 +191,7 @@ export const clearPhoneAuthSession = () => {
 
 /**
  * Authenticates with Indian mobile number + password via secure Netlify function backend.
+ * Generates and exchanges a Firebase Custom Token to establish a genuine Firebase session.
  */
 export const authenticateWithPhone = async ({ mode, phone, password, name = '' }) => {
   const normalizedPhone = normalizeIndianMobile(phone);
@@ -220,35 +222,33 @@ export const authenticateWithPhone = async ({ mode, phone, password, name = '' }
     throw error;
   }
 
-  // If backend minted a Firebase Custom Token, sign into Firebase client SDK
-  let user = null;
-  if (data.customToken) {
-    try {
-      const userCredential = await signInWithCustomToken(auth, data.customToken);
-      user = userCredential.user;
-    } catch (tokenErr) {
-      console.warn('signInWithCustomToken failed, falling back to authenticated phone session:', tokenErr.message);
-    }
+  if (!data.customToken) {
+    const error = new Error('Server did not return a valid authentication token. Please try again.');
+    error.code = 'auth/missing-custom-token';
+    throw error;
   }
 
-  // Construct standard session user record
-  const sessionUser = {
-    uid: data.uid,
-    phoneNumber: data.phone,
-    displayName: data.name,
-    username: data.username,
-    isPhoneAuth: true,
-  };
+  // Sign into Firebase Client SDK using the verified Custom Token
+  const userCredential = await signInWithCustomToken(auth, data.customToken);
+  const user = userCredential.user;
 
-  savePhoneAuthSession(sessionUser);
+  // Clean up any legacy localStorage phone session
+  clearPhoneAuthSession();
 
   return {
-    user: user || sessionUser,
-    uid: data.uid,
+    user,
+    uid: user.uid,
     phone: data.phone,
     name: data.name,
     username: data.username,
   };
+};
+
+/**
+ * Sign in anonymously with Firebase for Guest users
+ */
+export const signInAsGuest = async () => {
+  return await signInAnonymously(auth);
 };
 
 /**

@@ -171,13 +171,7 @@ export default function VipScreen({
       onInitiateVipPayment(selectedPlan);
       return;
     }
-    try {
-      const res = await activateUserVip(uid, selectedPlan.id);
-      setActiveVip(res.entitlement);
-      onToast?.(`🎉 Congratulations! You are now a ${selectedPlan.name} Member!`);
-    } catch (err) {
-      onToast?.(`❌ Activation failed: ${err.message}`);
-    }
+    onToast?.('VIP checkout service is currently unavailable. Please try again.');
   };
 
   const handleClaimVipBonus = async () => {

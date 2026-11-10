@@ -30,7 +30,6 @@ import {
   transactUserCoins,
   recordUserCall,
   fetchUserVipEntitlement,
-  activateUserVip,
 } from './firebase/userService';
 
 const VALID_PAGES = ['login', 'setup-profile', 'home', 'wallet', 'profile', 'vip'];
@@ -309,8 +308,8 @@ export default function App() {
       return false;
     }
 
-    // Immediately update UI balance optimistically
-    const nextLocal = Math.max(0, coinsRef.current - amount);
+    const previousBalance = coinsRef.current;
+    const nextLocal = Math.max(0, previousBalance - amount);
     coinsRef.current = nextLocal;
     setCoins(nextLocal);
 
@@ -321,11 +320,7 @@ export default function App() {
           isCredit: false,
           type: metadata.type || 'call',
           title: metadata.title || 'Video Call Coins',
-          clientBalance: nextLocal + amount,
-          metadata: {
-            ...metadata,
-            clientBalance: nextLocal,
-          },
+          metadata,
         });
         if (typeof res?.newBalance === 'number') {
           setCoins(res.newBalance);
@@ -334,8 +329,11 @@ export default function App() {
         return true;
       } catch (err) {
         console.warn('transactUserCoins debit error:', err);
-        // User had sufficient balance in session, so keep nextLocal and allow call to proceed
-        return true;
+        // Revert optimistic update since backend rejected transaction
+        coinsRef.current = previousBalance;
+        setCoins(previousBalance);
+        showToast('⚠️ Insufficient Coins! Please recharge to continue.');
+        return false;
       }
     }
 
@@ -560,11 +558,13 @@ export default function App() {
       } catch (err) {}
 
       const alreadyDone = isProfileSetupDone(uid, serverProfile);
+      const isAnon = fallbackData.isGuest || Boolean(auth.currentUser?.isAnonymous);
+      const skipSetup = alreadyDone || isAnon;
 
       if (serverProfile) {
         const fullProfile = {
           ...serverProfile,
-          isProfileComplete: alreadyDone || Boolean(serverProfile.isProfileComplete),
+          isProfileComplete: skipSetup || Boolean(serverProfile.isProfileComplete),
         };
         setUserProfile(fullProfile);
         try {
@@ -573,7 +573,7 @@ export default function App() {
         } catch (e) {}
 
         // Open setup-profile if user has never completed initial profile setup
-        if (!alreadyDone) {
+        if (!skipSetup) {
           goToPage('setup-profile');
         } else {
           try {
@@ -597,6 +597,8 @@ export default function App() {
     }
 
     const alreadyDone = isProfileSetupDone(uid, null);
+    const isAnon = fallbackData.isGuest || Boolean(auth.currentUser?.isAnonymous);
+    const skipSetup = alreadyDone || isAnon;
     const displayName = fallbackData.name || 'CONNECT User';
     const newProfile = {
       uid,
@@ -612,7 +614,7 @@ export default function App() {
       email: fallbackData.email || '',
       avatar: fallbackData.avatar || '/default-avatars/1.png',
       dob: '2000-01-01',
-      isProfileComplete: alreadyDone,
+      isProfileComplete: skipSetup,
     };
 
     setUserProfile(newProfile);
@@ -622,7 +624,7 @@ export default function App() {
     } catch (e) {}
 
     // Open setup-profile if user has never completed initial profile setup
-    if (!alreadyDone) {
+    if (!skipSetup) {
       goToPage('setup-profile');
     } else {
       try {
@@ -656,19 +658,22 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = subscribeToAuth((firebaseUser) => {
       if (firebaseUser) {
-        setIsGuest(false);
+        const isAnon = Boolean(firebaseUser.isAnonymous);
+        setIsGuest(isAnon);
         try {
-          localStorage.setItem('connect_is_guest', 'false');
+          localStorage.setItem('connect_is_guest', isAnon ? 'true' : 'false');
           localStorage.setItem('connect_logged_in', 'true');
           localStorage.setItem('connect_last_auth_uid', firebaseUser.uid);
         } catch (e) {}
 
         const uid = firebaseUser.uid;
         loadProfileForUid(uid, {
-          name: firebaseUser.displayName || 'CONNECT User',
+          name: isAnon ? 'Guest User' : (firebaseUser.displayName || 'CONNECT User'),
+          username: isAnon ? '@guest_' + uid.slice(-4) : undefined,
           phone: firebaseUser.phoneNumber || '',
           avatar: firebaseUser.photoURL || '/default-avatars/1.png',
           email: firebaseUser.email || '',
+          isGuest: isAnon,
         });
       } else {
         // Check for active phone session
@@ -864,22 +869,38 @@ export default function App() {
   };
 
   // Called when user clicks "Continue as Guest"
-  const handleGuestLogin = () => {
-    setIsGuest(true);
+  const handleGuestLogin = async () => {
     try {
-      localStorage.setItem('connect_is_guest', 'true');
-      localStorage.setItem('connect_logged_in', 'true');
-      localStorage.setItem('connect_current_page', 'home');
-      setUserProfile((prev) => ({
-        ...prev,
+      showToast('⚡ Connecting as Guest...');
+      const cred = await signInAsGuest();
+      const guestUser = cred?.user;
+      if (!guestUser) {
+        throw new Error('Failed to establish anonymous guest session.');
+      }
+
+      setIsGuest(true);
+      const guestUid = guestUser.uid;
+      try {
+        localStorage.setItem('connect_is_guest', 'true');
+        localStorage.setItem('connect_logged_in', 'true');
+        localStorage.setItem('connect_last_auth_uid', guestUid);
+        localStorage.setItem('connect_current_page', 'home');
+      } catch (e) {}
+
+      await loadProfileForUid(guestUid, {
         name: 'Guest User',
-        username: '@guest',
-        userId: 'CN-GUEST',
+        username: '@guest_' + guestUid.slice(-4),
         avatar: '/default-avatars/1.png',
-      }));
-    } catch (e) {}
-    showToast('⚡ Continuing as Guest. Welcome to CONNECT!');
-    goToPage('home');
+        isGuest: true,
+      });
+
+      showToast('⚡ Welcome to CONNECT!');
+      goToPage('home');
+    } catch (err) {
+      console.warn('Guest login failed:', err);
+      const msg = getAuthErrorMessage(err);
+      showToast(`❌ Guest login failed: ${msg}`);
+    }
   };
 
   // Triggered when a guest clicks Call or Buy Coins
@@ -944,32 +965,18 @@ export default function App() {
     showToast('Logged out successfully.');
   };
 
-  const handleAddCoins = async (amount = 100, title = 'Coins Recharged') => {
-    const uid = auth.currentUser?.uid || getStoredPhoneUser()?.uid;
-    if (uid && amount > 0) {
+  const handleAddCoins = async () => {
+    const uid = currentUid || auth.currentUser?.uid || getStoredPhoneUser()?.uid;
+    if (uid) {
       try {
-        const res = await transactUserCoins(uid, {
-          amount,
-          isCredit: true,
-          type: 'purchase',
-          title,
-        });
-        setCoins(res.newBalance);
-        coinsRef.current = res.newBalance;
-        showToast(`✅ Added ${amount} Coins to your wallet!`);
-        return;
+        const serverBalance = await fetchUserWallet(uid);
+        if (typeof serverBalance === 'number') {
+          setCoins(serverBalance);
+          coinsRef.current = serverBalance;
+        }
       } catch (err) {
-        console.warn('handleAddCoins backend error:', err);
+        console.warn('handleAddCoins wallet refresh error:', err);
       }
-    }
-
-    setCoins((prev) => {
-      const next = Math.max(0, prev + amount);
-      coinsRef.current = next;
-      return next;
-    });
-    if (amount > 0) {
-      showToast(`✅ Added ${amount} Coins to your wallet!`);
     }
   };
 
@@ -982,7 +989,7 @@ export default function App() {
       const params = new URLSearchParams(window.location.search);
       const status = params.get('status');
       const txnid = params.get('txnid');
-      const token = params.get('token');
+      const coinsParam = params.get('coins');
 
       if (status && txnid) {
         // Prevent 2x execution: if this transaction ID was already processed, ignore!
@@ -999,173 +1006,82 @@ export default function App() {
         const cleanUrl = window.location.pathname + window.location.hash;
         window.history.replaceState(null, '', cleanUrl);
 
-        if (status === 'success' && token) {
-          processedTxnsRef.current.add(txnid);
-          try {
-            localStorage.setItem(`connect_processed_txn_${txnid}`, 'true');
-          } catch (e) {}
+        processedTxnsRef.current.add(txnid);
+        try {
+          localStorage.setItem(`connect_processed_txn_${txnid}`, 'true');
+        } catch (e) {}
 
-          showToast('Verifying payment server-side...');
-          const verifyPayment = async () => {
-            try {
-              let res = await fetch(
-                `/.netlify/functions/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`
+        if (status === 'success') {
+          const isVipReturn = params.get('type') === 'vip' || Boolean(params.get('plan'));
+          const activeUid = currentUid || auth.currentUser?.uid || getStoredPhoneUser()?.uid;
+          if (activeUid) {
+            if (isVipReturn) {
+              fetchUserVipEntitlement(activeUid)
+                .then((res) => {
+                  if (res?.entitlement && res.entitlement.active) {
+                    setVipEntitlement(res.entitlement);
+                    setUserProfile((prev) => ({
+                      ...prev,
+                      isVip: true,
+                      vipPlan: res.entitlement?.planName || 'VIP Member',
+                      vipExpiry: res.entitlement?.expiryDate,
+                    }));
+                    showToast(`👑 Payment Verified! You are now an active ${res.entitlement?.planName || 'VIP'} Member! 🎉`);
+                    goToPage('vip');
+                  }
+                })
+                .catch(() => {});
+            } else {
+              fetchUserWallet(activeUid)
+                .then((newCoins) => {
+                  if (typeof newCoins === 'number') {
+                    setCoins(newCoins);
+                    coinsRef.current = newCoins;
+                  }
+                })
+                .catch((err) => console.warn('fetchUserWallet error after payment:', err));
+
+              showToast(
+                coinsParam
+                  ? `🎉 Verified payment! Added ${coinsParam} Coins to your wallet.`
+                  : '🎉 Verified payment! Coins added to your wallet.'
               );
-              if (res.status === 404) {
-                res = await fetch(
-                  `/api/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`
-                );
-              }
-              const data = await res.json();
-              if (data.success && data.verified) {
-                let pendingPack = null;
-                let pendingUid = '';
-                try {
-                  pendingPack = JSON.parse(localStorage.getItem('connect_pending_recharge_pack') || 'null');
-                  pendingUid = localStorage.getItem('connect_pending_recharge_uid') || '';
-                } catch (e) {}
-
-                const items = data.items || data.order?.items || [];
-                const item = items[0] || pendingPack || {};
-                const itemId = String(item.id || pendingPack?.id || '');
-                const orderAmount = Number(data.order?.amount || item.price || pendingPack?.price) || 0;
-                const isVipPurchase = itemId.includes('vip') || itemId.startsWith('connect-vip-');
-
-                if (isVipPurchase) {
-                  let planId = item.planId;
-                  if (!planId) {
-                    if (itemId.includes('diamond')) planId = 'diamond';
-                    else if (itemId.includes('gold')) planId = 'gold';
-                    else if (itemId.includes('silver')) planId = 'silver';
-                    else planId = 'gold';
-                  }
-
-                  const activeUid = currentUid || pendingUid || localStorage.getItem('connect_last_auth_uid') || auth.currentUser?.uid || getStoredPhoneUser()?.uid || '';
-                  if (activeUid) {
-                    try {
-                      const res = await activateUserVip(activeUid, planId);
-                      setVipEntitlement(res.entitlement);
-                      setUserProfile((prev) => ({
-                        ...prev,
-                        isVip: true,
-                        vipPlan: res.entitlement?.planName || 'VIP Member',
-                        vipExpiry: res.entitlement?.expiryDate,
-                      }));
-                      try {
-                        localStorage.setItem(`connect_vip_active_${activeUid}`, 'true');
-                      } catch (e) {}
-                      showToast(`👑 Payment Verified! You are now an active ${res.entitlement?.planName || 'VIP'} Member! 🎉`);
-                      goToPage('profile');
-                    } catch (vipErr) {
-                      console.warn('VIP activation error after payment:', vipErr);
-                      showToast('👑 Payment Verified! VIP Membership is now active.');
-                      goToPage('profile');
-                    }
-                  } else {
-                    showToast('👑 Payment Verified! VIP Membership purchased successfully.');
-                    goToPage('profile');
-                  }
-                } else {
-                  // Coin Pack Recharge
-                  const COIN_MAP = {
-                    'connect-pack-19': 50,
-                    'pack-19': 50,
-                    'connect-pack-49': 160,
-                    'pack-49': 160,
-                    'connect-pack-99': 440,
-                    'pack-99': 440,
-                    'connect-pack-149': 880,
-                    'pack-149': 880,
-                    'connect-pack-199': 1250,
-                    'pack-199': 1250,
-                    'connect-pack-499': 2400,
-                    'pack-499': 2400,
-                    'connect-pack-999': 5000,
-                    'pack-999': 5000,
-                    'connect-pack-1999': 11000,
-                    'pack-1999': 11000,
-                    'connect-pack-4999': 30000,
-                    'pack-4999': 30000,
-                    'connect-pack-9999': 66000,
-                    'pack-9999': 66000,
-                    'connect-pack-14999': 100000,
-                    'pack-14999': 100000,
-                    'connect-pack-29999': 200000,
-                    'pack-29999': 200000,
-                  };
-                  let coinsToAdd = item.coins || pendingPack?.coins || COIN_MAP[item.id] || COIN_MAP[itemId];
-                  if (!coinsToAdd) {
-                    if (orderAmount === 19 || itemId.includes('19')) coinsToAdd = 50;
-                    else if (orderAmount === 49 || itemId.includes('49')) coinsToAdd = 160;
-                    else if (orderAmount === 99 || itemId.includes('99')) coinsToAdd = 440;
-                    else if (orderAmount === 149 || itemId.includes('149')) coinsToAdd = 880;
-                    else if (orderAmount === 199 || itemId.includes('199')) coinsToAdd = 1250;
-                    else if (orderAmount === 499 || itemId.includes('499')) coinsToAdd = 2400;
-                    else if (orderAmount === 999 || itemId.includes('999')) coinsToAdd = 5000;
-                    else if (orderAmount === 1999 || itemId.includes('1999')) coinsToAdd = 11000;
-                    else if (orderAmount === 4999 || itemId.includes('4999')) coinsToAdd = 30000;
-                    else if (orderAmount === 9999 || itemId.includes('9999')) coinsToAdd = 66000;
-                    else if (orderAmount === 14999 || itemId.includes('14999')) coinsToAdd = 100000;
-                    else if (orderAmount === 29999 || itemId.includes('29999')) coinsToAdd = 200000;
-                    else coinsToAdd = 50;
-                  }
-
-                  if (item.id || pendingPack?.id) {
-                    markPackAsPurchased(item.id || pendingPack?.id);
-                  }
-
-                  const activeUid = currentUid || pendingUid || localStorage.getItem('connect_last_auth_uid') || auth.currentUser?.uid || getStoredPhoneUser()?.uid || '';
-                  if (activeUid) {
-                    try {
-                      const transactRes = await transactUserCoins(activeUid, {
-                        amount: coinsToAdd,
-                        isCredit: true,
-                        type: 'purchase',
-                        title: `Coins Recharged - ${coinsToAdd} Coins (₹${orderAmount || 19})`,
-                        metadata: { txnid, amount: orderAmount },
-                      });
-                      if (typeof transactRes?.newBalance === 'number') {
-                        setCoins(transactRes.newBalance);
-                        coinsRef.current = transactRes.newBalance;
-                      } else {
-                        handleAddCoins(coinsToAdd, `Coins Recharged (${coinsToAdd} Coins)`);
-                      }
-                    } catch (transactErr) {
-                      console.warn('transactUserCoins error after payment:', transactErr);
-                      handleAddCoins(coinsToAdd, `Coins Recharged (${coinsToAdd} Coins)`);
-                    }
-                  } else {
-                    handleAddCoins(coinsToAdd, `Coins Recharged (${coinsToAdd} Coins)`);
-                  }
-
-                  showToast(`🎉 Verified payment! Added ${coinsToAdd} Coins.`);
-
-                  try {
-                    localStorage.removeItem('connect_pending_recharge_pack');
-                    localStorage.removeItem('connect_pending_recharge_uid');
-                    const pendingExpert = localStorage.getItem('connect_pending_call_expert');
-                    if (pendingExpert) {
-                      const expertObj = JSON.parse(pendingExpert);
-                      setAutoStartExpert(expertObj);
-                      localStorage.removeItem('connect_pending_call_expert');
-                    }
-                  } catch (e) {}
-                }
-              } else {
-                showToast(data.error || 'Payment verification failed server-side.');
-              }
-            } catch (err) {
-              showToast('Could not verify payment with server.');
             }
-          };
-          verifyPayment();
-        } else if (status === 'failure' || status === 'cancel') {
-          const msg = params.get('msg') || 'Payment was cancelled or failed.';
+
+            fetchUserProfile(activeUid)
+              .then((prof) => {
+                if (prof) setUserProfile(prof);
+              })
+              .catch(() => {});
+          }
+
+          try {
+            localStorage.removeItem('connect_pending_recharge_pack');
+            localStorage.removeItem('connect_pending_recharge_uid');
+            const pendingExpert = localStorage.getItem('connect_pending_call_expert');
+            if (pendingExpert) {
+              const expertObj = JSON.parse(pendingExpert);
+              setAutoStartExpert(expertObj);
+              localStorage.removeItem('connect_pending_call_expert');
+            }
+          } catch (e) {}
+        } else if (
+          status === 'failure' ||
+          status === 'cancel' ||
+          status === 'failed' ||
+          status === 'cancelled' ||
+          status === 'tampered'
+        ) {
+          const msg =
+            params.get('msg') ||
+            (status === 'tampered'
+              ? 'Payment verification failed: security hash mismatch.'
+              : 'Payment was cancelled or unsuccessful.');
           showToast(`❌ ${msg}`);
         }
       }
     } catch (e) {}
-  }, []);
+  }, [currentUid]);
 
   // ── Initiate PayU Checkout for Recharge Pack ──
   const handleInitiateRecharge = async (pack, pendingExpert) => {
@@ -1175,51 +1091,48 @@ export default function App() {
       } else {
         localStorage.removeItem('connect_pending_call_expert');
       }
-      localStorage.setItem('connect_pending_recharge_pack', JSON.stringify(pack));
-      const activeUid = currentUid || auth.currentUser?.uid || getStoredPhoneUser()?.uid || '';
-      if (activeUid) {
-        localStorage.setItem('connect_pending_recharge_uid', activeUid);
-      }
     } catch (e) {}
 
+    const token = await auth.currentUser?.getIdToken?.();
+    if (!token) {
+      showToast('Please log in first to recharge coins.');
+      return;
+    }
+
     const payload = {
-      itemType: 'connect',
-      itemId: pack.id.startsWith('connect-') ? pack.id : `connect-${pack.id}`,
+      packageId: pack.id,
       name: userProfile?.name || 'CONNECT User',
       phone: (userProfile?.phone || '9876543210').replace(/[^0-9]/g, '').slice(-10),
       email: `${(userProfile?.username || 'user').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'user'}@connect.local`,
-      source: 'connect-web',
     };
 
     let response;
     try {
-      response = await fetch('/.netlify/functions/payu-initiate', {
+      response = await fetch('/.netlify/functions/connect-payu-initiate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(payload),
       });
       if (response.status === 404) {
-        response = await fetch('/api/payu-initiate', {
+        response = await fetch('/api/connect-payu-initiate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify(payload),
         });
       }
     } catch (netErr) {
-      // Local dev server fallback when Netlify Functions backend is offline
-      markPackAsPurchased(pack.id);
-      const fallbackCoins = pack.coins || 400;
-      handleAddCoins(fallbackCoins);
-      showToast(`🎉 Preview Mode: Added ${fallbackCoins} Coins for testing!`);
+      showToast('Network error: Unable to connect to payment server.');
       return;
     }
 
     if (!response || response.status === 404) {
-      // Local dev server fallback when Netlify Functions backend is offline
-      markPackAsPurchased(pack.id);
-      const fallbackCoins = pack.coins || 400;
-      handleAddCoins(fallbackCoins);
-      showToast(`🎉 Preview Mode: Added ${fallbackCoins} Coins for testing!`);
+      showToast('Payment service is currently unavailable.');
       return;
     }
 
@@ -1258,58 +1171,46 @@ export default function App() {
 
   // ── Initiate PayU Checkout for VIP Membership ──
   const handleInitiateVipPayment = async (plan) => {
-    if (!currentUid) {
+    const token = await auth.currentUser?.getIdToken?.();
+    if (!token) {
       showToast('Please log in first to purchase VIP membership.');
       return;
     }
 
     const payload = {
-      itemType: 'connect',
-      itemId: `connect-vip-${plan.id}`,
+      planId: plan.id,
       name: userProfile?.name || 'CONNECT VIP User',
       phone: (userProfile?.phone || '9876543210').replace(/[^0-9]/g, '').slice(-10),
       email: `${(userProfile?.username || 'user').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'user'}@connect.local`,
-      source: 'connect-web',
     };
 
     let response;
     try {
-      response = await fetch('/.netlify/functions/payu-initiate', {
+      response = await fetch('/.netlify/functions/connect-payu-initiate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(payload),
       });
       if (response.status === 404) {
-        response = await fetch('/api/payu-initiate', {
+        response = await fetch('/api/connect-payu-initiate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
           body: JSON.stringify(payload),
         });
       }
     } catch (netErr) {
-      // Local dev server fallback when Netlify Functions backend is offline
-      const res = await activateUserVip(currentUid, plan.id);
-      setVipEntitlement(res.entitlement);
-      setUserProfile((prev) => ({
-        ...prev,
-        isVip: true,
-        vipPlan: res.entitlement?.planName || 'VIP Member',
-        vipExpiry: res.entitlement?.expiryDate,
-      }));
-      showToast(`🎉 Preview Mode: Activated ${plan.name} for testing!`);
+      showToast('Network error: Unable to connect to VIP payment server.');
       return;
     }
 
     if (!response || response.status === 404) {
-      const res = await activateUserVip(currentUid, plan.id);
-      setVipEntitlement(res.entitlement);
-      setUserProfile((prev) => ({
-        ...prev,
-        isVip: true,
-        vipPlan: res.entitlement?.planName || 'VIP Member',
-        vipExpiry: res.entitlement?.expiryDate,
-      }));
-      showToast(`🎉 Preview Mode: Activated ${plan.name} for testing!`);
+      showToast('VIP checkout service is currently unavailable.');
       return;
     }
 
@@ -1323,7 +1224,7 @@ export default function App() {
     }
 
     if (!response.ok || !data.success) {
-      throw new Error(data.error || 'Failed to initiate PayU payment.');
+      throw new Error(data.error || 'Failed to initiate VIP payment.');
     }
 
     showToast(`Redirecting to 100% Secure PayU Checkout for ${plan.name}...`);

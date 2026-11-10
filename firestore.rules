@@ -1,0 +1,63 @@
+rules_version = '2';
+
+/**
+ * CONNECT Firestore Security Rules
+ * 
+ * ARCHITECTURE PRINCIPLE: ZERO TRUST CLIENT ACCESS
+ * 
+ * 1. Default-Deny: Direct read and write access from the Firebase Client Web SDK is completely denied.
+ * 2. Trusted Authority: All data reads, profile updates, wallet mutations, transaction ledger writes,
+ *    daily rewards, VIP activations, promo codes, and phone authentication records are executed exclusively
+ *    by server-side Netlify Functions using the Firebase Admin SDK (see netlify/functions/_connect-db.js).
+ * 3. Admin SDK Privileges: The Firebase Admin SDK operates with full administrative credentials and
+ *    bypasses these rules entirely.
+ * 4. Authentication Independence: Firebase Authentication (anonymous auth, phone custom tokens,
+ *    token refreshing, and user session management) is handled by Firebase Auth service and is not
+ *    restricted or affected by Cloud Firestore security rules.
+ */
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all collections and documents
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    /**
+     * users Collection & Subcollections
+     * Contains user profiles, wallet balances, ledger entries, daily reward state, VIP status,
+     * favourites, and purchased packs.
+     * All reads and writes must pass through /.netlify/functions/connect-user.
+     */
+    match /users/{userId} {
+      allow read, write: if false;
+
+      match /{allSubcollections=**} {
+        allow read, write: if false;
+      }
+    }
+
+    /**
+     * phone_credentials Collection
+     * Contains phone-to-UID mappings, bcrypt password hashes, and failed login lockout state.
+     * Accessible ONLY by /.netlify/functions/connect-auth-phone via Firebase Admin SDK.
+     * Direct client access is strictly prohibited.
+     */
+    match /phone_credentials/{phone} {
+      allow read, write: if false;
+    }
+
+    /**
+     * connect_orders Collection
+     * Contains PayU payment orders, package details, payment amounts, and fulfilment statuses.
+     * Accessible ONLY by /.netlify/functions/connect-payu-initiate and /.netlify/functions/payu-response
+     * via Firebase Admin SDK.
+     * Direct client access is strictly prohibited.
+     */
+    match /connect_orders/{orderId} {
+      allow read, write: if false;
+    }
+  }
+}
+

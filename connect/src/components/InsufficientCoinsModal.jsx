@@ -8,6 +8,7 @@ import {
   markPackAsPurchased,
   ONE_TIME_PURCHASE_PACK_IDS,
 } from '../data/packages';
+import { fetchUserPurchasedPacks } from '../firebase/userService';
 
 // Graphic matching the reference image: gold coins stack + sparkles + pink exclamation badge
 function CoinWarningIllustration() {
@@ -112,17 +113,35 @@ export default function InsufficientCoinsModal({
   // Track purchased pack IDs
   const [purchasedPackIds, setPurchasedPackIds] = useState(getPurchasedPackIds);
 
+  const activeUid = userProfile?.uid || null;
+
   useEffect(() => {
-    const handleSync = () => {
-      setPurchasedPackIds(getPurchasedPackIds());
+    let isMounted = true;
+    if (activeUid) {
+      fetchUserPurchasedPacks(activeUid)
+        .then((packs) => {
+          if (isMounted && Array.isArray(packs) && packs.length > 0) {
+            setPurchasedPackIds(packs);
+          }
+        })
+        .catch(() => {});
+    }
+
+    const handleSync = (e) => {
+      if (e?.detail?.all) {
+        setPurchasedPackIds(e.detail.all);
+      } else {
+        setPurchasedPackIds(getPurchasedPackIds());
+      }
     };
     window.addEventListener('connect_purchased_packs_updated', handleSync);
     window.addEventListener('storage', handleSync);
     return () => {
+      isMounted = false;
       window.removeEventListener('connect_purchased_packs_updated', handleSync);
       window.removeEventListener('storage', handleSync);
     };
-  }, []);
+  }, [activeUid]);
 
   // Filter out any packs that have already been purchased and take the next 3 available packs
   // Strictly: only 19, 49, 99 disappear after purchase. All other packs (149, 199, 499, 999...) remain permanently visible.

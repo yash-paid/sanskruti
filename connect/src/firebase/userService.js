@@ -5,29 +5,57 @@
  * Never shares balances, profiles, transactions, or VIP entitlements between accounts.
  */
 
+import { auth } from './config';
+
 const API_BASE = '/.netlify/functions/connect-user';
 
 /**
- * Standard fetch helper with auth headers
+ * Retrieves the current user's Firebase ID token
+ */
+export const getFirebaseIdToken = async () => {
+  if (auth?.currentUser) {
+    try {
+      return await auth.currentUser.getIdToken();
+    } catch (e) {
+      console.warn('Failed to retrieve Firebase ID token from currentUser:', e);
+    }
+  }
+
+  if (typeof auth?.authStateReady === 'function') {
+    try {
+      await auth.authStateReady();
+      if (auth.currentUser) {
+        return await auth.currentUser.getIdToken();
+      }
+    } catch (e) {}
+  }
+
+  return null;
+};
+
+/**
+ * Standard fetch helper with verified Firebase ID token Authorization header
  */
 const apiCall = async (action, options = {}) => {
   const { uid, method = 'GET', body, query = {} } = options;
-  if (!uid) {
-    throw new Error('Authentication required: Missing UID.');
-  }
 
-  const queryParams = new URLSearchParams({ action, uid, ...query });
+  const idToken = await getFirebaseIdToken();
+
+  const queryParams = new URLSearchParams({ action, ...(uid ? { uid } : {}), ...query });
   const url = `${API_BASE}?${queryParams.toString()}`;
 
   const headers = {
     'Content-Type': 'application/json',
-    'x-user-uid': uid,
   };
+
+  if (idToken) {
+    headers['Authorization'] = `Bearer ${idToken}`;
+  }
 
   const response = await fetch(url, {
     method,
     headers,
-    body: body ? JSON.stringify({ uid, ...body }) : undefined,
+    body: body ? JSON.stringify({ ...(uid ? { uid } : {}), ...body }) : undefined,
   });
 
   const data = await response.json().catch(() => ({}));
@@ -74,9 +102,9 @@ export const fetchUserWallet = async (uid) => {
 };
 
 /**
- * Perform atomic coin transaction (credit or debit) with server validation
+ * Perform atomic coin transaction (credit or debit) with backend authority & idempotency
  */
-export const transactUserCoins = async (uid, { amount, isCredit, type, title, metadata = {} }) => {
+export const transactUserCoins = async (uid, { amount, isCredit, type, title, idempotencyKey, metadata = {} }) => {
   if (!uid) throw new Error('Authentication required');
   const res = await apiCall('transact_coins', {
     uid,
@@ -86,6 +114,7 @@ export const transactUserCoins = async (uid, { amount, isCredit, type, title, me
       isCredit: Boolean(isCredit),
       type,
       title,
+      idempotencyKey,
       metadata,
     },
   });
@@ -93,12 +122,75 @@ export const transactUserCoins = async (uid, { amount, isCredit, type, title, me
 };
 
 /**
- * Fetch the user's isolated transaction ledger
+ * Fetch the user's isolated transaction ledger with optional cursor pagination
  */
-export const fetchUserTransactions = async (uid) => {
+export const fetchUserTransactions = async (uid, options = {}) => {
   if (!uid) return [];
-  const res = await apiCall('transactions', { uid });
-  return res.transactions || [];
+  const { cursor, limit = 20 } = typeof options === 'object' ? options : {};
+  const query = {};
+  if (limit) query.limit = limit;
+  if (cursor) query.cursor = cursor;
+  const res = await apiCall('transactions', { uid, query });
+  const list = Array.isArray(res.transactions) ? res.transactions : [];
+  list.pagination = res.pagination || { hasMore: false, nextCursor: null, limit };
+  return list;
+};
+
+/**
+ * Fetch user's persistent favourites from Firestore
+ */
+export const fetchUserFavourites = async (uid) => {
+  if (!uid) return [];
+  const res = await apiCall('favourites', { uid });
+  return res.favourites || [];
+};
+
+/**
+ * Toggle favourite expert in Firestore
+ */
+export const toggleUserFavourite = async (uid, expertId) => {
+  if (!uid || !expertId) return [];
+  const res = await apiCall('toggle_favourite', {
+    uid,
+    method: 'POST',
+    body: { expertId },
+  });
+  return res;
+};
+
+/**
+ * Batch update favourites in Firestore
+ */
+export const saveUserFavourites = async (uid, favourites) => {
+  if (!uid) return [];
+  const res = await apiCall('update_favourites', {
+    uid,
+    method: 'POST',
+    body: { favourites },
+  });
+  return res.favourites || [];
+};
+
+/**
+ * Fetch user's purchased packs from Firestore
+ */
+export const fetchUserPurchasedPacks = async (uid) => {
+  if (!uid) return [];
+  const res = await apiCall('purchased_packs', { uid });
+  return res.purchasedPacks || [];
+};
+
+/**
+ * Record a pack purchase in Firestore
+ */
+export const recordUserPurchasedPack = async (uid, packId) => {
+  if (!uid || !packId) return [];
+  const res = await apiCall('record_pack_purchase', {
+    uid,
+    method: 'POST',
+    body: { packId },
+  });
+  return res.purchasedPacks || [];
 };
 
 /**
