@@ -1,7 +1,10 @@
 [build]
-  command = "npm --prefix connect run build"
+  command = "npm --prefix connect install && npm --prefix connect run build"
   publish = "."
   functions = "netlify/functions"
+
+[build.environment]
+  NPM_FLAGS = "--include=dev"
 
 [[headers]]
   for = "/*"
