@@ -16,60 +16,64 @@ import {
 import { fetchUserLedger } from '../firebase/rewardService';
 import { useLanguage } from '../context/LanguageContext';
 
+const getLocalLedger = (userId) => {
+  if (!userId) return [];
+  try {
+    const raw = localStorage.getItem(`connect_local_ledger_${userId}`);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+};
+
 export default function TransactionsModal({ uid, coins = 0, onClose }) {
   const { t } = useLanguage();
   const [filter, setFilter] = useState('all'); // 'all' | 'credit' | 'debit'
   const [transactions, setTransactions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [hasMore, setHasMore] = useState(false);
-  const [nextCursor, setNextCursor] = useState(null);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  const loadTransactions = () => {
-    if (!uid) {
-      setTransactions([]);
-      setIsLoading(false);
-      return;
-    }
-    setIsLoading(true);
-    setErrorMessage('');
-    fetchUserLedger(uid, { limit: 20 })
-      .then((serverTxns) => {
-        const txns = Array.isArray(serverTxns) ? [...serverTxns] : [];
-        txns.sort((a, b) => new Date(b.timestamp || b.date) - new Date(a.timestamp || a.date));
-        setTransactions(txns);
-        setHasMore(Boolean(serverTxns.pagination?.hasMore));
-        setNextCursor(serverTxns.pagination?.nextCursor || null);
-        setIsLoading(false);
-      })
-      .catch((err) => {
-        console.warn('Failed to load user ledger from server:', err);
-        setErrorMessage(err.message || 'Unable to connect to transaction service.');
-        setTransactions([]);
-        setIsLoading(false);
-      });
-  };
-
-  const handleLoadMore = () => {
-    if (!uid || !nextCursor || isLoadingMore) return;
-    setIsLoadingMore(true);
-    fetchUserLedger(uid, { limit: 20, cursor: nextCursor })
-      .then((moreTxns) => {
-        const newItems = Array.isArray(moreTxns) ? [...moreTxns] : [];
-        setTransactions((prev) => [...prev, ...newItems]);
-        setHasMore(Boolean(moreTxns.pagination?.hasMore));
-        setNextCursor(moreTxns.pagination?.nextCursor || null);
-        setIsLoadingMore(false);
-      })
-      .catch((err) => {
-        console.warn('Failed to load more transactions:', err);
-        setIsLoadingMore(false);
-      });
-  };
 
   useEffect(() => {
-    loadTransactions();
+    let isMounted = true;
+    if (uid) {
+      setIsLoading(true);
+      fetchUserLedger(uid)
+        .then((serverTxns) => {
+          if (!isMounted) return;
+          const localTxns = getLocalLedger(uid);
+          // Merge server transactions with local transactions, deduplicating by transaction ID
+          const seen = new Set();
+          const merged = [];
+          for (const txn of serverTxns || []) {
+            if (txn.id && !seen.has(txn.id)) {
+              seen.add(txn.id);
+              merged.push(txn);
+            }
+          }
+          for (const txn of localTxns) {
+            if (txn.id && !seen.has(txn.id)) {
+              seen.add(txn.id);
+              merged.push(txn);
+            }
+          }
+          // Sort latest first
+          merged.sort((a, b) => new Date(b.timestamp || b.date) - new Date(a.timestamp || a.date));
+          setTransactions(merged);
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          console.warn('Failed to load user ledger from server, falling back to local store:', err);
+          if (isMounted) {
+            setTransactions(getLocalLedger(uid));
+            setIsLoading(false);
+          }
+        });
+    } else {
+      setTransactions([]);
+      setIsLoading(false);
+    }
+    return () => {
+      isMounted = false;
+    };
   }, [uid]);
 
   // Compute total credits and debits for full coin accounting
@@ -221,32 +225,6 @@ export default function TransactionsModal({ uid, coins = 0, onClose }) {
               <Clock size={24} style={{ margin: '0 auto 8px', opacity: 0.6 }} />
               <div>Loading transaction passbook...</div>
             </div>
-          ) : errorMessage ? (
-            <div style={{ padding: '36px 16px', textAlign: 'center', color: '#fca5a5' }}>
-              <div style={{ fontSize: 26, marginBottom: 8 }}>⚠️</div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: '#fee2e2', marginBottom: 6 }}>
-                Failed to load transactions
-              </div>
-              <div style={{ fontSize: 12, opacity: 0.8, maxWidth: 260, margin: '0 auto 14px' }}>
-                {errorMessage}
-              </div>
-              <button
-                type="button"
-                onClick={loadTransactions}
-                style={{
-                  background: 'rgba(255, 255, 255, 0.12)',
-                  border: '1px solid rgba(255, 255, 255, 0.25)',
-                  color: '#ffffff',
-                  borderRadius: 20,
-                  padding: '6px 16px',
-                  cursor: 'pointer',
-                  fontSize: 12,
-                  fontWeight: 600,
-                }}
-              >
-                Try Again
-              </button>
-            </div>
           ) : filtered.length === 0 ? (
             <div style={{ padding: '44px 16px', textAlign: 'center', color: '#c9b4d5' }}>
               <div style={{ fontSize: 26, marginBottom: 8 }}>📜</div>
@@ -325,28 +303,6 @@ export default function TransactionsModal({ uid, coins = 0, onClose }) {
                 </div>
               );
             })
-          )}
-
-          {hasMore && (
-            <div style={{ textAlign: 'center', margin: '14px 0 6px 0' }}>
-              <button
-                onClick={handleLoadMore}
-                disabled={isLoadingMore}
-                style={{
-                  background: 'rgba(255, 42, 141, 0.15)',
-                  border: '1px solid rgba(255, 42, 141, 0.4)',
-                  color: '#ff2a8d',
-                  padding: '9px 20px',
-                  borderRadius: 20,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  cursor: isLoadingMore ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                {isLoadingMore ? 'Loading More...' : 'Load More Transactions'}
-              </button>
-            </div>
           )}
         </div>
 

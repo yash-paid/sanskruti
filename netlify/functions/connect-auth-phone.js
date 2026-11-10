@@ -1,21 +1,14 @@
 /**
  * CONNECT Mobile Number Authentication Netlify Function
  * 
- * Provides production-secure mobile number + password authentication with Cloud Firestore persistence.
- * Features:
- * - Persistent Firestore storage in collection 'phone_credentials' with E.164 phone document ID.
- * - Atomic duplicate registration prevention via Firestore transactions.
- * - Persistent rate-limiting and account lockout fields (failedLoginAttempts, lockedUntil).
- * - Zero-downtime lazy migration of existing accounts from read-only _phone-users.json.
- * - Strict preservation of existing UIDs (phone_<digits>) and bcrypt/PBKDF2 password verification.
- * - Server-side Firebase Custom Token generation via Firebase Admin SDK.
- * - Safe fail-closed error handling (no insecure local fallback on database errors).
+ * Provides secure mobile number + password authentication without OTP or fake emails.
+ * Uses PBKDF2 cryptographic password hashing, strict E.164 Indian mobile normalization,
+ * persistent account storage, and Firebase Custom Token generation via Firebase Admin SDK.
  */
 
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const bcrypt = require('bcryptjs');
 
 const hasServiceAccountCredentials = Boolean(
   process.env.FIREBASE_SERVICE_ACCOUNT_KEY ||
@@ -27,127 +20,46 @@ let adminApp = null;
 let adminAuth = null;
 let adminFirestore = null;
 let adminInitialized = false;
-let customFirestoreInjected = false;
-let customAuthInjected = false;
 
-const initFirebaseAdmin = () => {
-  if (adminInitialized && adminAuth) {
-    return { adminApp, adminAuth, adminFirestore };
-  }
+try {
+  const { initializeApp, getApps, cert } = require('firebase-admin/app');
+  const { getAuth } = require('firebase-admin/auth');
+  const { getFirestore } = require('firebase-admin/firestore');
 
-  try {
-    const { initializeApp, getApps, cert } = require('firebase-admin/app');
-    const { getAuth } = require('firebase-admin/auth');
-    const { getFirestore } = require('firebase-admin/firestore');
-
-    if (!adminApp) {
-      if (getApps().length > 0) {
-        adminApp = getApps()[0];
+  if (hasServiceAccountCredentials) {
+    if (getApps().length === 0) {
+      if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+        const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+        adminApp = initializeApp({
+          credential: cert(serviceAccount),
+        });
       } else {
-        // Attempt 1: Safe parse of FIREBASE_SERVICE_ACCOUNT_KEY
-        let serviceAccount = null;
-        if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-          try {
-            let rawKey = String(process.env.FIREBASE_SERVICE_ACCOUNT_KEY).trim();
-            if (!rawKey.startsWith('{') && rawKey.length > 30) {
-              try {
-                const decoded = Buffer.from(rawKey, 'base64').toString('utf-8').trim();
-                if (decoded.startsWith('{')) rawKey = decoded;
-              } catch (_) {}
-            }
-            let parsed = JSON.parse(rawKey);
-            if (typeof parsed === 'string') {
-              try { parsed = JSON.parse(parsed); } catch (_) {}
-            }
-            if (parsed && typeof parsed === 'object') {
-              serviceAccount = parsed;
-            }
-          } catch (parseErr) {
-            console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY in connect-auth-phone:', parseErr.message);
-          }
-        }
-
-        if (serviceAccount) {
-          try {
-            adminApp = initializeApp({
-              credential: cert(serviceAccount),
-              projectId: serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-            });
-          } catch (certErr) {
-            console.warn('cert(serviceAccount) failed in connect-auth-phone, falling back:', certErr.message);
-            adminApp = null;
-          }
-        }
-
-        // Attempt 2: Use FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL
-        if (!adminApp && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
-          try {
-            const privateKey = String(process.env.FIREBASE_PRIVATE_KEY).replace(/\\n/g, '\n');
-            adminApp = initializeApp({
-              credential: cert({
-                projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                privateKey,
-              }),
-              projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-            });
-          } catch (certErr2) {
-            console.warn('cert(privateKey) failed in connect-auth-phone, falling back:', certErr2.message);
-            adminApp = null;
-          }
-        }
-
-        // Attempt 3: Project-only initialization
-        if (!adminApp) {
-          try {
-            adminApp = initializeApp({
-              projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-            });
-          } catch (defaultErr) {
-            if (getApps().length > 0) {
-              adminApp = getApps()[0];
-            } else {
-              console.warn('Default initializeApp failed in connect-auth-phone:', defaultErr.message);
-            }
-          }
-        }
+        adminApp = initializeApp({
+          credential: cert({
+            projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+            privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+          }),
+        });
       }
+      adminInitialized = true;
+    } else {
+      adminApp = getApps()[0];
+      adminInitialized = true;
     }
 
     if (adminApp) {
-      if (!adminAuth && !customAuthInjected) {
-        try {
-          adminAuth = getAuth(adminApp);
-        } catch (e) {
-          console.warn('getAuth(adminApp) warning in connect-auth-phone:', e.message);
-          try {
-            adminAuth = getAuth();
-          } catch (_) {}
-        }
-      }
-      if (!adminFirestore && !customFirestoreInjected && hasServiceAccountCredentials) {
-        try {
-          adminFirestore = getFirestore(adminApp);
-          try {
-            adminFirestore.settings({ ignoreUndefinedProperties: true });
-          } catch (_) {}
-        } catch (e) {
-          console.warn('getFirestore warning in connect-auth-phone:', e.message);
-        }
-      }
+      adminAuth = getAuth(adminApp);
+      try {
+        adminFirestore = getFirestore(adminApp);
+      } catch (fsErr) {}
     }
-    adminInitialized = Boolean(adminApp && adminAuth);
-  } catch (e) {
-    console.warn('Firebase Admin init warning in connect-auth-phone:', e.message);
   }
+} catch (e) {
+  console.warn('Firebase Admin init warning:', e.message);
+}
 
-  return { adminApp, adminAuth, adminFirestore };
-};
-
-// Auto-run init
-initFirebaseAdmin();
-
-// Read-only legacy fallback file for lazy migration
+// Persistent File-Based Storage for Phone Accounts
 const DB_FILE = path.join(__dirname, '_phone-users.json');
 
 const loadPhoneUsers = () => {
@@ -157,9 +69,19 @@ const loadPhoneUsers = () => {
       return JSON.parse(raw);
     }
   } catch (e) {
-    console.warn('Error reading legacy phone users store:', e.message);
+    console.warn('Error reading phone users store:', e.message);
   }
   return {};
+};
+
+const savePhoneUsers = (users) => {
+  try {
+    fs.writeFileSync(DB_FILE, JSON.stringify(users, null, 2), 'utf-8');
+    return true;
+  } catch (e) {
+    console.error('Error writing phone users store:', e.message);
+    return false;
+  }
 };
 
 /**
@@ -192,118 +114,28 @@ const isValidIndianMobile = (e164) => {
 };
 
 /**
- * Bcrypt password hashing (Cost 10)
+ * Secure PBKDF2 Password Hashing (100,000 iterations, SHA-512, 16-byte random salt)
  */
-const hashPassword = async (password) => {
-  const salt = await bcrypt.genSalt(10);
-  return await bcrypt.hash(password, salt);
+const hashPassword = (password) => {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
+  return `${salt}:${hash}`;
 };
 
 /**
- * Timing-safe password verification with backwards compatibility for PBKDF2
+ * Timing-safe password verification
  */
-const verifyPassword = async (password, storedHash) => {
-  if (!storedHash) return false;
-  if (storedHash.startsWith('$2')) {
-    return await bcrypt.compare(password, storedHash);
-  }
-  // Backwards compatibility for legacy PBKDF2 accounts
-  if (storedHash.includes(':')) {
-    const [salt, originalHash] = storedHash.split(':');
-    const checkHash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
-    return crypto.timingSafeEqual(Buffer.from(checkHash, 'hex'), Buffer.from(originalHash, 'hex'));
-  }
-  return false;
-};
-
-const ALLOWED_ORIGINS = [
-  'https://sanskrutiservice.in',
-  'https://www.sanskrutiservice.in',
-  'http://localhost:5173',
-  'http://localhost:8888',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:8888',
-];
-
-const getCorsOrigin = (event) => {
-  const reqOrigin = event.headers?.origin || event.headers?.Origin || '';
-  if (!reqOrigin) {
-    return process.env.URL || 'https://sanskrutiservice.in';
-  }
-  if (
-    ALLOWED_ORIGINS.includes(reqOrigin) ||
-    (process.env.URL && reqOrigin === process.env.URL) ||
-    (process.env.DEPLOY_PRIME_URL && reqOrigin === process.env.DEPLOY_PRIME_URL) ||
-    reqOrigin.endsWith('.netlify.app')
-  ) {
-    return reqOrigin;
-  }
-  return 'https://sanskrutiservice.in';
-};
-
-const getClientIp = (event) => {
-  const h = event.headers || {};
-  return (
-    h['x-nf-client-connection-ip'] ||
-    h['client-ip'] ||
-    (h['x-forwarded-for'] ? h['x-forwarded-for'].split(',')[0].trim() : '') ||
-    h['x-real-ip'] ||
-    '127.0.0.1'
-  );
-};
-
-/**
- * Persistent, abuse-resistant rate limiting in Cloud Firestore
- * Tracks attempt count within rolling windows per IP to prevent credential stuffing and registration flooding.
- */
-const checkPersistentIpRateLimit = async (db, clientIp, options = {}) => {
-  if (!db) return { allowed: true };
-  const { maxAttempts = clientIp === '127.0.0.1' ? 60 : 15, windowMs = 60000, blockDurationMs = 300000 } = options;
-  
-  const ipHash = crypto.createHash('sha256').update(clientIp).digest('hex').slice(0, 20);
-  const rateDocRef = db.collection('rate_limits').doc(`ip_${ipHash}`);
-  
-  return await db.runTransaction(async (transaction) => {
-    const snap = await transaction.get(rateDocRef);
-    const now = Date.now();
-    let rateData = snap.exists ? snap.data() : { attempts: 0, windowStart: now, blockedUntil: 0 };
-
-    if (rateData.blockedUntil && now < rateData.blockedUntil) {
-      const waitMins = Math.ceil((rateData.blockedUntil - now) / 60000);
-      return {
-        allowed: false,
-        waitMins,
-        blockedUntil: rateData.blockedUntil,
-      };
-    }
-
-    if (now - (rateData.windowStart || 0) > windowMs) {
-      rateData.attempts = 1;
-      rateData.windowStart = now;
-      rateData.blockedUntil = 0;
-    } else {
-      rateData.attempts = (rateData.attempts || 0) + 1;
-    }
-
-    if (rateData.attempts > maxAttempts) {
-      rateData.blockedUntil = now + blockDurationMs;
-      transaction.set(rateDocRef, { ...rateData, ipHash, updatedAt: new Date().toISOString() });
-      const waitMins = Math.ceil(blockDurationMs / 60000);
-      return {
-        allowed: false,
-        waitMins,
-        blockedUntil: rateData.blockedUntil,
-      };
-    }
-
-    transaction.set(rateDocRef, { ...rateData, ipHash, updatedAt: new Date().toISOString() });
-    return { allowed: true, attempts: rateData.attempts };
-  });
+const verifyPassword = (password, storedHash) => {
+  if (!storedHash || !storedHash.includes(':')) return false;
+  const [salt, originalHash] = storedHash.split(':');
+  const checkHash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
+  return crypto.timingSafeEqual(Buffer.from(checkHash, 'hex'), Buffer.from(originalHash, 'hex'));
 };
 
 exports.handler = async (event, context) => {
+  // CORS Headers
   const headers = {
-    'Access-Control-Allow-Origin': getCorsOrigin(event),
+    'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Content-Type': 'application/json',
@@ -360,362 +192,125 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const { adminAuth: currentAuth, adminFirestore: currentDb } = initFirebaseAdmin();
-
-    // Fail safely if Firestore is unavailable (no insecure local fallback writes)
-    if (!currentDb) {
-      return {
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({
-          error: 'Authentication database service is currently unavailable. Please try again.',
-          code: 'auth/database-unavailable',
-        }),
-      };
-    }
-
-    // Persistent IP Rate Limiting Check
-    const clientIp = getClientIp(event);
-    const rateCheck = await checkPersistentIpRateLimit(currentDb, clientIp);
-    if (!rateCheck.allowed) {
-      return {
-        statusCode: 429,
-        headers,
-        body: JSON.stringify({
-          error: `Too many requests from this IP address. Please try again after ${rateCheck.waitMins} minutes.`,
-          code: 'auth/too-many-requests',
-        }),
-      };
-    }
-
+    // Deterministic unique UID for this mobile number
     const phoneDigits = normalizedPhone.replace(/[^0-9]/g, '');
     const uid = `phone_${phoneDigits}`;
 
-    // ─────────────────────────────────────────────────────────────
-    // 1. SIGNUP (Atomic Duplicate Prevention via Firestore Transaction)
-    // ─────────────────────────────────────────────────────────────
+    const usersStore = loadPhoneUsers();
+
     if (mode === 'signup') {
-      try {
-        const atomicResult = await currentDb.runTransaction(async (transaction) => {
-          const docRef = currentDb.collection('phone_credentials').doc(normalizedPhone);
-          const docSnap = await transaction.get(docRef);
+      // 1. Check if mobile number already registered
+      if (usersStore[normalizedPhone]) {
+        return {
+          statusCode: 409,
+          headers,
+          body: JSON.stringify({
+            error: 'This mobile number is already registered. Please log in instead.',
+            code: 'auth/phone-already-in-use',
+          }),
+        };
+      }
 
-          if (docSnap.exists) {
-            return { conflict: true };
-          }
+      // 2. Hash password & store account
+      const passwordHash = hashPassword(password);
+      const userRecord = {
+        uid,
+        phone: normalizedPhone,
+        name: (name || 'CONNECT User').trim(),
+        username: '@' + (name ? name.toLowerCase().replace(/[^a-z0-9]/g, '_') : `user_${phoneDigits.slice(-4)}`),
+        passwordHash,
+        createdAt: new Date().toISOString(),
+      };
 
-          // Check legacy store as well (read-only)
-          const legacyStore = loadPhoneUsers();
-          if (legacyStore[normalizedPhone]) {
-            return { conflict: true };
-          }
+      usersStore[normalizedPhone] = userRecord;
+      savePhoneUsers(usersStore);
 
-          const passwordHash = await hashPassword(password);
-          const userRecord = {
-            uid,
-            phone: normalizedPhone,
-            name: (name || 'CONNECT User').trim(),
-            username: '@' + (name ? name.toLowerCase().replace(/[^a-z0-9]/g, '_') : `user_${phoneDigits.slice(-4)}`),
-            passwordHash,
-            failedLoginAttempts: 0,
-            lockedUntil: null,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-
-          transaction.set(docRef, userRecord);
-
-          // Atomically initialize users/{uid} document with the chosen name
-          const userDocRef = currentDb.collection('users').doc(uid);
-          transaction.set(userDocRef, {
-            profile: {
-              uid,
-              userId: 'CN-' + phoneDigits.slice(-6).toUpperCase(),
-              name: userRecord.name,
-              username: userRecord.username,
-              phone: normalizedPhone,
-              email: '',
-              avatar: '/default-avatars/1.png',
-              dob: '2000-01-01',
-              isProfileComplete: false,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-            wallet: { coins: 0, updatedAt: new Date().toISOString() },
-            favourites: [],
-            purchasedPacks: [],
-            ledger: [],
-            daily_rewards: {
-              state: {
-                currentStreak: 0,
-                lastClaimDate: null,
-                cycleCount: 0,
-                lastAwardedCoins: 0,
-                updatedAt: new Date().toISOString(),
-              },
-              claims: {},
-            },
-            vip: {
-              entitlement: {
-                planId: null,
-                planName: null,
-                status: 'none',
-                active: false,
-                dailyBonusCoins: 0,
-                expiryDate: null,
-                activatedAt: null,
-              },
-              claims: {},
-            },
-            calls: [],
-            payments: [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+      // 3. Generate Firebase Custom Token
+      let customToken = null;
+      if (adminAuth) {
+        try {
+          customToken = await adminAuth.createCustomToken(uid, {
+            phone_number: normalizedPhone,
           });
-
-          return { conflict: false, userRecord };
-        });
-
-        if (atomicResult.conflict) {
-          return {
-            statusCode: 409,
-            headers,
-            body: JSON.stringify({
-              error: 'This mobile number is already registered. Please log in instead.',
-              code: 'auth/phone-already-in-use',
-            }),
-          };
+        } catch (tokenErr) {
+          console.warn('Firebase Admin customToken generation failed:', tokenErr.message);
         }
+      }
 
-        const userRecord = atomicResult.userRecord;
-
-        // Generate Firebase Custom Token
-        let customToken = null;
-        if (currentAuth) {
-          try {
-            customToken = await currentAuth.createCustomToken(uid, {
-              phone_number: normalizedPhone,
-              display_name: userRecord.name,
-            });
-          } catch (tokenErr) {
-            console.error('Firebase Admin customToken generation failed:', tokenErr.message);
-            return {
-              statusCode: 500,
-              headers,
-              body: JSON.stringify({
-                error: 'Authentication service temporarily unavailable. Token generation failed.',
-                code: 'auth/token-generation-failed',
-              }),
-            };
-          }
-        } else {
-          return {
-            statusCode: 500,
-            headers,
-            body: JSON.stringify({
-              error: 'Authentication service unavailable: Firebase Admin not initialized.',
-              code: 'auth/admin-not-initialized',
-            }),
-          };
-        }
-
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          uid,
+          phone: normalizedPhone,
+          name: userRecord.name,
+          username: userRecord.username,
+          customToken,
+          message: 'Account created successfully!',
+        }),
+      };
+    } else if (mode === 'login') {
+      // 1. Check if user exists
+      const existingUser = usersStore[normalizedPhone];
+      if (!existingUser) {
         return {
-          statusCode: 200,
+          statusCode: 404,
           headers,
           body: JSON.stringify({
-            success: true,
-            uid,
-            phone: normalizedPhone,
-            name: userRecord.name,
-            username: userRecord.username,
-            customToken,
-            message: 'Account created successfully!',
-          }),
-        };
-      } catch (txErr) {
-        console.error('Firestore signup transaction error:', txErr);
-        return {
-          statusCode: 500,
-          headers,
-          body: JSON.stringify({
-            error: 'Database operation failed during registration. Please try again.',
-            code: 'auth/database-error',
+            error: 'No account found with this mobile number. Please sign up.',
+            code: 'auth/user-not-found',
           }),
         };
       }
-    }
 
-    // ─────────────────────────────────────────────────────────────
-    // 2. LOGIN (Firestore Persistent Lockout & Lazy Migration)
-    // ─────────────────────────────────────────────────────────────
-    if (mode === 'login') {
-      try {
-        const docRef = currentDb.collection('phone_credentials').doc(normalizedPhone);
-        const userDocSnap = await docRef.get();
-        let userRecord = userDocSnap.exists ? userDocSnap.data() : null;
-        let isLazyMigrated = false;
-
-        // If not in Firestore, check legacy store for lazy migration
-        if (!userRecord) {
-          const legacyStore = loadPhoneUsers();
-          const legacyRecord = legacyStore[normalizedPhone];
-          if (legacyRecord) {
-            userRecord = legacyRecord;
-            isLazyMigrated = true;
-          }
-        }
-
-        // Check persistent lockout status
-        if (userRecord && userRecord.lockedUntil) {
-          const lockExpiry = new Date(userRecord.lockedUntil).getTime();
-          if (Date.now() < lockExpiry) {
-            const waitMins = Math.ceil((lockExpiry - Date.now()) / 60000);
-            return {
-              statusCode: 429,
-              headers,
-              body: JSON.stringify({
-                error: `Too many failed login attempts. Please try again after ${waitMins} minutes.`,
-                code: 'auth/too-many-requests',
-              }),
-            };
-          }
-        }
-
-        // Timing-safe verification
-        const dummyBcryptHash = '$2a$10$wT0vA9e1P6qF7vL8hZ9K2e6J2e3H1l2b3c4d5e6f7g8h9i0j1k2l3';
-        const isMatch = userRecord
-          ? await verifyPassword(password, userRecord.passwordHash)
-          : await verifyPassword(password, dummyBcryptHash);
-
-        if (!userRecord || !isMatch) {
-          // Increment persistent lockout in Firestore if doc exists
-          if (userDocSnap.exists) {
-            const nextAttempts = (userRecord.failedLoginAttempts || 0) + 1;
-            const updates = {
-              failedLoginAttempts: nextAttempts,
-              updatedAt: new Date().toISOString(),
-            };
-            if (nextAttempts >= 5) {
-              updates.lockedUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-            }
-            await docRef.update(updates).catch(() => {});
-          }
-
-          return {
-            statusCode: 401,
-            headers,
-            body: JSON.stringify({
-              error: 'Invalid mobile number or password. Please check your credentials.',
-              code: 'auth/invalid-credential',
-            }),
-          };
-        }
-
-        // Successful password verification:
-        // If from legacy store, lazily migrate to Firestore immediately with exact UID preserved
-        if (isLazyMigrated) {
-          const migratedData = {
-            uid: userRecord.uid, // EXACT SAME UID PRESERVED!
-            phone: normalizedPhone,
-            name: userRecord.name || 'CONNECT User',
-            username: userRecord.username || `@user_${phoneDigits.slice(-4)}`,
-            passwordHash: userRecord.passwordHash.startsWith('$2')
-              ? userRecord.passwordHash
-              : await hashPassword(password),
-            failedLoginAttempts: 0,
-            lockedUntil: null,
-            createdAt: userRecord.createdAt || new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            migratedFromLocal: true,
-          };
-          await docRef.set(migratedData);
-          userRecord = migratedData;
-        } else {
-          // Reset failed attempts in Firestore on successful login
-          if (userRecord.failedLoginAttempts > 0 || userRecord.lockedUntil) {
-            await docRef.update({
-              failedLoginAttempts: 0,
-              lockedUntil: null,
-              updatedAt: new Date().toISOString(),
-            }).catch(() => {});
-          }
-        }
-
-        // Generate Firebase Custom Token
-        let customToken = null;
-        if (currentAuth) {
-          try {
-            customToken = await currentAuth.createCustomToken(userRecord.uid, {
-              phone_number: normalizedPhone,
-              display_name: userRecord.name,
-            });
-          } catch (tokenErr) {
-            console.error('Firebase Admin customToken generation failed:', tokenErr.message);
-            return {
-              statusCode: 500,
-              headers,
-              body: JSON.stringify({
-                error: 'Authentication service temporarily unavailable. Token generation failed.',
-                code: 'auth/token-generation-failed',
-              }),
-            };
-          }
-        } else {
-          return {
-            statusCode: 500,
-            headers,
-            body: JSON.stringify({
-              error: 'Authentication service unavailable: Firebase Admin not initialized.',
-              code: 'auth/admin-not-initialized',
-            }),
-          };
-        }
-
+      // 2. Verify password hash
+      const isMatch = verifyPassword(password, existingUser.passwordHash);
+      if (!isMatch) {
         return {
-          statusCode: 200,
+          statusCode: 401,
           headers,
           body: JSON.stringify({
-            success: true,
-            uid: userRecord.uid,
-            phone: normalizedPhone,
-            name: userRecord.name,
-            username: userRecord.username,
-            customToken,
-            message: 'Login successful!',
-          }),
-        };
-      } catch (loginErr) {
-        console.error('Firestore login error:', loginErr);
-        return {
-          statusCode: 500,
-          headers,
-          body: JSON.stringify({
-            error: 'Database operation failed during login. Please try again.',
-            code: 'auth/database-error',
+            error: 'Incorrect password for this mobile number. Please try again.',
+            code: 'auth/wrong-password',
           }),
         };
       }
+
+      // 3. Generate Firebase Custom Token
+      let customToken = null;
+      if (adminAuth) {
+        try {
+          customToken = await adminAuth.createCustomToken(uid, {
+            phone_number: normalizedPhone,
+          });
+        } catch (tokenErr) {
+          console.warn('Firebase Admin customToken generation failed:', tokenErr.message);
+        }
+      }
+
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          success: true,
+          uid,
+          phone: normalizedPhone,
+          name: existingUser.name,
+          username: existingUser.username,
+          customToken,
+          message: 'Login successful!',
+        }),
+      };
     }
   } catch (err) {
-    console.error('Mobile auth handler error:', err);
+    console.error('Mobile auth function error:', err);
     return {
       statusCode: 500,
       headers,
       body: JSON.stringify({
         error: 'Authentication failed due to a server error. Please try again.',
-        code: 'auth/internal-error',
       }),
     };
   }
-};
-
-// Test helper hooks for injecting mocks during offline automated testing
-exports._setFirestoreDb = (customDb) => {
-  adminFirestore = customDb;
-  customFirestoreInjected = true;
-};
-
-exports._setAdminAuth = (customAuth) => {
-  adminAuth = customAuth;
-  customAuthInjected = true;
 };

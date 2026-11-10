@@ -1,5 +1,3 @@
-import { recordUserPurchasedPack } from '../firebase/userService';
-
 export const COIN_PACKAGES = [
   {
     id: 'pack-19',
@@ -141,7 +139,7 @@ export const getPurchasedPackIds = () => {
   }
 };
 
-export const markPackAsPurchased = (packId, uid) => {
+export const markPackAsPurchased = (packId) => {
   if (!packId) return;
   try {
     const cleanId = String(packId).replace(/^connect-/, '');
@@ -160,9 +158,6 @@ export const markPackAsPurchased = (packId, uid) => {
           })
         );
       }
-    }
-    if (uid) {
-      recordUserPurchasedPack(uid, cleanId).catch(() => {});
     }
   } catch (e) {}
 };
