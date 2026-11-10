@@ -3,6 +3,7 @@ import { User, Lock, Eye, EyeOff, ArrowRight, Zap, AlertCircle } from 'lucide-re
 import FeatureBadges from './FeatureBadges';
 import { GoogleIcon } from './LoginRequiredModal';
 import { useLanguage } from '../context/LanguageContext';
+import { normalizeIndianMobile, isValidIndianMobile } from '../firebase/authService';
 
 export default function AuthCard({
   initialMode = 'login',
@@ -38,10 +39,36 @@ export default function AuthCard({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.identifier.trim()) {
+    const rawId = formData.identifier.trim();
+    if (!rawId) {
       onToast('Enter mobile number or email');
       return;
     }
+
+    // Mobile Number vs Email Validation
+    if (!rawId.includes('@')) {
+      const digits = rawId.replace(/[^0-9]/g, '');
+      if (digits.length === 8 || digits.length === 9 || (digits.length > 0 && digits.length < 10)) {
+        onToast('❌ Wrong number! Please input correct 10-digit mobile number.');
+        return;
+      }
+      if (digits.length === 10 && !/^[6-9]\d{9}$/.test(digits)) {
+        onToast('❌ Wrong number! Please input correct 10-digit mobile number starting with 6, 7, 8, or 9.');
+        return;
+      }
+      const normalized = normalizeIndianMobile(rawId);
+      if (!normalized || !isValidIndianMobile(normalized)) {
+        onToast('❌ Wrong number! Please input correct 10-digit mobile number.');
+        return;
+      }
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(rawId)) {
+        onToast('❌ Please enter a valid email address.');
+        return;
+      }
+    }
+
     if (!formData.password) {
       onToast(t('password_placeholder', 'Please enter your password'));
       return;
@@ -194,6 +221,31 @@ export default function AuthCard({
               autoComplete="username"
             />
           </div>
+          {/* Helper alert if user types 8 or 9 digits */}
+          {formData.identifier &&
+            !formData.identifier.includes('@') &&
+            (() => {
+              const digits = formData.identifier.replace(/[^0-9]/g, '');
+              if (digits.length >= 7 && digits.length <= 9) {
+                return (
+                  <div
+                    style={{
+                      fontSize: 11.5,
+                      color: '#ff4d6d',
+                      marginTop: -4,
+                      marginBottom: 10,
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <span>⚠️ Wrong number ({digits.length}/10 digits). Please input 10-digit mobile number.</span>
+                  </div>
+                );
+              }
+              return null;
+            })()}
 
           {/* Password */}
           <div className="input-group">

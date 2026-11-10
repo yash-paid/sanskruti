@@ -414,6 +414,24 @@ export default function App() {
   const handleLogin = async (formData) => {
     try {
       const rawIdentifier = (formData.identifier || formData.email || '').trim();
+      if (!rawIdentifier) {
+        showToast('Please enter mobile number or email');
+        return;
+      }
+
+      // Check for mobile number validation
+      if (!rawIdentifier.includes('@')) {
+        const digits = rawIdentifier.replace(/[^0-9]/g, '');
+        if (digits.length === 8 || digits.length === 9 || (digits.length > 0 && digits.length < 10)) {
+          showToast('❌ Wrong number! Please input correct 10-digit mobile number.');
+          return;
+        }
+        if (digits.length === 10 && !/^[6-9]\d{9}$/.test(digits)) {
+          showToast('❌ Wrong number! Please input correct 10-digit mobile number starting with 6, 7, 8, or 9.');
+          return;
+        }
+      }
+
       const idType = detectIdentifierType(rawIdentifier);
 
       if (idType === 'phone') {

@@ -187,7 +187,7 @@ exports.handler = async (event, context) => {
         statusCode: 400,
         headers,
         body: JSON.stringify({
-          error: 'Please enter a valid 10-digit Indian mobile number (e.g. 9876543210).',
+          error: 'Wrong number! Please input correct 10-digit mobile number.',
         }),
       };
     }

@@ -175,6 +175,17 @@ export default function ProfileScreen({
       onToast?.('⚠️ Name cannot be empty');
       return;
     }
+    if (editForm.phone && editForm.phone.trim()) {
+      const digits = editForm.phone.replace(/[^0-9]/g, '');
+      if (digits.length === 8 || digits.length === 9 || (digits.length > 0 && digits.length < 10)) {
+        onToast?.('❌ Wrong number! Please input correct 10-digit mobile number.');
+        return;
+      }
+      if (digits.length === 10 && !/^[6-9]\d{9}$/.test(digits)) {
+        onToast?.('❌ Wrong number! Please input correct 10-digit mobile number starting with 6, 7, 8, or 9.');
+        return;
+      }
+    }
     if (editForm.dob && !isAtLeast18(editForm.dob)) {
       const currentAge = calculateAge(editForm.dob);
       onToast?.(`⚠️ You must be at least 18 years old. (Current age: ${currentAge} years)`);
@@ -685,6 +696,17 @@ export default function ProfileScreen({
                   className="auth-input edit-box"
                   placeholder="+91..."
                 />
+                {editForm.phone && (() => {
+                  const digits = editForm.phone.replace(/[^0-9]/g, '');
+                  if (digits.length >= 7 && digits.length <= 9) {
+                    return (
+                      <span style={{ fontSize: 11, color: '#ff4d6d', marginTop: 4, display: 'block', fontWeight: 600 }}>
+                        ⚠️ Wrong number ({digits.length}/10 digits). Please input 10-digit mobile number.
+                      </span>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
 
               <div className="edit-field-group">

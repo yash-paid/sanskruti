@@ -35,7 +35,7 @@ export const getAuthErrorMessage = (error) => {
     case 'auth/phone-already-in-use':
       return 'This mobile number is already registered. Please log in instead.';
     case 'auth/invalid-phone':
-      return 'Please enter a valid 10-digit Indian mobile number (e.g. 9876543210).';
+      return '❌ Wrong number! Please input correct 10-digit mobile number.';
     case 'auth/email-already-in-use':
       return 'This email is already registered. Please log in instead.';
     case 'auth/weak-password':
