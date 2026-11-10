@@ -51,9 +51,14 @@ export default function DailyRewardModal({
       // Refresh status to reflect claimed state
       await loadStatus();
 
+      // Dispatch global event so profile calendar and home screen sync instantly
+      window.dispatchEvent(new CustomEvent('connect_daily_reward_updated', { detail: result }));
+
+      // Automatically dismiss the popup after showing celebration
       setTimeout(() => {
         setShowCoinBurst(false);
-      }, 2500);
+        onClose?.();
+      }, 1500);
     } catch (err) {
       console.warn('Claim error:', err);
       if (err.message === 'ALREADY_CLAIMED_TODAY') {
@@ -166,13 +171,20 @@ export default function DailyRewardModal({
           {claimedToday ? (
             <div className="daily-reward-claimed-box">
               <div className="claimed-status-row">
-                <Check size={16} color="#4ade80" />
-                <span>Today's Reward Claimed!</span>
+                <Check size={16} color="#4ade80" strokeWidth={3} />
+                <span>Today's Reward Already Claimed!</span>
               </div>
               <div className="claimed-next-hint">
                 <Clock size={13} />
                 <span>Next reward opens in {rewardStatus?.timeUntilNextClaim || 'a few hours'}</span>
               </div>
+              <button
+                type="button"
+                className="daily-reward-already-claimed-btn"
+                onClick={onClose}
+              >
+                Already Claimed Today • Close
+              </button>
             </div>
           ) : (
             <button
