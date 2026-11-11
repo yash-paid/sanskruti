@@ -115,7 +115,8 @@ export default function ProfileScreen({
   const [callHistory, setCallHistory] = useState(() => getLocalCallHistory(uid));
   const [isLoadingCalls, setIsLoadingCalls] = useState(false);
   const [activeVip, setActiveVip] = useState(() => {
-    return propVipEntitlement || getStoredVipEntitlement(uid);
+    const ent = propVipEntitlement || getStoredVipEntitlement(uid);
+    return ent && ent.active ? ent : null;
   });
 
   const vipTier = (() => {
@@ -183,12 +184,15 @@ export default function ProfileScreen({
   React.useEffect(() => {
     if (propVipEntitlement && propVipEntitlement.active) {
       setActiveVip(propVipEntitlement);
+    } else if (propVipEntitlement === null || propVipEntitlement?.active === false) {
+      setActiveVip(null);
     }
   }, [propVipEntitlement]);
 
   React.useEffect(() => {
     const handleVipUpdate = (e) => {
-      if (e?.detail) setActiveVip(e.detail);
+      if (e?.detail && e.detail.active) setActiveVip(e.detail);
+      else setActiveVip(null);
     };
     const handleCallUpdate = () => {
       setCallHistory(getLocalCallHistory(uid));
@@ -234,13 +238,17 @@ export default function ProfileScreen({
 
       fetchUserVipEntitlement(uid)
         .then((res) => {
-          if (isMounted && res?.entitlement && res.entitlement.active) {
-            setActiveVip(res.entitlement);
-            saveStoredVipEntitlement(uid, res.entitlement);
-          } else if (isMounted) {
-            const cached = getStoredVipEntitlement(uid);
-            if (cached && cached.active) {
-              setActiveVip(cached);
+          if (isMounted) {
+            if (res?.entitlement && res.entitlement.active) {
+              setActiveVip(res.entitlement);
+              saveStoredVipEntitlement(uid, res.entitlement);
+            } else if (res?.success) {
+              // Server confirmed user has NO active VIP membership
+              setActiveVip(null);
+              try {
+                localStorage.removeItem(`connect_vip_entitlement_${uid}`);
+                localStorage.removeItem(`connect_vip_active_${uid}`);
+              } catch (_) {}
             }
           }
         })
@@ -248,6 +256,7 @@ export default function ProfileScreen({
           if (isMounted) {
             const cached = getStoredVipEntitlement(uid);
             if (cached && cached.active) setActiveVip(cached);
+            else setActiveVip(null);
           }
         });
     }

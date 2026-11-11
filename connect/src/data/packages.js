@@ -130,6 +130,29 @@ export const getPurchasedPackIds = (userId) => {
   try {
     const activeUid = userId || (typeof window !== 'undefined' ? (localStorage.getItem('connect_last_auth_uid') || '') : '');
 
+    // Self-heal corrupted localStorage for pack-49 (e.g. mistakenly marked when redeeming promo code)
+    if (typeof window !== 'undefined') {
+      try {
+        const rawSaved = localStorage.getItem('connect_purchased_packs');
+        if (rawSaved && rawSaved.includes('pack-49')) {
+          const localLedgerRaw = activeUid ? localStorage.getItem(`connect_local_ledger_${activeUid}`) : null;
+          const ledgerList = localLedgerRaw ? JSON.parse(localLedgerRaw) : [];
+          const hasReal49 = Array.isArray(ledgerList) && ledgerList.some(
+            (t) => (t.type === 'purchase' || t.type === 'recharge') &&
+                   !String(t.id || '').startsWith('TXN-PACK-') &&
+                   (t.metadata?.packId === 'pack-49' || (t.metadata?.price === 49 && !t.metadata?.code))
+          );
+          if (!hasReal49) {
+            const parsed = JSON.parse(rawSaved).filter((id) => id !== 'pack-49');
+            localStorage.setItem('connect_purchased_packs', JSON.stringify(parsed));
+            if (activeUid) {
+              localStorage.setItem(`connect_purchased_packs_${activeUid}`, JSON.stringify(parsed));
+            }
+          }
+        }
+      } catch (_) {}
+    }
+
     // If an authenticated user ID is available, verify against actual completed purchases in ledger
     if (activeUid) {
       const localLedgerRaw = localStorage.getItem(`connect_local_ledger_${activeUid}`);
@@ -137,12 +160,22 @@ export const getPurchasedPackIds = (userId) => {
         const list = JSON.parse(localLedgerRaw);
         if (Array.isArray(list)) {
           const purchasedInLedger = list
-            .filter((item) => (item.type === 'purchase' || item.type === 'recharge') && item.status !== 'Failed')
+            .filter((item) => {
+              if (!item || item.status === 'Failed') return false;
+              // Ignore synthetic TXN-PACK- entries from past bug
+              if (String(item.id || '').startsWith('TXN-PACK-')) return false;
+              // Ignore promo codes
+              if (item.type === 'promo_code' || item.metadata?.code) return false;
+              return item.type === 'purchase' || item.type === 'recharge';
+            })
             .map((item) => {
               const packId = item.metadata?.packId || '';
               const cleanId = String(packId).replace(/^connect-/, '');
               if (ONE_TIME_PURCHASE_PACK_IDS.includes(cleanId)) return cleanId;
               const title = item.title || '';
+              if (title.includes('₹19') || title.includes('pack-19') || title.includes('50 Coins')) return 'pack-19';
+              if (title.includes('₹49') || title.includes('pack-49')) return 'pack-49';
+              if (title.includes('₹99') || title.includes('pack-99')) return 'pack-99';
               for (const id of ONE_TIME_PURCHASE_PACK_IDS) {
                 if (title.includes(id)) return id;
               }

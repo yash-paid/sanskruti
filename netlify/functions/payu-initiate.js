@@ -100,19 +100,21 @@ exports.handler = async (event, context) => {
     }
 
     // 4. Generate unique transaction ID (max 30 chars for PayU)
+    const isConnect = itemType === 'connect' || (body && body.source === 'connect-web');
+    const connectUid = body.uid || '';
     const randomSuffix = crypto.randomBytes(3).toString('hex').toUpperCase();
-    const txnid = `SKT_${Date.now()}_${randomSuffix}`;
+    const txnid = isConnect ? `CN_${Date.now()}_${randomSuffix}` : `SKT_${Date.now()}_${randomSuffix}`;
 
     // Callback URLs
     const surl = `${config.siteUrl}/.netlify/functions/payu-response`;
     const furl = `${config.siteUrl}/.netlify/functions/payu-response`;
 
     // User Defined Fields (UDFs) for tracking order metadata through PayU
-    const udf1 = `${itemType}:${itemId || 'cart'}`.substring(0, 50);
-    const udf2 = cleanPhone;
-    const udf3 = orderCalc.appliedCoupon ? `COUPON_${orderCalc.appliedCoupon}` : (orderCalc.appliedOffer ? `OFFER_${orderCalc.appliedOffer.offerId}` : 'NO_COUPON');
-    const udf4 = `${orderCalc.itemsPurchased.length}_items`;
-    const udf5 = (body && body.source === 'index-php') ? 'index-php' : 'sanskruti-web';
+    const udf1 = (isConnect ? (connectUid || `${itemType}:${itemId || 'cart'}`) : `${itemType}:${itemId || 'cart'}`).substring(0, 50);
+    const udf2 = (isConnect ? (itemId || 'connect-pack-19') : cleanPhone).substring(0, 50);
+    const udf3 = isConnect ? 'connect_wallet_recharge' : (orderCalc.appliedCoupon ? `COUPON_${orderCalc.appliedCoupon}` : (orderCalc.appliedOffer ? `OFFER_${orderCalc.appliedOffer.offerId}` : 'NO_COUPON'));
+    const udf4 = isConnect ? String(orderCalc.itemsPurchased[0]?.coins || 50) : `${orderCalc.itemsPurchased.length}_items`;
+    const udf5 = isConnect ? 'connect' : ((body && body.source === 'index-php') ? 'index-php' : 'sanskruti-web');
 
     // 5. Generate secure SHA-512 request hash server-side
     const hash = generateRequestHash({
@@ -140,12 +142,62 @@ exports.handler = async (event, context) => {
       appliedOffer: orderCalc.appliedOffer || null,
       productinfo: orderCalc.productInfo,
       itemsPurchased: orderCalc.itemsPurchased,
-      productCategory: orderCalc.productCategory,
+      productCategory: isConnect ? 'connect' : orderCalc.productCategory,
       customerName: cleanName,
       customerPhone: cleanPhone,
       customerEmail: cleanEmail,
       createdAt: new Date().toISOString()
     });
+
+    // If CONNECT order, store pending order in Firestore connect_orders collection
+    if (isConnect) {
+      try {
+        const { getDb, getCanonicalPackage, getCanonicalVipPlan } = require('./_connect-db');
+        const db = getDb();
+        const targetVip = getCanonicalVipPlan(itemId);
+        const targetPackage = getCanonicalPackage(itemId);
+        const isVip = Boolean(targetVip);
+        const orderRecord = isVip
+          ? {
+              txnid,
+              uid: connectUid,
+              orderType: 'vip',
+              planId: targetVip.planId,
+              packageName: targetVip.title,
+              planName: targetVip.planName,
+              durationDays: targetVip.durationDays,
+              dailyBonusCoins: targetVip.dailyBonusCoins,
+              expectedAmount: Number(targetVip.price),
+              expectedCoins: 0,
+              status: 'pending',
+              fulfilled: false,
+              createdAt: new Date().toISOString(),
+              customerName: cleanName,
+              customerPhone: cleanPhone,
+              customerEmail: cleanEmail,
+              category: 'connect_vip',
+            }
+          : {
+              txnid,
+              uid: connectUid,
+              orderType: 'coins',
+              packageId: targetPackage?.id || itemId,
+              packageName: targetPackage?.title || orderCalc.itemsPurchased[0]?.title || 'Coin Pack',
+              expectedAmount: Number(targetPackage?.price || orderCalc.finalAmount),
+              expectedCoins: Number(targetPackage?.coins || orderCalc.itemsPurchased[0]?.coins || 50),
+              status: 'pending',
+              fulfilled: false,
+              createdAt: new Date().toISOString(),
+              customerName: cleanName,
+              customerPhone: cleanPhone,
+              customerEmail: cleanEmail,
+              category: 'connect',
+            };
+        await db.collection('connect_orders').doc(txnid).set(orderRecord);
+      } catch (storeErr) {
+        console.warn('Failed to store connect_order in Firestore during payu-initiate:', storeErr);
+      }
+    }
 
     // 7. Return initiation payload to client
     return {

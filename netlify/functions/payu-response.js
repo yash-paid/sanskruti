@@ -217,10 +217,45 @@ exports.handler = async (event, context) => {
 
       let orderData = orderSnap.exists ? orderSnap.data() : null;
       if (!orderData) {
-        // Resilient fallback: reconstruct from cryptographically verified UDFs
-        const verifiedUid = udf1;
-        const targetPackage = getCanonicalPackage(udf2);
-        const targetVip = getCanonicalVipPlan(udf2);
+        // Resilient fallback: reconstruct from cryptographically verified UDFs or amount
+        let verifiedUid = udf1 || '';
+        let targetKey = udf2 || '';
+        if (udf1 && udf1.includes(':')) {
+          targetKey = udf1.split(':')[1];
+          verifiedUid = '';
+        }
+        let targetPackage = getCanonicalPackage(targetKey) || getCanonicalPackage(udf2);
+        let targetVip = getCanonicalVipPlan(targetKey) || getCanonicalVipPlan(udf2);
+
+        // Fallback by amount if package key was not resolved
+        if (!targetPackage && !targetVip) {
+          const numAmount = parseFloat(amount || 0);
+          if (Math.abs(numAmount - 19) < 0.01) targetPackage = getCanonicalPackage('connect-pack-19');
+          else if (Math.abs(numAmount - 49) < 0.01) targetPackage = getCanonicalPackage('connect-pack-49');
+          else if (Math.abs(numAmount - 99) < 0.01) targetPackage = getCanonicalPackage('connect-pack-99');
+          else if (Math.abs(numAmount - 149) < 0.01) targetPackage = getCanonicalPackage('connect-pack-149');
+          else if (Math.abs(numAmount - 199) < 0.01) targetPackage = getCanonicalPackage('connect-pack-199');
+          else if (Math.abs(numAmount - 299) < 0.01) targetVip = getCanonicalVipPlan('connect-vip-gold');
+          else if (Math.abs(numAmount - 399) < 0.01) targetVip = getCanonicalVipPlan('connect-vip-diamond');
+        }
+
+        // If verifiedUid is empty, try to resolve via phone number
+        if (!verifiedUid && phone) {
+          const cleanP = String(phone).replace(/[^0-9]/g, '').slice(-10);
+          try {
+            const fs = require('fs');
+            const path = require('path');
+            const phoneUsersRaw = fs.readFileSync(path.join(__dirname, '_phone-users.json'), 'utf8');
+            const phoneMap = JSON.parse(phoneUsersRaw || '{}');
+            if (phoneMap[cleanP]?.uid) {
+              verifiedUid = phoneMap[cleanP].uid;
+            }
+          } catch (_) {}
+        }
+        if (!verifiedUid) {
+          verifiedUid = `phone_${String(phone).replace(/[^0-9]/g, '').slice(-10) || 'user'}`;
+        }
+
         if (verifiedUid && (targetPackage || targetVip)) {
           orderData = targetVip
             ? {
@@ -525,10 +560,30 @@ exports.handler = async (event, context) => {
         paidAt: new Date().toISOString()
       });
 
+      const { generateDeliveryToken } = require('./_order-store');
+      const deliveryToken = generateDeliveryToken({
+        txnid,
+        status: 'success',
+        amount: amount || expectedAmount,
+        itemsPurchased: [{
+          id: orderData.packageId || (orderData.orderType === 'vip' ? `connect-vip-${orderData.planId}` : 'connect-pack-19'),
+          title: orderData.packageName || 'Coin Pack',
+          price: amount || expectedAmount,
+          category: isVipOrder ? 'connect_vip' : 'connect',
+          coins: fulfilmentResult.coinsCredited || orderData.expectedCoins || 50,
+          planId: orderData.planId || null,
+        }],
+        productCategory: isVipOrder ? 'connect_vip' : 'connect',
+        customerPhone: phone || orderData.customerPhone || '',
+        customerName: firstname || orderData.customerName || '',
+        mihpayid,
+      }, config.signingSecret);
+
       const baseSuccessUrl = getRedirectUrl({
         targetCategory: 'connect',
         status: 'success',
         txnid,
+        token: deliveryToken,
         amount,
         mihpayid
       });

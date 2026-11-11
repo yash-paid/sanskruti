@@ -181,9 +181,15 @@ export default function VipScreen({
       fetchUserVipEntitlement(uid)
         .then((res) => {
           if (isMounted) {
-            const serverEnt = res?.entitlement && res.entitlement.active ? res.entitlement : null;
-            const localEnt = getStoredVipEntitlement(uid);
-            setActiveVip(serverEnt || localEnt || null);
+            if (res?.entitlement && res.entitlement.active) {
+              setActiveVip(res.entitlement);
+              saveStoredVipEntitlement(uid, res.entitlement);
+            } else if (res?.success) {
+              setActiveVip(null);
+            } else {
+              const localEnt = getStoredVipEntitlement(uid);
+              setActiveVip(localEnt && localEnt.active ? localEnt : null);
+            }
             if (res?.vipBonusClaimedToday) {
               setVipBonusClaimedToday(true);
             }
@@ -191,7 +197,8 @@ export default function VipScreen({
         })
         .catch(() => {
           if (isMounted && uid) {
-            setActiveVip(getStoredVipEntitlement(uid));
+            const localEnt = getStoredVipEntitlement(uid);
+            setActiveVip(localEnt && localEnt.active ? localEnt : null);
           }
         });
     }

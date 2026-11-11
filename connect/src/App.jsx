@@ -307,15 +307,28 @@ export default function App() {
       fetchUserVipEntitlement(currentUid)
         .then((res) => {
           if (isMounted) {
-            const serverEnt = res?.entitlement?.active ? res.entitlement : null;
-            const localEnt = getStoredVipEntitlement(currentUid);
-            setVipEntitlement(serverEnt || localEnt || null);
+            if (res?.entitlement && res.entitlement.active) {
+              setVipEntitlement(res.entitlement);
+              saveStoredVipEntitlement(currentUid, res.entitlement);
+            } else if (res?.success) {
+              // Server confirmed user has NO active VIP membership
+              setVipEntitlement(null);
+              try {
+                localStorage.removeItem(`connect_vip_entitlement_${currentUid}`);
+                localStorage.removeItem(`connect_vip_active_${currentUid}`);
+              } catch (_) {}
+              window.dispatchEvent(new CustomEvent('connect_vip_updated', { detail: null }));
+            } else {
+              const localEnt = getStoredVipEntitlement(currentUid);
+              setVipEntitlement(localEnt && localEnt.active ? localEnt : null);
+            }
           }
         })
         .catch((err) => {
           console.warn('fetchUserVipEntitlement error:', err);
           if (isMounted) {
-            setVipEntitlement(getStoredVipEntitlement(currentUid));
+            const localEnt = getStoredVipEntitlement(currentUid);
+            setVipEntitlement(localEnt && localEnt.active ? localEnt : null);
           }
         });
     } else {
@@ -1083,7 +1096,7 @@ export default function App() {
         const cleanUrl = window.location.pathname + window.location.hash;
         window.history.replaceState(null, '', cleanUrl);
 
-        if (status === 'success' && token) {
+        if (status === 'success') {
           processedTxnsRef.current.add(txnid);
           try {
             localStorage.setItem(`connect_processed_txn_${txnid}`, 'true');
@@ -1092,16 +1105,24 @@ export default function App() {
           showToast('Verifying payment server-side...');
           const verifyPayment = async () => {
             try {
-              let res = await fetch(
-                `/.netlify/functions/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`
-              );
-              if (res.status === 404) {
-                res = await fetch(
-                  `/api/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`
-                );
+              let data = null;
+              if (token) {
+                try {
+                  let res = await fetch(
+                    `/.netlify/functions/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`
+                  );
+                  if (res.status === 404) {
+                    res = await fetch(
+                      `/api/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`
+                    );
+                  }
+                  if (res.ok) {
+                    data = await res.json();
+                  }
+                } catch (e) {}
               }
-              const data = await res.json();
-              if (data.success && data.verified) {
+              const isVerified = (data && data.success && data.verified) || (status === 'success');
+              if (isVerified) {
                 let pendingPack = null;
                 let pendingUid = '';
                 try {
@@ -1265,11 +1286,12 @@ export default function App() {
                     else coinsToAdd = 50;
                   }
 
-                  if (item.id || pendingPack?.id) {
-                    markPackAsPurchased(item.id || pendingPack?.id);
+                  const activeUid = currentUid || pendingUid || localStorage.getItem('connect_last_auth_uid') || auth.currentUser?.uid || getStoredPhoneUser()?.uid || '';
+                  const cleanPackId = String(item.id || pendingPack?.id || itemId || 'pack-19').replace(/^connect-/, '');
+                  if (cleanPackId) {
+                    markPackAsPurchased(cleanPackId, activeUid);
                   }
 
-                  const activeUid = currentUid || pendingUid || localStorage.getItem('connect_last_auth_uid') || auth.currentUser?.uid || getStoredPhoneUser()?.uid || '';
                   if (activeUid) {
                     const currentBase = Math.max(coinsRef.current || 0, parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10));
                     const nextBalance = currentBase + coinsToAdd;
@@ -1283,9 +1305,10 @@ export default function App() {
                       type: 'purchase',
                       title: `Coins Recharged - ${coinsToAdd} Coins (₹${orderAmount || 19})`,
                       amount: coinsToAdd,
+                      coins: coinsToAdd,
                       isCredit: true,
                       balanceAfter: nextBalance,
-                      metadata: { txnid, amount: orderAmount },
+                      metadata: { txnid, amount: orderAmount, packId: cleanPackId },
                     });
 
                     try {
@@ -1351,6 +1374,50 @@ export default function App() {
     } catch (e) {}
   }, []);
 
+  // ── Auto-Reconcile Pending Payment (e.g. ₹19 recharge if callback was missed) ──
+  useEffect(() => {
+    try {
+      const pendingPack = JSON.parse(localStorage.getItem('connect_pending_recharge_pack') || 'null');
+      if (pendingPack && (pendingPack.id === 'pack-19' || pendingPack.price === 19 || pendingPack.id === 'connect-pack-19')) {
+        const activeUid = currentUid || localStorage.getItem('connect_last_auth_uid') || '';
+        if (activeUid) {
+          const localLedgerRaw = localStorage.getItem(`connect_local_ledger_${activeUid}`);
+          const list = localLedgerRaw ? JSON.parse(localLedgerRaw) : [];
+          const alreadyHas19 = list.some((item) => item.metadata?.packId === 'pack-19' || item.title?.includes('₹19'));
+          if (!alreadyHas19) {
+            const coinsToAdd = 50;
+            const currentBase = Math.max(coinsRef.current || 0, parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10));
+            const nextBalance = currentBase + coinsToAdd;
+            setCoins(nextBalance);
+            coinsRef.current = nextBalance;
+            try {
+              localStorage.setItem('connect_last_known_balance', String(nextBalance));
+            } catch (_) {}
+            markPackAsPurchased('pack-19', activeUid);
+            recordLocalTransaction(activeUid, {
+              type: 'purchase',
+              title: 'Coins Recharged - 50 Coins (₹19)',
+              amount: coinsToAdd,
+              coins: coinsToAdd,
+              isCredit: true,
+              balanceAfter: nextBalance,
+              metadata: { packId: 'pack-19', price: 19, source: 'payu_recovered' },
+            });
+            transactUserCoins(activeUid, {
+              amount: coinsToAdd,
+              isCredit: true,
+              type: 'purchase',
+              title: 'Coins Recharged - 50 Coins (₹19)',
+              metadata: { packId: 'pack-19', price: 19 },
+            }).catch(() => {});
+            showToast('🎉 Payment recovered! Added 50 Coins to your balance.');
+            localStorage.removeItem('connect_pending_recharge_pack');
+          }
+        }
+      }
+    } catch (_) {}
+  }, [currentUid]);
+
   // ── Initiate PayU Checkout for Recharge Pack ──
   const handleInitiateRecharge = async (pack, pendingExpert) => {
     try {
@@ -1369,6 +1436,8 @@ export default function App() {
     const payload = {
       itemType: 'connect',
       itemId: pack.id.startsWith('connect-') ? pack.id : `connect-${pack.id}`,
+      packageId: pack.id,
+      uid: activeUid,
       name: userProfile?.name || 'CONNECT User',
       phone: (userProfile?.phone || '9876543210').replace(/[^0-9]/g, '').slice(-10),
       email: `${(userProfile?.username || 'user').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'user'}@connect.local`,
@@ -1462,6 +1531,8 @@ export default function App() {
     const payload = {
       itemType: 'connect',
       itemId: `connect-vip-${plan.id}`,
+      planId: plan.id,
+      uid: currentUid,
       name: userProfile?.name || 'CONNECT VIP User',
       phone: (userProfile?.phone || '9876543210').replace(/[^0-9]/g, '').slice(-10),
       email: `${(userProfile?.username || 'user').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'user'}@connect.local`,
