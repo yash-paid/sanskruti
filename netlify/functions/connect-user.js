@@ -685,16 +685,31 @@ exports.handler = async (event, context) => {
       user.profile.vipPlanId = planId;
       user.profile.vipExpiry = expiry.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 
+      // Automatically award Day 1 daily bonus coins upon membership purchase
+      const today = getKolkataDateString();
+      if (!user.vip.claims) user.vip.claims = {};
+      user.vip.claims[`vip-${today}`] = {
+        date: today,
+        bonusCoins,
+        planId,
+        claimedAt: new Date().toISOString(),
+        type: 'vip_activation_bonus',
+      };
+
+      if (!user.wallet) user.wallet = { coins: 0, updatedAt: new Date().toISOString() };
+      user.wallet.coins = (Number(user.wallet.coins) || 0) + bonusCoins;
+      user.wallet.updatedAt = new Date().toISOString();
+
       if (!Array.isArray(user.ledger)) user.ledger = [];
       user.ledger.unshift({
         id: `TXN-VIP-${Date.now().toString(36).toUpperCase()}`,
-        type: 'vip_purchase',
-        title: `Purchased ${planName} (${days} Days)`,
-        coins: 0,
+        type: 'vip_bonus',
+        title: `${planName} Activated (+${bonusCoins} Daily Coins)`,
+        coins: bonusCoins,
         isCredit: true,
-        balanceAfter: user.wallet?.coins || 0,
+        balanceAfter: user.wallet.coins,
         status: 'Completed',
-        date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }),
+        date: getKolkataFormattedDateTime(),
         timestamp: new Date().toISOString(),
         metadata: { planId, planName, days, bonusCoins },
       });
@@ -707,7 +722,9 @@ exports.handler = async (event, context) => {
         body: JSON.stringify({
           success: true,
           entitlement: user.vip.entitlement,
-          message: `${planName} activated successfully!`,
+          bonusCoins,
+          newBalance: user.wallet.coins,
+          message: `${planName} activated successfully! (+${bonusCoins} Coins added)`,
         }),
       };
     }

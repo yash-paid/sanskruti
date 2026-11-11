@@ -107,6 +107,12 @@ export const claimVipDailyBonus = async (uid) => {
       const today = getKolkataDateString();
       try {
         localStorage.setItem(`connect_vip_claimed_${today}_${uid}`, 'true');
+        if (typeof res.newBalance === 'number') {
+          localStorage.setItem('connect_last_known_balance', String(res.newBalance));
+        } else {
+          const lastBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
+          localStorage.setItem('connect_last_known_balance', String(lastBal + res.bonusAmount));
+        }
       } catch (e) {}
       recordLocalTransaction(uid, {
         type: 'vip_bonus',
@@ -190,6 +196,9 @@ export const recordLocalTransaction = (uid, txn) => {
     list.unshift(entry);
     if (list.length > 100) list.length = 100;
     localStorage.setItem(key, JSON.stringify(list));
+    if (typeof entry.balanceAfter === 'number' && !isNaN(entry.balanceAfter)) {
+      localStorage.setItem('connect_last_known_balance', String(entry.balanceAfter));
+    }
     window.dispatchEvent(new CustomEvent('connect_ledger_updated', { detail: entry }));
     return entry;
   } catch (e) {

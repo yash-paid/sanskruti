@@ -274,8 +274,24 @@ export default function App() {
       fetchUserWallet(currentUid)
         .then((balance) => {
           if (isMounted) {
-            setCoins(balance);
-            coinsRef.current = balance;
+            const localBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
+            const verifiedBalance = Math.max(Number(balance) || 0, Number(localBal) || 0);
+            setCoins(verifiedBalance);
+            coinsRef.current = verifiedBalance;
+            try {
+              localStorage.setItem('connect_last_known_balance', String(verifiedBalance));
+            } catch (e) {}
+
+            // If local balance was ahead of server (e.g. fresh recharge before cold server sync), sync to server
+            if (verifiedBalance > (Number(balance) || 0)) {
+              transactUserCoins(currentUid, {
+                amount: verifiedBalance - (Number(balance) || 0),
+                isCredit: true,
+                type: 'balance_sync',
+                title: 'Wallet Balance Sync',
+                clientBalance: verifiedBalance,
+              }).catch(() => {});
+            }
           }
         })
         .catch((err) => console.warn('fetchUserWallet error:', err));
@@ -1012,14 +1028,28 @@ export default function App() {
     showToast('Logged out successfully.');
   };
 
-  const handleAddCoins = async () => {
+  const handleAddCoins = async (amount = 0) => {
+    const addAmt = Number(amount) || 0;
+    if (addAmt > 0) {
+      const nextBal = (coinsRef.current || 0) + addAmt;
+      setCoins(nextBal);
+      coinsRef.current = nextBal;
+      try {
+        localStorage.setItem('connect_last_known_balance', String(nextBal));
+      } catch (e) {}
+    }
     const uid = currentUid || auth.currentUser?.uid || getStoredPhoneUser()?.uid;
     if (uid) {
       try {
         const serverBalance = await fetchUserWallet(uid);
         if (typeof serverBalance === 'number') {
-          setCoins(serverBalance);
-          coinsRef.current = serverBalance;
+          const localBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
+          const best = Math.max(serverBalance, localBal, coinsRef.current || 0);
+          setCoins(best);
+          coinsRef.current = best;
+          try {
+            localStorage.setItem('connect_last_known_balance', String(best));
+          } catch (e) {}
         }
       } catch (err) {
         console.warn('handleAddCoins wallet refresh error:', err);
@@ -1109,12 +1139,29 @@ export default function App() {
                       };
                       setVipEntitlement(ent);
                       saveStoredVipEntitlement(activeUid, ent);
+
+                      // Award Day 1 daily bonus coins immediately to wallet
+                      const bonusCoins = Number(res?.bonusCoins) || Number(ent.dailyBonusCoins) || (planId === 'silver' ? 200 : planId === 'gold' ? 500 : 1200);
+                      const currentBase = Math.max(coinsRef.current || 0, parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10));
+                      const nextBalance = (typeof res?.newBalance === 'number' && res.newBalance >= currentBase + bonusCoins)
+                        ? res.newBalance
+                        : currentBase + bonusCoins;
+
+                      setCoins(nextBalance);
+                      coinsRef.current = nextBalance;
+                      try {
+                        localStorage.setItem('connect_last_known_balance', String(nextBalance));
+                        const today = getKolkataDateString();
+                        localStorage.setItem(`connect_vip_claimed_${today}_${activeUid}`, 'true');
+                      } catch (e) {}
+
                       recordLocalTransaction(activeUid, {
-                        type: 'vip_purchase',
-                        title: `${ent.planName} Membership Activated (30 Days)`,
-                        amount: 0,
+                        type: 'vip_bonus',
+                        title: `${ent.planName} Activated (+${bonusCoins} Daily Coins)`,
+                        amount: bonusCoins,
                         isCredit: true,
-                        balanceAfter: coinsRef.current || 0,
+                        balanceAfter: nextBalance,
+                        metadata: { planId, txnid },
                       });
                       setUserProfile((prev) => ({
                         ...prev,
@@ -1125,7 +1172,7 @@ export default function App() {
                       try {
                         localStorage.setItem(`connect_vip_active_${activeUid}`, 'true');
                       } catch (e) {}
-                      showToast(`👑 Payment Verified! You are now an active ${ent.planName || 'VIP'} Member! 🎉`);
+                      showToast(`👑 Payment Verified! ${ent.planName} Activated (+${bonusCoins} Coins added to your wallet) 🎉`);
                       goToPage('profile');
                     } catch (vipErr) {
                       console.warn('VIP activation error after payment:', vipErr);
@@ -1140,12 +1187,25 @@ export default function App() {
                       };
                       setVipEntitlement(ent);
                       saveStoredVipEntitlement(activeUid, ent);
+
+                      const bonusCoins = Number(ent.dailyBonusCoins) || (planId === 'silver' ? 200 : planId === 'gold' ? 500 : 1200);
+                      const currentBase = Math.max(coinsRef.current || 0, parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10));
+                      const nextBalance = currentBase + bonusCoins;
+                      setCoins(nextBalance);
+                      coinsRef.current = nextBalance;
+                      try {
+                        localStorage.setItem('connect_last_known_balance', String(nextBalance));
+                        const today = getKolkataDateString();
+                        localStorage.setItem(`connect_vip_claimed_${today}_${activeUid}`, 'true');
+                      } catch (e) {}
+
                       recordLocalTransaction(activeUid, {
-                        type: 'vip_purchase',
-                        title: `${ent.planName} Membership Activated (30 Days)`,
-                        amount: 0,
+                        type: 'vip_bonus',
+                        title: `${ent.planName} Activated (+${bonusCoins} Daily Coins)`,
+                        amount: bonusCoins,
                         isCredit: true,
-                        balanceAfter: coinsRef.current || 0,
+                        balanceAfter: nextBalance,
+                        metadata: { planId, txnid },
                       });
                       setUserProfile((prev) => ({
                         ...prev,
@@ -1153,7 +1213,7 @@ export default function App() {
                         vipPlan: ent.planName || 'VIP Member',
                         vipExpiry: ent.expiryDate,
                       }));
-                      showToast('👑 Payment Verified! VIP Membership is now active.');
+                      showToast(`👑 Payment Verified! ${ent.planName} is now active (+${bonusCoins} Coins added).`);
                       goToPage('profile');
                     }
                   } else {
@@ -1211,7 +1271,14 @@ export default function App() {
 
                   const activeUid = currentUid || pendingUid || localStorage.getItem('connect_last_auth_uid') || auth.currentUser?.uid || getStoredPhoneUser()?.uid || '';
                   if (activeUid) {
-                    const nextBalance = (coinsRef.current || 0) + coinsToAdd;
+                    const currentBase = Math.max(coinsRef.current || 0, parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10));
+                    const nextBalance = currentBase + coinsToAdd;
+                    setCoins(nextBalance);
+                    coinsRef.current = nextBalance;
+                    try {
+                      localStorage.setItem('connect_last_known_balance', String(nextBalance));
+                    } catch (e) {}
+
                     recordLocalTransaction(activeUid, {
                       type: 'purchase',
                       title: `Coins Recharged - ${coinsToAdd} Coins (₹${orderAmount || 19})`,
@@ -1227,12 +1294,15 @@ export default function App() {
                         isCredit: true,
                         type: 'purchase',
                         title: `Coins Recharged - ${coinsToAdd} Coins (₹${orderAmount || 19})`,
-                        clientBalance: coinsRef.current || 0,
+                        clientBalance: currentBase,
                         metadata: { txnid, amount: orderAmount },
                       });
-                      if (typeof transactRes?.newBalance === 'number') {
+                      if (typeof transactRes?.newBalance === 'number' && transactRes.newBalance >= nextBalance) {
                         setCoins(transactRes.newBalance);
                         coinsRef.current = transactRes.newBalance;
+                        try {
+                          localStorage.setItem('connect_last_known_balance', String(transactRes.newBalance));
+                        } catch (e) {}
                       } else {
                         setCoins(nextBalance);
                         coinsRef.current = nextBalance;
@@ -1243,9 +1313,13 @@ export default function App() {
                       coinsRef.current = nextBalance;
                     }
                   } else {
-                    const nextBalance = (coinsRef.current || 0) + coinsToAdd;
+                    const currentBase = Math.max(coinsRef.current || 0, parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10));
+                    const nextBalance = currentBase + coinsToAdd;
                     setCoins(nextBalance);
                     coinsRef.current = nextBalance;
+                    try {
+                      localStorage.setItem('connect_last_known_balance', String(nextBalance));
+                    } catch (e) {}
                   }
 
                   showToast(`🎉 Verified payment! Added ${coinsToAdd} Coins.`);
@@ -1373,6 +1447,18 @@ export default function App() {
       return;
     }
 
+    const bonusCoins = plan.id === 'silver' ? 200 : plan.id === 'gold' ? 500 : 1200;
+    try {
+      localStorage.setItem('connect_pending_recharge_pack', JSON.stringify({
+        id: `connect-vip-${plan.id}`,
+        planId: plan.id,
+        price: plan.price,
+        coins: bonusCoins,
+        title: plan.name,
+      }));
+      localStorage.setItem('connect_pending_recharge_uid', currentUid);
+    } catch (e) {}
+
     const payload = {
       itemType: 'connect',
       itemId: `connect-vip-${plan.id}`,
@@ -1400,26 +1486,58 @@ export default function App() {
       // Local dev server fallback when Netlify Functions backend is offline
       const res = await activateUserVip(currentUid, plan.id);
       setVipEntitlement(res.entitlement);
+      const currentBase = Math.max(coinsRef.current || 0, parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10));
+      const nextBal = currentBase + bonusCoins;
+      setCoins(nextBal);
+      coinsRef.current = nextBal;
+      try {
+        localStorage.setItem('connect_last_known_balance', String(nextBal));
+        const today = getKolkataDateString();
+        localStorage.setItem(`connect_vip_claimed_${today}_${currentUid}`, 'true');
+      } catch (e) {}
+      recordLocalTransaction(currentUid, {
+        type: 'vip_bonus',
+        title: `${plan.name} Activated (+${bonusCoins} Daily Coins)`,
+        amount: bonusCoins,
+        isCredit: true,
+        balanceAfter: nextBal,
+      });
       setUserProfile((prev) => ({
         ...prev,
         isVip: true,
         vipPlan: res.entitlement?.planName || 'VIP Member',
         vipExpiry: res.entitlement?.expiryDate,
       }));
-      showToast(`🎉 Preview Mode: Activated ${plan.name} for testing!`);
+      showToast(`🎉 Activated ${plan.name} (+${bonusCoins} Coins added)!`);
       return;
     }
 
     if (!response || response.status === 404) {
       const res = await activateUserVip(currentUid, plan.id);
       setVipEntitlement(res.entitlement);
+      const currentBase = Math.max(coinsRef.current || 0, parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10));
+      const nextBal = currentBase + bonusCoins;
+      setCoins(nextBal);
+      coinsRef.current = nextBal;
+      try {
+        localStorage.setItem('connect_last_known_balance', String(nextBal));
+        const today = getKolkataDateString();
+        localStorage.setItem(`connect_vip_claimed_${today}_${currentUid}`, 'true');
+      } catch (e) {}
+      recordLocalTransaction(currentUid, {
+        type: 'vip_bonus',
+        title: `${plan.name} Activated (+${bonusCoins} Daily Coins)`,
+        amount: bonusCoins,
+        isCredit: true,
+        balanceAfter: nextBal,
+      });
       setUserProfile((prev) => ({
         ...prev,
         isVip: true,
         vipPlan: res.entitlement?.planName || 'VIP Member',
         vipExpiry: res.entitlement?.expiryDate,
       }));
-      showToast(`🎉 Preview Mode: Activated ${plan.name} for testing!`);
+      showToast(`🎉 Activated ${plan.name} (+${bonusCoins} Coins added)!`);
       return;
     }
 

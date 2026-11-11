@@ -106,5 +106,50 @@
         "timestamp": "2026-11-10T13:00:00.000Z"
       }
     ]
+  },
+  "user_A_id_123": {
+    "profile": {
+      "uid": "user_A_id_123",
+      "userId": "CN-AID123",
+      "name": "User A Authenticated Name",
+      "username": "@user__123",
+      "email": "",
+      "phone": "",
+      "avatar": "/default-avatars/1.png",
+      "dob": "2000-01-01",
+      "isProfileComplete": false,
+      "favourites": [],
+      "createdAt": "2026-11-10T13:37:43.906Z",
+      "updatedAt": "2026-11-10T14:15:27.680Z"
+    },
+    "wallet": {
+      "coins": 0,
+      "updatedAt": "2026-11-10T13:37:43.906Z"
+    },
+    "ledger": [],
+    "daily_rewards": {
+      "state": {
+        "currentStreak": 0,
+        "lastClaimDate": null,
+        "cycleCount": 0,
+        "lastAwardedCoins": 0,
+        "updatedAt": "2026-11-10T13:37:43.906Z"
+      },
+      "claims": {}
+    },
+    "vip": {
+      "entitlement": {
+        "planId": null,
+        "planName": null,
+        "status": "none",
+        "active": false,
+        "dailyBonusCoins": 0,
+        "expiryDate": null,
+        "activatedAt": null
+      },
+      "claims": {}
+    },
+    "calls": [],
+    "payments": []
   }
 }

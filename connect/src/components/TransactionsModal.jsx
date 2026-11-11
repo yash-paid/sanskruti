@@ -91,21 +91,34 @@ const getLocalLedger = (userId) => {
       const vipEntitlement = JSON.parse(localStorage.getItem(`connect_vip_entitlement_${userId}`) || 'null');
       if (vipActive || (vipEntitlement && vipEntitlement.active)) {
         const planName = vipEntitlement?.planName || 'Diamond VIP';
-        const exists = list.some((item) => item.type === 'vip_purchase' || item.title?.includes('VIP'));
+        const bonusCoins = Number(vipEntitlement?.dailyBonusCoins) || (planName.includes('Diamond') ? 1200 : planName.includes('Gold') ? 500 : 200);
+        const exists = list.some((item) => item.type === 'vip_purchase' || item.type === 'vip_bonus' || item.title?.includes('VIP'));
         if (!exists) {
           list.push({
             id: `TXN-VIP-${userId}`,
-            type: 'vip_purchase',
-            title: `${planName} Membership Activated (30 Days)`,
-            coins: 0,
+            type: 'vip_bonus',
+            title: `${planName} Activated (+${bonusCoins} Daily Coins)`,
+            coins: bonusCoins,
             isCredit: true,
+            balanceAfter: bonusCoins,
             status: 'Completed',
             date: vipEntitlement?.expiryDate ? `Active till ${vipEntitlement.expiryDate}` : 'Active',
-            timestamp: new Date().toISOString(),
+            timestamp: vipEntitlement?.activatedAt || new Date().toISOString(),
           });
         }
       }
     } catch (_) {}
+
+    // Ensure any VIP purchase entries in local ledger display their actual awarded coins instead of 0
+    list.forEach((item) => {
+      if ((item.type === 'vip_purchase' || item.type === 'vip_bonus') && (!item.coins || item.coins === 0)) {
+        const titleLower = (item.title || '').toLowerCase();
+        if (titleLower.includes('diamond')) item.coins = 1200;
+        else if (titleLower.includes('gold')) item.coins = 500;
+        else if (titleLower.includes('silver')) item.coins = 200;
+        else item.coins = 1200;
+      }
+    });
 
     list.sort((a, b) => new Date(b.timestamp || b.date) - new Date(a.timestamp || a.date));
     return list;
