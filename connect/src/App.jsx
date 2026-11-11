@@ -256,6 +256,19 @@ export default function App() {
     };
   });
 
+  const currentUid =
+    auth.currentUser?.uid ||
+    getStoredPhoneUser()?.uid ||
+    userProfile?.uid ||
+    (() => {
+      try {
+        return localStorage.getItem('connect_last_auth_uid') || null;
+      } catch (e) {
+        return null;
+      }
+    })() ||
+    null;
+
   // Confirmed coins balance: preserved across browser reloads via multi-tier fallback
   const [coins, setCoins] = useState(() => {
     try {
@@ -282,19 +295,6 @@ export default function App() {
       }
     } catch (e) {}
   }, [coins, currentUid]);
-
-  const currentUid =
-    auth.currentUser?.uid ||
-    getStoredPhoneUser()?.uid ||
-    userProfile?.uid ||
-    (() => {
-      try {
-        return localStorage.getItem('connect_last_auth_uid') || null;
-      } catch (e) {
-        return null;
-      }
-    })() ||
-    null;
 
   // Sync confirmed live wallet coins and profile from backend whenever user changes
   useEffect(() => {
