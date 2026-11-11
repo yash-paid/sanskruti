@@ -508,7 +508,7 @@ export default function ProfileScreen({
           </div>
         </div>
 
-        {/* ── 2. Diamond VIP Membership Card (Matches Reference Image) ── */}
+        {/* ── 2. VIP Membership Card ── */}
         <div
           className="profile-vip-banner-card"
           onClick={onOpenVip}
@@ -516,84 +516,66 @@ export default function ProfileScreen({
           title={activeVip?.active ? `${activeVip.planName} Active • Click to view VIP Membership` : 'Click to view VIP Membership plans'}
         >
           {/* Top-Right Ribbon Badge with 💎 */}
-          <div className="vip-ribbon-badge" title="Diamond VIP Exclusive">
+          <div className="vip-ribbon-badge" title="VIP Exclusive">
             <span className="vip-ribbon-icon">💎</span>
           </div>
 
-          <div className="vip-card-inner">
-            {/* Left Column */}
-            <div className="vip-card-left">
-              <div className="vip-circle-crown">
-                <Crown size={28} color="#fff" />
-              </div>
-              <h3 className="vip-card-title">{activeVip?.planName || 'Diamond VIP'}</h3>
-              {activeVip?.active ? (
-                <span className="vip-status-pill activated">ACTIVATED</span>
-              ) : (
-                <button
-                  type="button"
-                  className="vip-status-pill upgrade"
-                  onClick={onOpenVip}
-                >
-                  UPGRADE
-                </button>
-              )}
-              <div className="vip-expiry-row">
-                <Calendar size={13} color="#00e5ff" style={{ marginTop: '2px', flexShrink: 0 }} />
-                <div className="vip-expiry-text">
-                  <span>Active till</span>
-                  <strong>{activeVip?.expiryDate || '10 Dec 2028'}</strong>
-                </div>
-              </div>
+          {/* Top Header Row: Crown + Plan Name + Status + Expiry */}
+          <div className="vip-card-header-row">
+            <div className="vip-circle-crown">
+              <Crown size={24} color="#fff" />
             </div>
-
-            {/* Vertical Divider */}
-            <div className="vip-card-divider" />
-
-            {/* Right Column: Benefits */}
-            <div className="vip-card-right">
-              <div className="vip-benefits-header">
-                <Crown size={15} color="#ffd700" fill="#ffd700" />
-                <span>VIP Benefits</span>
+            <div className="vip-header-info">
+              <div className="vip-header-title-badge">
+                <h3 className="vip-card-title">{activeVip?.planName || 'Diamond VIP'}</h3>
+                {activeVip?.active ? (
+                  <span className="vip-status-pill activated">ACTIVATED</span>
+                ) : (
+                  <button
+                    type="button"
+                    className="vip-status-pill upgrade"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenVip?.();
+                    }}
+                  >
+                    UPGRADE
+                  </button>
+                )}
               </div>
-              <ul className="vip-benefits-list">
-                <li>
-                  <span className="vip-check-circle">
-                    <Check size={10} color="#fff" strokeWidth={3.5} />
-                  </span>
-                  <span>+{activeVip?.dailyBonusCoins || 1200} Daily Coins</span>
-                </li>
-                <li>
-                  <span className="vip-check-circle">
-                    <Check size={10} color="#fff" strokeWidth={3.5} />
-                  </span>
-                  <span>Free Coins every day</span>
-                </li>
-                <li>
-                  <span className="vip-check-circle">
-                    <Check size={10} color="#fff" strokeWidth={3.5} />
-                  </span>
-                  <span>VIP Club Access</span>
-                </li>
-                <li>
-                  <span className="vip-check-circle">
-                    <Check size={10} color="#fff" strokeWidth={3.5} />
-                  </span>
-                  <span>Claim Daily Rewards</span>
-                </li>
-                <li>
-                  <span className="vip-check-circle">
-                    <Check size={10} color="#fff" strokeWidth={3.5} />
-                  </span>
-                  <span>Priority Support</span>
-                </li>
-              </ul>
+              <div className="vip-expiry-row">
+                <Calendar size={12} color="#00e5ff" style={{ flexShrink: 0 }} />
+                <span>Active till <strong>{activeVip?.expiryDate || '10 Dec 2028'}</strong></span>
+              </div>
             </div>
           </div>
 
-          {/* Daily VIP Coins Benefit Claim Bar (Preserves daily bonus claim functionality) */}
+          {/* VIP Benefits Grid (Clean 2-Column Chips) */}
+          <div className="vip-benefits-grid">
+            <div className="vip-benefit-chip">
+              <span className="vip-benefit-icon">🪙</span>
+              <span>+{activeVip?.dailyBonusCoins || 1200} Daily Coins</span>
+            </div>
+            <div className="vip-benefit-chip">
+              <span className="vip-benefit-icon">👑</span>
+              <span>VIP Club Access</span>
+            </div>
+            <div className="vip-benefit-chip">
+              <span className="vip-benefit-icon">🎁</span>
+              <span>Free Daily Gifts</span>
+            </div>
+            <div className="vip-benefit-chip">
+              <span className="vip-benefit-icon">⚡</span>
+              <span>Priority Support</span>
+            </div>
+          </div>
+
+          {/* Daily VIP Coins Benefit Claim Bar (When active) */}
           {activeVip?.active && (
-            <div className="vip-claim-today-bar">
+            <div
+              className="vip-claim-today-bar"
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="vip-claim-today-left">
                 <span className="vip-claim-title">🪙 Daily VIP Coins Benefit</span>
                 <span className="vip-claim-sub">+{activeVip.dailyBonusCoins || 1200} Free Coins every day</span>
@@ -604,7 +586,10 @@ export default function ProfileScreen({
                 <button
                   type="button"
                   className="vip-collect-bonus-btn"
-                  onClick={handleClaimVipBonus}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleClaimVipBonus();
+                  }}
                   disabled={isClaimingVipBonus}
                 >
                   {isClaimingVipBonus ? 'Claiming...' : `Collect +${activeVip.dailyBonusCoins || 1200}`}
