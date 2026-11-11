@@ -200,6 +200,26 @@ const getInitialPage = () => {
   return hasAuth ? 'home' : 'login';
 };
 
+const calculateLedgerBalance = (uid) => {
+  if (!uid) return 0;
+  try {
+    const raw = localStorage.getItem(`connect_local_ledger_${uid}`);
+    if (!raw) return 0;
+    const list = JSON.parse(raw);
+    if (!Array.isArray(list) || list.length === 0) return 0;
+    let net = 0;
+    for (const item of list) {
+      if (!item || item.status === 'Failed') continue;
+      const c = Number(item.coins || item.amount || 0);
+      if (item.isCredit) net += c;
+      else net -= c;
+    }
+    return Math.max(0, net);
+  } catch (e) {
+    return 0;
+  }
+};
+
 export default function App() {
   // Pages: 'login' | 'setup-profile' | 'home' | 'wallet' | 'profile' | 'vip'
   const [page, setPage] = useState(getInitialPage);
@@ -236,11 +256,14 @@ export default function App() {
     };
   });
 
-  // Confirmed coins balance from live backend
+  // Confirmed coins balance: preserved across browser reloads via multi-tier fallback
   const [coins, setCoins] = useState(() => {
     try {
-      const last = localStorage.getItem('connect_last_known_balance');
-      return last ? parseInt(last, 10) || 0 : 0;
+      const lastAuthUid = localStorage.getItem('connect_last_auth_uid') || '';
+      const userBal = lastAuthUid ? parseInt(localStorage.getItem(`connect_coins_${lastAuthUid}`) || '0', 10) : 0;
+      const last = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
+      const ledgerBal = lastAuthUid ? calculateLedgerBalance(lastAuthUid) : 0;
+      return Math.max(userBal, last, ledgerBal, 0);
     } catch (e) {
       return 0;
     }
@@ -250,9 +273,15 @@ export default function App() {
   useEffect(() => {
     coinsRef.current = coins;
     try {
-      localStorage.setItem('connect_last_known_balance', String(coins));
+      if (coins > 0) {
+        localStorage.setItem('connect_last_known_balance', String(coins));
+        const activeUid = currentUid || localStorage.getItem('connect_last_auth_uid');
+        if (activeUid) {
+          localStorage.setItem(`connect_coins_${activeUid}`, String(coins));
+        }
+      }
     } catch (e) {}
-  }, [coins]);
+  }, [coins, currentUid]);
 
   const currentUid =
     auth.currentUser?.uid ||
@@ -275,11 +304,14 @@ export default function App() {
         .then((balance) => {
           if (isMounted) {
             const localBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
-            const verifiedBalance = Math.max(Number(balance) || 0, Number(localBal) || 0);
+            const userBal = parseInt(localStorage.getItem(`connect_coins_${currentUid}`) || '0', 10);
+            const ledgerBal = calculateLedgerBalance(currentUid);
+            const verifiedBalance = Math.max(Number(balance) || 0, localBal, userBal, ledgerBal);
             setCoins(verifiedBalance);
             coinsRef.current = verifiedBalance;
             try {
               localStorage.setItem('connect_last_known_balance', String(verifiedBalance));
+              localStorage.setItem(`connect_coins_${currentUid}`, String(verifiedBalance));
             } catch (e) {}
 
             // If local balance was ahead of server (e.g. fresh recharge before cold server sync), sync to server
@@ -294,7 +326,19 @@ export default function App() {
             }
           }
         })
-        .catch((err) => console.warn('fetchUserWallet error:', err));
+        .catch((err) => {
+          console.warn('fetchUserWallet error:', err);
+          if (isMounted) {
+            const localBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
+            const userBal = parseInt(localStorage.getItem(`connect_coins_${currentUid}`) || '0', 10);
+            const ledgerBal = calculateLedgerBalance(currentUid);
+            const verified = Math.max(localBal, userBal, ledgerBal);
+            if (verified > 0) {
+              setCoins(verified);
+              coinsRef.current = verified;
+            }
+          }
+        });
 
       fetchUserProfile(currentUid)
         .then((profile) => {
@@ -332,8 +376,6 @@ export default function App() {
           }
         });
     } else {
-      setCoins(0);
-      coinsRef.current = 0;
       setVipEntitlement(null);
     }
     return () => {
