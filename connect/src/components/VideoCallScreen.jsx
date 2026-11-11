@@ -150,6 +150,11 @@ export default function VideoCallScreen({
   const [connectingStage, setConnectingStage] = useState('Initializing Video...');
   const [callDuration, setCallDuration] = useState(0);
 
+  // In-call grace window states (prevents abrupt disconnects when balance is low)
+  const [graceSecondsLeft, setGraceSecondsLeft] = useState(null);
+  const inGracePeriodRef = useRef(false);
+  const pendingMinuteRef = useRef(1);
+
   // Per-minute coin rate (65 Coins/min for Uma & Simran, 30 Coins/min for all others)
   const isTopExpert = expert?.id === 'simran' || expert?.id === 'uma' || expert?.top;
   const callRate = isTopExpert ? 65 : (Number(expert?.price) || 30);
@@ -390,6 +395,11 @@ export default function VideoCallScreen({
     if (callState === 'active') {
       durationTimerRef.current = setInterval(() => {
         setCallDuration((prev) => {
+          // If in low-balance grace countdown, keep holding duration at current minute boundary
+          if (inGracePeriodRef.current) {
+            return prev;
+          }
+
           const nextSec = prev + 1;
 
           // In demo call: automatically end call at 10 seconds!
@@ -404,19 +414,25 @@ export default function VideoCallScreen({
           // Every 60 seconds of conversation, deduct coins for the next minute (normal call only)
           if (!isDemo && nextSec > 0 && nextSec % 60 === 0) {
             const nextMin = Math.floor(nextSec / 60) + 1;
-            (async () => {
-              const numericCoins = Number(coinsRef.current ?? coins) || 0;
-              const numericRate = Number(callRate) || 30;
-              if (numericCoins < numericRate) {
-                onToast?.('Call ended: Coin balance exhausted!');
-                if (onInsufficientCoins) {
-                  onInsufficientCoins();
-                } else {
-                  onEndCall?.(nextSec);
-                }
-                return;
-              }
+            const numericCoins = Number(coinsRef.current ?? coins) || 0;
+            const numericRate = Number(callRate) || 30;
 
+            // Check if user has sufficient coins for next minute
+            if (numericCoins < numericRate) {
+              // Smooth in-call grace window: pause duration counter, show recharge popup & countdown banner
+              inGracePeriodRef.current = true;
+              pendingMinuteRef.current = nextMin;
+              setGraceSecondsLeft(15);
+              onToast?.(`⚠️ Low Coins (${numericCoins})! Please recharge within 15s to continue call with ${expert?.name || 'Expert'}.`);
+              if (onOpenRecharge) {
+                onOpenRecharge();
+              } else if (onInsufficientCoins) {
+                onInsufficientCoins();
+              }
+              return nextSec;
+            }
+
+            (async () => {
               const success = onDeductCoins
                 ? await onDeductCoins(numericRate, {
                     type: 'call',
@@ -427,13 +443,15 @@ export default function VideoCallScreen({
                 : true;
 
               const updatedCoins = Number(coinsRef.current ?? coins) || 0;
-              if (!success && updatedCoins < numericRate) {
-                // Out of coins! End call and immediately open recharge modal
-                onToast?.('Call ended: Coin balance exhausted!');
-                if (onInsufficientCoins) {
+              if (!success || updatedCoins < 0) {
+                inGracePeriodRef.current = true;
+                pendingMinuteRef.current = nextMin;
+                setGraceSecondsLeft(15);
+                onToast?.(`⚠️ Low Coins! Please recharge within 15s to keep talking.`);
+                if (onOpenRecharge) {
+                  onOpenRecharge();
+                } else if (onInsufficientCoins) {
                   onInsufficientCoins();
-                } else {
-                  onEndCall?.(nextSec);
                 }
               }
             })();
@@ -448,7 +466,48 @@ export default function VideoCallScreen({
     return () => {
       if (durationTimerRef.current) clearInterval(durationTimerRef.current);
     };
-  }, [callState, callRate, onDeductCoins, onInsufficientCoins, onEndCall, onToast, expert, isDemo]);
+  }, [callState, callRate, onDeductCoins, onInsufficientCoins, onOpenRecharge, onEndCall, onToast, expert, isDemo]);
+
+  // C. In-Call Grace Window Countdown (15s timer when balance is exhausted for next minute)
+  useEffect(() => {
+    if (graceSecondsLeft === null) return;
+
+    const numericCoins = Number(coinsRef.current ?? coins) || 0;
+    const numericRate = Number(callRate) || 30;
+
+    // 1. Balance replenished! Exit grace period and deduct next minute
+    if (numericCoins >= numericRate) {
+      inGracePeriodRef.current = false;
+      const minToDeduct = pendingMinuteRef.current || Math.floor(callDuration / 60) + 1;
+      setGraceSecondsLeft(null);
+      (async () => {
+        await onDeductCoins?.(numericRate, {
+          type: 'call',
+          title: `Call with ${expert?.name || 'Expert'} (Min ${minToDeduct})`,
+          expertId: expert?.id,
+          expertName: expert?.name,
+        });
+        onToast?.(`✅ Recharged! Continuing call with ${expert?.name || 'Expert'}.`);
+      })();
+      return;
+    }
+
+    // 2. Grace period expired without recharging: end call gracefully
+    if (graceSecondsLeft <= 0) {
+      inGracePeriodRef.current = false;
+      setGraceSecondsLeft(null);
+      onToast?.('Call ended: Coin balance exhausted!');
+      handleEnd();
+      return;
+    }
+
+    // 3. Decrement 1 second
+    const timer = setTimeout(() => {
+      setGraceSecondsLeft((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [graceSecondsLeft, coins, callRate, callDuration, onDeductCoins, expert]);
 
   /* ── 4. User Camera & Mic (PiP) Setup ── */
   const setupUserCamera = async (isFront = isFrontCamera) => {
@@ -589,6 +648,8 @@ export default function VideoCallScreen({
   const handleEnd = () => {
     savePlaybackPosition();
     if (durationTimerRef.current) clearInterval(durationTimerRef.current);
+    inGracePeriodRef.current = false;
+    setGraceSecondsLeft(null);
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach((track) => track.stop());
       mediaStreamRef.current = null;
@@ -900,8 +961,8 @@ export default function VideoCallScreen({
               <span className="timer-text">{formatTime(callDuration)}</span>
             </div>
 
-            {/* Low Coin Warning Alert Banner - Prompts user to recharge without screen going black */}
-            {numericCoins < callRate && !isDemo && (
+            {/* Low Coin Warning or Grace Countdown Alert Banner - Prompts user to recharge without screen going black */}
+            {!isDemo && (graceSecondsLeft !== null || numericCoins < callRate) && (
               <div
                 className="call-low-balance-banner"
                 onClick={() => onOpenRecharge?.()}
@@ -910,21 +971,31 @@ export default function VideoCallScreen({
                   top: '64px',
                   left: '12px',
                   right: '12px',
-                  background: 'linear-gradient(90deg, rgba(255, 42, 141, 0.95), rgba(180, 20, 100, 0.95))',
+                  background: graceSecondsLeft !== null
+                    ? 'linear-gradient(90deg, rgba(235, 20, 90, 0.98), rgba(180, 10, 70, 0.98))'
+                    : 'linear-gradient(90deg, rgba(255, 42, 141, 0.95), rgba(180, 20, 100, 0.95))',
                   borderRadius: '14px',
-                  padding: '7px 12px',
+                  padding: '8px 12px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   zIndex: 25,
-                  boxShadow: '0 4px 18px rgba(255, 42, 141, 0.55)',
+                  boxShadow: graceSecondsLeft !== null
+                    ? '0 4px 22px rgba(255, 30, 100, 0.75)'
+                    : '0 4px 18px rgba(255, 42, 141, 0.55)',
                   cursor: 'pointer',
-                  border: '1px solid rgba(255, 215, 0, 0.5)',
+                  border: graceSecondsLeft !== null
+                    ? '1.5px solid rgba(255, 215, 0, 0.9)'
+                    : '1px solid rgba(255, 215, 0, 0.5)',
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fff', fontSize: '11.5px', fontWeight: 600 }}>
-                  <span style={{ fontSize: '14px' }}>⚠️</span>
-                  <span>Low Coins ({numericCoins}) • Need {callRate} for next min</span>
+                  <span style={{ fontSize: '14px' }}>{graceSecondsLeft !== null ? '⏳' : '⚠️'}</span>
+                  <span>
+                    {graceSecondsLeft !== null
+                      ? `Recharge in ${graceSecondsLeft}s to keep talking!`
+                      : `Low Coins (${numericCoins}) • Need ${callRate} for next min`}
+                  </span>
                 </div>
                 <button
                   type="button"
@@ -935,7 +1006,7 @@ export default function VideoCallScreen({
                     fontSize: '11px',
                     border: 'none',
                     borderRadius: '9999px',
-                    padding: '3px 10px',
+                    padding: '4px 11px',
                     cursor: 'pointer',
                   }}
                 >

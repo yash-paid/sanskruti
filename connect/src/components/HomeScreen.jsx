@@ -832,9 +832,8 @@ export default function HomeScreen({
               console.warn('Blocked opening insufficient modal because balance is sufficient:', userCoins);
               return;
             }
-            const exp = callingExpert;
-            setCallingExpert(null);
-            setPendingCallExpert(exp);
+            // DO NOT setCallingExpert(null) - keeps the active video call running in background!
+            setPendingCallExpert(callingExpert);
             setInsufficientModal(true);
           }}
           onOpenRecharge={() => {
@@ -870,12 +869,12 @@ export default function HomeScreen({
       {insufficientModal && (
         <InsufficientCoinsModal
           coins={coins}
-          expert={pendingCallExpert}
+          expert={pendingCallExpert || callingExpert}
           userProfile={userProfile}
           onClose={handleCloseInsufficient}
           onProceedPay={async (pack) => {
             if (onInitiateRecharge) {
-              await onInitiateRecharge(pack, pendingCallExpert);
+              await onInitiateRecharge(pack, pendingCallExpert || callingExpert);
             }
           }}
           onToast={onToast}
