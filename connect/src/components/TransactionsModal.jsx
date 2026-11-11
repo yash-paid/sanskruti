@@ -45,6 +45,17 @@ const getLocalLedger = (userId) => {
       return true;
     });
 
+    // Deduplicate promo code entries: ensure strictly ONE promo code entry exists in ledger
+    let hasPromoSeen = false;
+    list = list.filter((item) => {
+      const isPromo = item.type === 'promo_code' || item.metadata?.code === 'YASH' || item.title?.includes('YASH') || String(item.id || '').includes('PROMO');
+      if (isPromo) {
+        if (hasPromoSeen) return false;
+        hasPromoSeen = true;
+      }
+      return true;
+    });
+
     // Write back cleaned list if corrupted items were purged
     if (list.length !== beforeCount) {
       try {
@@ -55,8 +66,7 @@ const getLocalLedger = (userId) => {
     // Reconcile promo code redemption if not in ledger
     try {
       const promoRedeemed = localStorage.getItem(`connect_promo_redeemed_YASH_${userId}`) === 'true';
-      const hasPromo = list.some((item) => item.type === 'promo_code' || item.metadata?.code === 'YASH' || item.title?.includes('YASH'));
-      if (promoRedeemed && !hasPromo) {
+      if (promoRedeemed && !hasPromoSeen) {
         list.push({
           id: `TXN-PROMO-YASH-${userId}`,
           type: 'promo_code',
@@ -152,17 +162,29 @@ export default function TransactionsModal({ uid, coins = 0, onClose }) {
         .then((serverTxns) => {
           if (!isMounted) return;
           const localTxns = getLocalLedger(uid);
-          // Merge server transactions with local transactions, deduplicating by transaction ID
+          // Merge server transactions with local transactions, deduplicating by ID and promo code
           const seen = new Set();
           const merged = [];
+          let hasPromoMerged = false;
+
           for (const txn of serverTxns || []) {
             if (txn.id && !seen.has(txn.id)) {
+              const isPromo = txn.type === 'promo_code' || txn.metadata?.code === 'YASH' || txn.title?.includes('YASH') || String(txn.id || '').includes('PROMO');
+              if (isPromo) {
+                if (hasPromoMerged) continue;
+                hasPromoMerged = true;
+              }
               seen.add(txn.id);
               merged.push(txn);
             }
           }
           for (const txn of localTxns) {
             if (txn.id && !seen.has(txn.id)) {
+              const isPromo = txn.type === 'promo_code' || txn.metadata?.code === 'YASH' || txn.title?.includes('YASH') || String(txn.id || '').includes('PROMO');
+              if (isPromo) {
+                if (hasPromoMerged) continue;
+                hasPromoMerged = true;
+              }
               seen.add(txn.id);
               merged.push(txn);
             }
