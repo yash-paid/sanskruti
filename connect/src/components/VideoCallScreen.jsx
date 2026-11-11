@@ -423,29 +423,23 @@ export default function VideoCallScreen({
             const currentCoins = Number(coinsRef.current ?? coins) || 0;
             const numericRate = Number(callRate) || 30;
 
+            // Always STOP the video — call is CUT regardless of coins
+            try { expertVideoRef.current?.pause(); } catch (_) {}
+            // Stop the interval so duration freezes at 10s
+            clearInterval(durationTimerRef.current);
+
             if (currentCoins >= numericRate) {
-              // User has coins -> show "continue call with coins" popup!
+              // User HAS coins → cut call but show "Continue with Coins?" popup
               showContinuePromptRef.current = true;
               setShowContinuePrompt(true);
-              try {
-                expertVideoRef.current?.pause();
-              } catch (_) {}
-              return 10;
             } else {
-              // User does NOT have coins -> pause video & prompt for recharge immediately (no 15s extra time)
-              try {
-                expertVideoRef.current?.pause();
-              } catch (_) {}
-              isWaitingForRechargeRef.current = true;
-              setIsWaitingForRecharge(true);
-              onToast?.(`⚠️ Free 10s preview ended! Please recharge to keep talking with ${expert?.name || 'Expert'}.`);
-              if (onOpenRecharge) {
-                onOpenRecharge();
-              } else if (onInsufficientCoins) {
-                onInsufficientCoins();
-              }
-              return 10;
+              // User has NO coins → end call directly with a toast
+              onToast?.(`Free 10s preview ended! Add coins to call ${expert?.name || 'Expert'} again.`);
+              setTimeout(() => {
+                onEndCall?.(0);
+              }, 1500);
             }
+            return 10;
           }
 
           // Every 60 seconds of paid conversation, deduct coins for the next minute
@@ -603,9 +597,16 @@ export default function VideoCallScreen({
     isDemoActiveRef.current = false;
     hasDeductedFirstMinuteRef.current = true;
 
+    // Resume video from where it was cut
     try {
       expertVideoRef.current?.play().catch(() => {});
     } catch (_) {}
+
+    // Restart the duration timer (was cleared when call was cut at 10s)
+    clearInterval(durationTimerRef.current);
+    durationTimerRef.current = setInterval(() => {
+      setCallDuration((prev) => prev + 1);
+    }, 1000);
 
     // Deduct Minute 1 coins
     try {
