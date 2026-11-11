@@ -23,7 +23,6 @@ import {
   Edit3,
   X,
   Crown,
-  Sparkles,
   Upload,
   Gift,
   Calendar,
@@ -652,9 +651,9 @@ export default function ProfileScreen({
                 e.stopPropagation();
                 setShowClaimModal(true);
               }}
-              title="Claim 500 Coins with code YASH"
+              title="Claim Bonus Coins"
             >
-              🎁 Claim 500 Coins
+              🎁 Claim Coins
             </button>
             <button
               type="button"
@@ -678,9 +677,9 @@ export default function ProfileScreen({
             </div>
             <div className="menu-text-wrap">
               <span className="menu-item-title">Claim Coins (Promo Code)</span>
-              <span className="menu-item-sub">Use secret code YASH to claim 500 Free Coins (Unlimited)</span>
+              <span className="menu-item-sub">Redeem promo code to claim bonus coins</span>
             </div>
-            <span className="promo-claim-pill">CLAIM 500</span>
+            <span className="promo-claim-pill">REDEEM</span>
             <ChevronRight size={18} className="menu-arrow" />
           </div>
 
@@ -1166,17 +1165,12 @@ export default function ProfileScreen({
                 <input
                   type="text"
                   className="claim-promo-input"
-                  placeholder="Enter Code (e.g. YASH)"
+                  placeholder="Type here"
                   value={promoCodeInput}
                   onChange={(e) => setPromoCodeInput(e.target.value.toUpperCase().trim())}
                   maxLength={15}
                   autoFocus
                 />
-              </div>
-
-              <div className="claim-code-hint">
-                <Sparkles size={14} color="#ffd700" />
-                <span>Tip: Use secret code <strong>YASH</strong> for 500 Free Coins! (Unlimited)</span>
               </div>
 
               <button
