@@ -251,7 +251,7 @@ async function runTests() {
     const isOk =
       res.statusCode === 200 &&
       body.success === true &&
-      body.params?.amount === '399.00' && // Canonical gold price ₹399
+      body.params?.amount === '299.00' && // Canonical gold price ₹299
       body.params?.udf1 === authUserUid && // Verified UID
       body.params?.udf2 === 'connect-vip-gold' &&
       body.params?.udf3 === 'connect_vip_subscription' &&
@@ -260,7 +260,7 @@ async function runTests() {
       orderData.uid === authUserUid &&
       orderData.orderType === 'vip' &&
       orderData.planId === 'gold' &&
-      orderData.expectedAmount === 399 &&
+      orderData.expectedAmount === 299 &&
       orderData.durationDays === 15 &&
       orderData.dailyBonusCoins === 500 &&
       orderData.status === 'pending' &&
@@ -274,7 +274,7 @@ async function runTests() {
     const tamperedParams = {
       key: config.key,
       txnid: initiatedTxnId,
-      amount: '399.00',
+      amount: '299.00',
       productinfo: initiatedParams.productinfo,
       firstname: initiatedParams.firstname,
       email: initiatedParams.email,
@@ -406,7 +406,7 @@ async function runTests() {
     const successParams = {
       key: config.key,
       txnid: successfulVipTxnId,
-      amount: '399.00',
+      amount: '299.00',
       productinfo: 'CONNECT Gold VIP (15 Days)',
       firstname: 'User Alpha',
       email: `${authUserUid}@connect.local`,
@@ -461,7 +461,7 @@ async function runTests() {
     const successParams = {
       key: config.key,
       txnid: successfulVipTxnId,
-      amount: '399.00',
+      amount: '299.00',
       productinfo: 'CONNECT Gold VIP (15 Days)',
       firstname: 'User Alpha',
       email: `${authUserUid}@connect.local`,

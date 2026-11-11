@@ -5,6 +5,8 @@
  * Never shares balances, profiles, transactions, or VIP entitlements between accounts.
  */
 
+import { auth } from './config';
+
 const API_BASE = '/.netlify/functions/connect-user';
 
 /**
@@ -23,6 +25,17 @@ const apiCall = async (action, options = {}) => {
     'Content-Type': 'application/json',
     'x-user-uid': uid,
   };
+
+  try {
+    if (auth?.currentUser) {
+      const token = await auth.currentUser.getIdToken();
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+  } catch (tokenErr) {
+    console.warn('Failed to retrieve Firebase ID token for API request:', tokenErr.message);
+  }
 
   const response = await fetch(url, {
     method,

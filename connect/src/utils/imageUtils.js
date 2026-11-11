@@ -97,3 +97,4 @@ export const compressImage = (file, options = {}) => {
     reader.readAsDataURL(file);
   });
 };
+
