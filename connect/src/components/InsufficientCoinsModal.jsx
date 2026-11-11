@@ -5,7 +5,6 @@ import { useLanguage } from '../context/LanguageContext';
 import {
   COIN_PACKAGES,
   getPurchasedPackIds,
-  markPackAsPurchased,
   ONE_TIME_PURCHASE_PACK_IDS,
 } from '../data/packages';
 
@@ -181,7 +180,6 @@ export default function InsufficientCoinsModal({
     if (!selectedPack) return;
     setIsSubmitting(true);
     try {
-      markPackAsPurchased(selectedPack.id);
       await onProceedPay?.(selectedPack);
       onClose?.();
     } catch (err) {
