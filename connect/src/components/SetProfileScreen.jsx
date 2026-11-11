@@ -4,6 +4,7 @@ import { DEFAULT_AVATARS } from '../data/defaultAvatars';
 import heartLogoImg from '../../assets/images/heart-logo-transparent.png';
 import { useLanguage } from '../context/LanguageContext';
 import { calculateAge, getMaxDobFor18Plus, isAtLeast18 } from '../utils/dateUtils';
+import { compressImage } from '../utils/imageUtils';
 
 export default function SetProfileScreen({ initialProfile, onConfirm, onToast }) {
   const { t } = useLanguage();
@@ -25,7 +26,7 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
   const fileInputRef = useRef(null);
 
   // Handle uploading custom photo from gallery / computer
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -34,20 +35,25 @@ export default function SetProfileScreen({ initialProfile, onConfirm, onToast })
       return;
     }
 
-    // Limit to 8MB
-    if (file.size > 8 * 1024 * 1024) {
-      onToast?.('⚠️ Image size should be under 8MB');
-      return;
+    try {
+      const compressedDataUrl = await compressImage(file, {
+        maxWidth: 512,
+        maxHeight: 512,
+        quality: 0.82,
+      });
+      setAvatar(compressedDataUrl);
+      onToast?.('📸 Profile photo selected from gallery!');
+    } catch (err) {
+      console.warn('Image compression fallback:', err);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setAvatar(event.target.result);
+          onToast?.('📸 Profile photo selected from gallery!');
+        }
+      };
+      reader.readAsDataURL(file);
     }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setAvatar(event.target.result);
-        onToast?.('📸 Profile photo selected from gallery!');
-      }
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleSelectDefault = (avUrl) => {

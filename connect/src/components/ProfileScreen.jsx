@@ -33,6 +33,7 @@ import TransactionsModal from './TransactionsModal';
 import LanguageModal from './LanguageModal';
 import ProfileDailyRewardCalendar from './ProfileDailyRewardCalendar';
 import { calculateAge, getMaxDobFor18Plus, isAtLeast18 } from '../utils/dateUtils';
+import { compressImage } from '../utils/imageUtils';
 import { useLanguage } from '../context/LanguageContext';
 import heartLogoImg from '../../assets/images/heart-logo-transparent.png';
 import { DEFAULT_AVATARS } from '../data/defaultAvatars';
@@ -285,7 +286,7 @@ export default function ProfileScreen({
     setTimeout(() => setCopiedId(false), 2000);
   };
 
-  const handleAvatarFileChange = (e) => {
+  const handleAvatarFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -294,19 +295,25 @@ export default function ProfileScreen({
       return;
     }
 
-    if (file.size > 8 * 1024 * 1024) {
-      onToast?.('⚠️ Image size should be under 8MB');
-      return;
+    try {
+      const compressedDataUrl = await compressImage(file, {
+        maxWidth: 512,
+        maxHeight: 512,
+        quality: 0.82,
+      });
+      setEditForm((prev) => ({ ...prev, avatar: compressedDataUrl }));
+      onToast?.('📸 Profile photo selected!');
+    } catch (err) {
+      console.warn('Image compression fallback:', err);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setEditForm((prev) => ({ ...prev, avatar: event.target.result }));
+          onToast?.('📸 Profile photo selected!');
+        }
+      };
+      reader.readAsDataURL(file);
     }
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setEditForm((prev) => ({ ...prev, avatar: event.target.result }));
-        onToast?.('📸 Profile photo selected!');
-      }
-    };
-    reader.readAsDataURL(file);
   };
 
   const handleSaveProfile = async (e) => {
