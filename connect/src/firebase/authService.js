@@ -27,7 +27,7 @@ export const getAuthErrorMessage = (error) => {
     case 'auth/popup-blocked':
       return 'Sign-in popup was blocked by browser. Please allow popups for localhost.';
     case 'auth/unauthorized-domain':
-      return 'This domain is not authorized in Firebase Console. Please add it to Authorized Domains.';
+      return 'This domain is not authorized. Please contact CONNECT support.';
     case 'auth/user-not-found':
       return 'No account found with this email address. Please sign up first.';
     case 'auth/wrong-password':
@@ -46,7 +46,7 @@ export const getAuthErrorMessage = (error) => {
     case 'auth/network-request-failed':
       return 'Network connection error. Please check your internet connection.';
     case 'auth/operation-not-allowed':
-      return 'Anonymous guest sign-in is not enabled in Firebase Console.';
+      return 'Anonymous guest sign-in is currently unavailable.';
     case 'auth/admin-restricted-operation':
       return 'Anonymous sign-in is currently restricted by administrator.';
     case 'auth/too-many-requests':

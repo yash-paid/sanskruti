@@ -861,9 +861,9 @@ export default function App() {
           showToast(`✅ Welcome back, ${result.name || result.phone}!`);
         }
       } else {
-        // Email + Password flow with Firebase
+        // Email + Password flow with CONNECT
         if (formData.mode === 'signup') {
-          showToast('Creating account with Firebase...');
+          showToast('Connecting with CONNECT...');
           const userCred = await signUpWithEmail(
             rawIdentifier,
             formData.password,
@@ -879,7 +879,7 @@ export default function App() {
           }
           showToast(`🎉 Account created! Welcome, ${formData.name || rawIdentifier}!`);
         } else {
-          showToast('Signing in with Firebase...');
+          showToast('Connecting with CONNECT...');
           const userCred = await signInWithEmail(
             rawIdentifier,
             formData.password
