@@ -83,29 +83,28 @@ const getLocalLedger = (userId) => {
       }
     } catch (_) {}
 
-    // Reconcile call history into debits if not in ledger
-    try {
-      const calls = JSON.parse(localStorage.getItem(`connect_call_history_${userId}`) || '[]');
-      if (Array.isArray(calls)) {
-        calls.forEach((call) => {
-          const exists = list.some((item) => item.id === `TXN-${call.id}` || item.metadata?.callId === call.id);
-          if (!exists && call.coins) {
-            list.push({
-              id: `TXN-${call.id}`,
-              type: 'call',
-              title: `Video Call with ${call.name || 'Expert'}`,
-              coins: call.coins,
-              isCredit: false,
-              balanceAfter: 0,
-              status: 'Completed',
-              date: call.time || 'Recent',
-              timestamp: call.timestamp || new Date().toISOString(),
-              metadata: { callId: call.id, expertName: call.name, duration: call.duration },
-            });
-          }
-        });
+    // Purge fake TXN-CALL- entries that duplicate real calls
+    list = list.filter((item) => {
+      if (!item) return false;
+      const id = String(item.id || '');
+      if (id.startsWith('TXN-CALL-')) {
+        const hasReal = list.some((other) => other !== item && other.type === 'call' && !String(other.id || '').startsWith('TXN-CALL-'));
+        if (hasReal) return false;
       }
-    } catch (_) {}
+      return true;
+    });
+
+    // Deduplicate duplicate debit actions occurring in same minute (e.g. duplicate gift or call)
+    const seenActionKeys = new Set();
+    list = list.filter((item) => {
+      if (!item) return false;
+      const timeStr = String(item.timestamp || item.date || '').slice(0, 16);
+      const subTitle = String(item.title || '').replace(/\s*\(\d+s\)/, '');
+      const key = `${item.type}_${item.coins}_${subTitle}_${timeStr}`;
+      if (seenActionKeys.has(key)) return false;
+      seenActionKeys.add(key);
+      return true;
+    });
 
     // Reconcile VIP membership purchase (only if actually active and valid)
     try {
@@ -162,32 +161,36 @@ export default function TransactionsModal({ uid, coins = 0, onClose }) {
         .then((serverTxns) => {
           if (!isMounted) return;
           const localTxns = getLocalLedger(uid);
-          // Merge server transactions with local transactions, deduplicating by ID and promo code
+          // Merge server transactions with local transactions, deduplicating by ID, promo code, and action key
           const seen = new Set();
+          const seenKeys = new Set();
           const merged = [];
           let hasPromoMerged = false;
 
-          for (const txn of serverTxns || []) {
-            if (txn.id && !seen.has(txn.id)) {
-              const isPromo = txn.type === 'promo_code' || txn.metadata?.code === 'YASH' || txn.title?.includes('YASH') || String(txn.id || '').includes('PROMO');
-              if (isPromo) {
-                if (hasPromoMerged) continue;
-                hasPromoMerged = true;
-              }
-              seen.add(txn.id);
-              merged.push(txn);
+          const addCandidate = (txn) => {
+            if (!txn || !txn.id || seen.has(txn.id)) return;
+            const isPromo = txn.type === 'promo_code' || txn.metadata?.code === 'YASH' || txn.title?.includes('YASH') || String(txn.id || '').includes('PROMO');
+            if (isPromo) {
+              if (hasPromoMerged) return;
+              hasPromoMerged = true;
             }
+
+            // Deduplicate duplicate actions (e.g. duplicate Teddy gift or duplicate call at same minute)
+            const timeStr = String(txn.timestamp || txn.date || '').slice(0, 16);
+            const subTitle = String(txn.title || '').replace(/\s*\(\d+s\)/, '');
+            const actionKey = `${txn.type}_${txn.coins}_${subTitle}_${timeStr}`;
+            if (seenKeys.has(actionKey)) return;
+
+            seen.add(txn.id);
+            seenKeys.add(actionKey);
+            merged.push(txn);
+          };
+
+          for (const txn of serverTxns || []) {
+            addCandidate(txn);
           }
           for (const txn of localTxns) {
-            if (txn.id && !seen.has(txn.id)) {
-              const isPromo = txn.type === 'promo_code' || txn.metadata?.code === 'YASH' || txn.title?.includes('YASH') || String(txn.id || '').includes('PROMO');
-              if (isPromo) {
-                if (hasPromoMerged) continue;
-                hasPromoMerged = true;
-              }
-              seen.add(txn.id);
-              merged.push(txn);
-            }
+            addCandidate(txn);
           }
           // Sort latest first
           merged.sort((a, b) => new Date(b.timestamp || b.date) - new Date(a.timestamp || a.date));

@@ -396,24 +396,30 @@ export default function App() {
     setCoins(nextLocal);
 
     if (currentUid) {
+      const txnId = metadata.id || `TXN-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
       // Record immediately in local ledger for 100% reliable passbook history
       recordLocalTransaction(currentUid, {
+        id: txnId,
         type: metadata.type || 'call',
         title: metadata.title || 'Video Call Coins',
         amount,
+        coins: amount,
         isCredit: false,
         balanceAfter: nextLocal,
-        metadata,
+        metadata: { ...metadata, txnId },
       });
 
       try {
         const res = await transactUserCoins(currentUid, {
+          idempotencyKey: txnId,
+          id: txnId,
           amount,
           isCredit: false,
           type: metadata.type || 'call',
           title: metadata.title || 'Video Call Coins',
           clientBalance: previousBalance,
-          metadata,
+          metadata: { ...metadata, txnId },
         });
         if (typeof res?.newBalance === 'number') {
           setCoins(res.newBalance);
