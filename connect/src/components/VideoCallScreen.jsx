@@ -163,14 +163,17 @@ export default function VideoCallScreen({
   // Demo / incoming free 10s preview states
   const [isDemoActive, setIsDemoActive] = useState(isDemo);
   const isDemoActiveRef = useRef(isDemo);
+  const hasUserContinuedRef = useRef(false);
   const [showContinuePrompt, setShowContinuePrompt] = useState(false);
   const showContinuePromptRef = useRef(false);
   const [isWaitingForRecharge, setIsWaitingForRecharge] = useState(false);
   const isWaitingForRechargeRef = useRef(false);
 
   useEffect(() => {
-    setIsDemoActive(isDemo);
-    isDemoActiveRef.current = isDemo;
+    if (!hasUserContinuedRef.current) {
+      setIsDemoActive(isDemo);
+      isDemoActiveRef.current = isDemo;
+    }
   }, [isDemo]);
 
   const hasDeductedFirstMinuteRef = useRef(false);
@@ -416,7 +419,7 @@ export default function VideoCallScreen({
           const nextSec = prev + 1;
 
           // In incoming free preview: check at 10 seconds!
-          if (isDemoActiveRef.current && nextSec >= 10) {
+          if (isDemoActiveRef.current && !hasUserContinuedRef.current && nextSec >= 10) {
             const currentCoins = Number(coinsRef.current ?? coins) || 0;
             const numericRate = Number(callRate) || 30;
 
@@ -593,6 +596,7 @@ export default function VideoCallScreen({
       return;
     }
 
+    hasUserContinuedRef.current = true;
     showContinuePromptRef.current = false;
     setShowContinuePrompt(false);
     setIsDemoActive(false);
