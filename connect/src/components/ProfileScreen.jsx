@@ -43,6 +43,7 @@ import {
   saveStoredVipEntitlement,
   claimVipDailyBonus,
   getKolkataDateString,
+  recordLocalTransaction,
 } from '../firebase/rewardService';
 
 const formatDobDisplay = (dobStr) => {
@@ -116,6 +117,41 @@ export default function ProfileScreen({
   const [activeVip, setActiveVip] = useState(() => {
     return propVipEntitlement || getStoredVipEntitlement(uid);
   });
+
+  const vipTier = (() => {
+    if (!activeVip?.active) return 'none';
+    const str = `${activeVip.planId || ''} ${activeVip.planName || ''}`.toLowerCase();
+    if (str.includes('silver')) return 'silver';
+    if (str.includes('diamond')) return 'diamond';
+    return 'gold';
+  })();
+
+  const vipTheme = {
+    silver: {
+      color: '#cbd5e1',
+      crownFill: '#e2e8f0',
+      border: '#94a3b8',
+      glow: 'rgba(203, 213, 225, 0.4)',
+    },
+    gold: {
+      color: '#ffd700',
+      crownFill: '#ffd700',
+      border: '#ffd700',
+      glow: 'rgba(255, 215, 0, 0.4)',
+    },
+    diamond: {
+      color: '#00e5ff',
+      crownFill: '#00e5ff',
+      border: '#00e5ff',
+      glow: 'rgba(0, 229, 255, 0.4)',
+    },
+    none: {
+      color: '#ffd700',
+      crownFill: '#ffd700',
+      border: '#ffd700',
+      glow: 'rgba(255, 215, 0, 0.25)',
+    },
+  }[vipTier];
 
   const today = getKolkataDateString();
   const [isVipBonusClaimedToday, setIsVipBonusClaimedToday] = useState(() => {
@@ -422,15 +458,17 @@ export default function ProfileScreen({
       <div className="profile-content">
         {/* ── 1. User Hero Card (Matches Reference Image) ── */}
         <div className="profile-hero-card">
-          {/* Top-Right Gold Diamond VIP Header Badge */}
-          <div
-            className="profile-vip-header-badge"
-            onClick={onOpenVip}
-            title={activeVip?.active ? `${activeVip.planName} Active • Click for VIP Club` : 'VIP Club Details'}
-          >
-            <Crown size={14} color="#ffd700" fill="#ffd700" />
-            <span>{activeVip?.active ? (activeVip.planName || 'Diamond VIP') : 'Diamond VIP'}</span>
-          </div>
+          {/* Top-Right VIP Header Badge: only shown when user has active membership */}
+          {activeVip?.active && (
+            <div
+              className={`profile-vip-header-badge tier-${vipTier}`}
+              onClick={onOpenVip}
+              title={`${activeVip.planName || 'VIP'} Active • Click for VIP Club`}
+            >
+              <Crown size={14} color={vipTheme.crownFill} fill={vipTheme.crownFill} />
+              <span>{activeVip.planName || 'VIP'}</span>
+            </div>
+          )}
 
           <div
             className="profile-avatar-outer"
@@ -480,16 +518,16 @@ export default function ProfileScreen({
 
             {/* Unique User ID with Copy Button & VIP status */}
             <div
-              className={`profile-userid-chip ${activeVip?.active ? 'vip-active-chip' : ''}`}
+              className={`profile-userid-chip ${activeVip?.active ? `vip-active-chip tier-${vipTier}` : ''}`}
               onClick={handleCopyId}
               title={activeVip?.active ? `${activeVip.planName} Active • Click to copy ID` : 'Click to copy ID'}
             >
               <span className="userid-label">{t('user_id', 'User ID:')}</span>
               <span className="userid-value">{profileData.userId || 'CN-0V64S1'}</span>
               {activeVip?.active && (
-                <span className="userid-vip-tag">
+                <span className={`userid-vip-tag tier-${vipTier}`}>
                   <Crown size={9} color="#0a0112" fill="#0a0112" />
-                  <span>VIP ACTIVE</span>
+                  <span>{activeVip.planName || 'VIP ACTIVE'}</span>
                 </span>
               )}
               <button
@@ -509,26 +547,30 @@ export default function ProfileScreen({
 
         {/* ── 2. VIP Membership Card ── */}
         <div
-          className="profile-vip-banner-card"
+          className={`profile-vip-banner-card ${activeVip?.active ? `active-vip-banner tier-${vipTier}` : 'upgrade-vip-banner'}`}
           onClick={onOpenVip}
           style={{ cursor: 'pointer' }}
-          title={activeVip?.active ? `${activeVip.planName} Active • Click to view VIP Membership` : 'Click to view VIP Membership plans'}
+          title={activeVip?.active ? `${activeVip.planName} Active • Click to view VIP Membership` : 'Upgrade your membership and take exciting benefits'}
         >
-          {/* Top-Right Ribbon Badge with 💎 */}
-          <div className="vip-ribbon-badge" title="VIP Exclusive">
-            <span className="vip-ribbon-icon">💎</span>
+          {/* Top-Right Ribbon Badge with 💎 / 👑 */}
+          <div className="vip-ribbon-badge" title={activeVip?.active ? `${activeVip.planName} Exclusive` : 'VIP Upgrade'}>
+            <span className="vip-ribbon-icon">
+              {activeVip?.active ? (vipTier === 'silver' ? '🥈' : vipTier === 'diamond' ? '💎' : '👑') : '👑'}
+            </span>
           </div>
 
-          {/* Top Header Row: Crown + Plan Name + Status + Expiry */}
+          {/* Top Header Row: Crown + Plan Name / Upgrade Title + Status */}
           <div className="vip-card-header-row">
-            <div className="vip-circle-crown">
-              <Crown size={24} color="#fff" />
+            <div className={`vip-circle-crown tier-${activeVip?.active ? vipTier : 'upgrade'}`}>
+              <Crown size={24} color={activeVip?.active ? vipTheme.color : '#ffd700'} />
             </div>
             <div className="vip-header-info">
               <div className="vip-header-title-badge">
-                <h3 className="vip-card-title">{activeVip?.planName || 'Diamond VIP'}</h3>
+                <h3 className="vip-card-title">
+                  {activeVip?.active ? activeVip.planName : 'Upgrade your membership'}
+                </h3>
                 {activeVip?.active ? (
-                  <span className="vip-status-pill activated">ACTIVATED</span>
+                  <span className={`vip-status-pill activated tier-${vipTier}`}>ACTIVATED</span>
                 ) : (
                   <button
                     type="button"
@@ -542,10 +584,16 @@ export default function ProfileScreen({
                   </button>
                 )}
               </div>
-              <div className="vip-expiry-row">
-                <Calendar size={12} color="#00e5ff" style={{ flexShrink: 0 }} />
-                <span>Active till <strong>{activeVip?.expiryDate || '10 Dec 2028'}</strong></span>
-              </div>
+              {activeVip?.active ? (
+                <div className="vip-expiry-row">
+                  <Calendar size={12} color={vipTheme.color} style={{ flexShrink: 0 }} />
+                  <span>Active till <strong>{activeVip.expiryDate}</strong></span>
+                </div>
+              ) : (
+                <p className="vip-upgrade-subtext">
+                  Take exciting benefits &amp; daily free coins!
+                </p>
+              )}
             </div>
           </div>
 
@@ -553,7 +601,7 @@ export default function ProfileScreen({
           <div className="vip-benefits-grid">
             <div className="vip-benefit-chip">
               <span className="vip-benefit-icon">🪙</span>
-              <span>+{activeVip?.dailyBonusCoins || 1200} Daily Coins</span>
+              <span>{activeVip?.active ? `+${activeVip.dailyBonusCoins || 1200} Daily Coins` : 'Up to 1200 Daily Coins'}</span>
             </div>
             <div className="vip-benefit-chip">
               <span className="vip-benefit-icon">👑</span>
@@ -1187,15 +1235,35 @@ export default function ProfileScreen({
                   try {
                     if (code === 'YASH') {
                       let finalBal = (typeof coins === 'number' ? coins : 0) + 500;
+                      let serverTxnId = null;
                       if (uid) {
                         try {
                           const res = await redeemPromoCode(uid, code, coins);
                           if (typeof res?.newBalance === 'number') {
                             finalBal = res.newBalance;
                           }
+                          if (res?.txnId) {
+                            serverTxnId = res.txnId;
+                          }
                         } catch (apiErr) {
                           console.warn('redeem promo server sync warning:', apiErr);
                         }
+                        try {
+                          localStorage.setItem(`connect_promo_redeemed_YASH_${uid}`, 'true');
+                        } catch (e) {}
+                        recordLocalTransaction(uid, {
+                          id: serverTxnId || `TXN-PROMO-${Date.now().toString(36).toUpperCase()}`,
+                          type: 'promo_code',
+                          title: 'Promo Code (YASH)',
+                          amount: 500,
+                          coins: 500,
+                          isCredit: true,
+                          balanceAfter: finalBal,
+                          status: 'Completed',
+                          date: 'Recent',
+                          timestamp: new Date().toISOString(),
+                          metadata: { code: 'YASH', coins: 500 },
+                        });
                       }
                       onRewardClaimed?.(500, finalBal);
                       onToast?.(`🎉 Success! 500 Coins added to your account with code YASH!`);

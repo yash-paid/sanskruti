@@ -38,19 +38,21 @@ export default function WalletScreen({
   onToast,
 }) {
   const { t } = useLanguage();
-  const [purchasedPackIds, setPurchasedPackIds] = useState(getPurchasedPackIds);
+  const [purchasedPackIds, setPurchasedPackIds] = useState(() => getPurchasedPackIds(uid));
 
   useEffect(() => {
     const handleSync = () => {
-      setPurchasedPackIds(getPurchasedPackIds());
+      setPurchasedPackIds(getPurchasedPackIds(uid));
     };
     window.addEventListener('connect_purchased_packs_updated', handleSync);
+    window.addEventListener('connect_ledger_updated', handleSync);
     window.addEventListener('storage', handleSync);
     return () => {
       window.removeEventListener('connect_purchased_packs_updated', handleSync);
+      window.removeEventListener('connect_ledger_updated', handleSync);
       window.removeEventListener('storage', handleSync);
     };
-  }, []);
+  }, [uid]);
 
   const availablePacks = COIN_PACKAGES.filter(
     (p) => !purchasedPackIds.includes(p.id)
@@ -89,8 +91,8 @@ export default function WalletScreen({
         onToast?.(err.message || 'Payment initiation failed.');
       }
     } else {
-      markPackAsPurchased(pkg.id);
-      setPurchasedPackIds(getPurchasedPackIds());
+      markPackAsPurchased(pkg.id, uid);
+      setPurchasedPackIds(getPurchasedPackIds(uid));
       onAddCoins?.(pkg.coins);
       onToast?.(`🎉 Success! Added ${pkg.coins} Coins to your balance.`);
     }

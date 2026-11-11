@@ -126,8 +126,36 @@ export const COIN_PACKAGES = [
 // All subsequent packs (₹149, ₹199, ₹499, ₹999, etc.) remain permanently available.
 export const ONE_TIME_PURCHASE_PACK_IDS = ['pack-19', 'pack-49', 'pack-99'];
 
-export const getPurchasedPackIds = () => {
+export const getPurchasedPackIds = (userId) => {
   try {
+    const activeUid = userId || (typeof window !== 'undefined' ? (localStorage.getItem('connect_last_auth_uid') || '') : '');
+
+    // If an authenticated user ID is available, verify against actual completed purchases in ledger
+    if (activeUid) {
+      const localLedgerRaw = localStorage.getItem(`connect_local_ledger_${activeUid}`);
+      if (localLedgerRaw) {
+        const list = JSON.parse(localLedgerRaw);
+        if (Array.isArray(list)) {
+          const purchasedInLedger = list
+            .filter((item) => (item.type === 'purchase' || item.type === 'recharge') && item.status !== 'Failed')
+            .map((item) => {
+              const packId = item.metadata?.packId || '';
+              const cleanId = String(packId).replace(/^connect-/, '');
+              if (ONE_TIME_PURCHASE_PACK_IDS.includes(cleanId)) return cleanId;
+              const title = item.title || '';
+              for (const id of ONE_TIME_PURCHASE_PACK_IDS) {
+                if (title.includes(id)) return id;
+              }
+              return null;
+            })
+            .filter(Boolean);
+
+          return Array.from(new Set(purchasedInLedger));
+        }
+      }
+      return [];
+    }
+
     const saved = localStorage.getItem('connect_purchased_packs');
     if (!saved) return [];
     const parsed = JSON.parse(saved);
@@ -139,7 +167,7 @@ export const getPurchasedPackIds = () => {
   }
 };
 
-export const markPackAsPurchased = (packId) => {
+export const markPackAsPurchased = (packId, userId) => {
   if (!packId) return;
   try {
     const cleanId = String(packId).replace(/^connect-/, '');
@@ -147,10 +175,13 @@ export const markPackAsPurchased = (packId) => {
     if (!ONE_TIME_PURCHASE_PACK_IDS.includes(cleanId)) {
       return;
     }
-    const existing = getPurchasedPackIds();
+    const existing = getPurchasedPackIds(userId);
     if (!existing.includes(cleanId)) {
       existing.push(cleanId);
       localStorage.setItem('connect_purchased_packs', JSON.stringify(existing));
+      if (userId) {
+        localStorage.setItem(`connect_purchased_packs_${userId}`, JSON.stringify(existing));
+      }
       if (typeof window !== 'undefined') {
         window.dispatchEvent(
           new CustomEvent('connect_purchased_packs_updated', {

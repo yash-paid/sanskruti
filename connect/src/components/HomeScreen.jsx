@@ -431,17 +431,7 @@ export default function HomeScreen({
     setIncomingDemoCall(null);
     if (!caller) return;
 
-    // Strict Coin Check: Never allow call to start if user has 0 coins or less than required call rate
-    const isTop = caller?.id === 'simran' || caller?.id === 'uma' || caller?.top;
-    const callRate = isTop ? 65 : (Number(caller?.price) || 30);
-    const userCoins = Number(coins) || 0;
-    if (userCoins < callRate) {
-      setPendingCallExpert(caller);
-      setInsufficientModal(true);
-      onToast?.(`⚠️ You need at least ${callRate} Coins to attend call from ${caller?.name || 'Expert'}. Balance: ${userCoins}`);
-      return;
-    }
-
+    // Incoming calls are 100% free to pick up for 10 seconds (no coins required upfront!)
     setActiveDemoCall(caller);
   };
 
@@ -921,15 +911,11 @@ export default function HomeScreen({
           onDeductCoins={onDeductCoins}
           onAddCoins={onAddCoins}
           onInsufficientCoins={() => {
-            const caller = activeDemoCall;
-            handleEndDemoCall(caller);
-            setPendingCallExpert(caller);
+            setPendingCallExpert(activeDemoCall);
             setInsufficientModal(true);
           }}
           onOpenRecharge={() => {
-            const caller = activeDemoCall;
-            handleEndDemoCall(caller);
-            setPendingCallExpert(caller);
+            setPendingCallExpert(activeDemoCall);
             setInsufficientModal(true);
           }}
         />

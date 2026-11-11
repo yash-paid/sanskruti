@@ -49,7 +49,7 @@ exports.handler = async (event, context) => {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': corsOrigin,
-        'Access-Control-Allow-Headers': 'Authorization, Content-Type',
+        'Access-Control-Allow-Headers': 'Authorization, Content-Type, x-user-uid',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
       },
       body: '',

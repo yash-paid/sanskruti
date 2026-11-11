@@ -260,19 +260,8 @@ export const getStoredVipEntitlement = (uid) => {
     const raw = localStorage.getItem(`connect_vip_entitlement_${uid}`);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (parsed && (parsed.active || parsed.status === 'active')) return parsed;
-    }
-    const isActive = localStorage.getItem(`connect_vip_active_${uid}`) === 'true';
-    if (isActive) {
-      return {
-        planId: 'diamond',
-        planName: 'Diamond VIP',
-        status: 'active',
-        active: true,
-        dailyBonusCoins: 1200,
-        expiryDate: '11 Dec 2026',
-        activatedAt: new Date().toISOString(),
-      };
+      if (parsed && (parsed.active === true || parsed.status === 'active')) return parsed;
+      return null;
     }
   } catch (e) {}
   return null;

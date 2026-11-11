@@ -59,10 +59,14 @@ export default function ProfileDailyRewardCalendar({
       window.dispatchEvent(new CustomEvent('connect_daily_reward_updated', { detail: result }));
       await loadStatus();
     } catch (err) {
-      if (err.message === 'ALREADY_CLAIMED_TODAY') {
+      if (
+        err.message === 'ALREADY_CLAIMED_TODAY' ||
+        err.code === 'reward/already-claimed-today' ||
+        err.message?.toLowerCase().includes('already claimed')
+      ) {
         onToast?.("⚠️ Today's reward is already claimed!");
       } else {
-        onToast?.('❌ Unable to claim reward. Please try again.');
+        onToast?.(err.message || '❌ Unable to claim reward. Please try again.');
       }
       await loadStatus();
     } finally {

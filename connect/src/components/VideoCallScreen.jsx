@@ -160,6 +160,17 @@ export default function VideoCallScreen({
   const callRate = isTopExpert ? 65 : (Number(expert?.price) || 30);
   const numericCoins = Number(coins) || 0;
 
+  // Demo / incoming free 10s preview states
+  const [isDemoActive, setIsDemoActive] = useState(isDemo);
+  const isDemoActiveRef = useRef(isDemo);
+  const [showContinuePrompt, setShowContinuePrompt] = useState(false);
+  const showContinuePromptRef = useRef(false);
+
+  useEffect(() => {
+    setIsDemoActive(isDemo);
+    isDemoActiveRef.current = isDemo;
+  }, [isDemo]);
+
   const hasDeductedFirstMinuteRef = useRef(false);
   const coinsRef = useRef(numericCoins);
 
@@ -350,9 +361,9 @@ export default function VideoCallScreen({
   };
 
   /* ── 3. Active Call Duration Timer & Per-Minute Coin Deduction ── */
-  // A. Deduct Minute 1 immediately in the starting 1 second when call starts
+  // A. Deduct Minute 1 immediately in the starting 1 second when call starts (only for paid calls, NOT for free 10s preview)
   useEffect(() => {
-    if (isDemo) return; // Zero coin deduction for demo calls
+    if (isDemoActive) return; // Zero coin deduction for demo / free 10s preview calls
     if (!hasDeductedFirstMinuteRef.current) {
       hasDeductedFirstMinuteRef.current = true;
       (async () => {
@@ -388,32 +399,51 @@ export default function VideoCallScreen({
         }
       })();
     }
-  }, [isDemo]);
+  }, [isDemoActive]);
 
-  // B. Deduct subsequent minutes every 60 seconds (at 60s, 120s, 180s, etc.)
+  // B. Deduct subsequent minutes every 60 seconds (at 60s, 120s, 180s, etc.) & check 10s preview limit
   useEffect(() => {
     if (callState === 'active') {
       durationTimerRef.current = setInterval(() => {
         setCallDuration((prev) => {
-          // If in low-balance grace countdown, keep holding duration at current minute boundary
-          if (inGracePeriodRef.current) {
+          // If in low-balance grace countdown or showing continue prompt, hold duration
+          if (inGracePeriodRef.current || showContinuePromptRef.current) {
             return prev;
           }
 
           const nextSec = prev + 1;
 
-          // In demo call: automatically end call at 10 seconds!
-          if (isDemo && nextSec >= 10) {
-            if (durationTimerRef.current) clearInterval(durationTimerRef.current);
-            setTimeout(() => {
-              handleEnd();
-            }, 0);
-            return 10;
+          // In incoming free preview: check at 10 seconds!
+          if (isDemoActiveRef.current && nextSec >= 10) {
+            const currentCoins = Number(coinsRef.current ?? coins) || 0;
+            const numericRate = Number(callRate) || 30;
+
+            if (currentCoins >= numericRate) {
+              // User has coins -> show "continue call with coins" popup!
+              showContinuePromptRef.current = true;
+              setShowContinuePrompt(true);
+              try {
+                expertVideoRef.current?.pause();
+              } catch (_) {}
+              return 10;
+            } else {
+              // User does NOT have coins -> prompt for recharge with grace countdown!
+              inGracePeriodRef.current = true;
+              pendingMinuteRef.current = 1;
+              setGraceSecondsLeft(15);
+              onToast?.(`⚠️ Free 10s preview ended! Please recharge to keep talking with ${expert?.name || 'Expert'}.`);
+              if (onOpenRecharge) {
+                onOpenRecharge();
+              } else if (onInsufficientCoins) {
+                onInsufficientCoins();
+              }
+              return 10;
+            }
           }
 
-          // Every 60 seconds of conversation, deduct coins for the next minute (normal call only)
-          if (!isDemo && nextSec > 0 && nextSec % 60 === 0) {
-            const nextMin = Math.floor(nextSec / 60) + 1;
+          // Every 60 seconds of paid conversation, deduct coins for the next minute
+          if (!isDemoActiveRef.current && nextSec > 10 && (nextSec - 10) % 60 === 0) {
+            const nextMin = Math.floor((nextSec - 10) / 60) + 2;
             const numericCoins = Number(coinsRef.current ?? coins) || 0;
             const numericRate = Number(callRate) || 30;
 
@@ -466,7 +496,7 @@ export default function VideoCallScreen({
     return () => {
       if (durationTimerRef.current) clearInterval(durationTimerRef.current);
     };
-  }, [callState, callRate, onDeductCoins, onInsufficientCoins, onOpenRecharge, onEndCall, onToast, expert, isDemo]);
+  }, [callState, callRate, onDeductCoins, onInsufficientCoins, onOpenRecharge, onEndCall, onToast, expert]);
 
   // C. In-Call Grace Window Countdown (15s timer when balance is exhausted for next minute)
   useEffect(() => {
@@ -478,8 +508,14 @@ export default function VideoCallScreen({
     // 1. Balance replenished! Exit grace period and deduct next minute
     if (numericCoins >= numericRate) {
       inGracePeriodRef.current = false;
-      const minToDeduct = pendingMinuteRef.current || Math.floor(callDuration / 60) + 1;
+      const minToDeduct = pendingMinuteRef.current || 1;
       setGraceSecondsLeft(null);
+      setIsDemoActive(false);
+      isDemoActiveRef.current = false;
+      hasDeductedFirstMinuteRef.current = true;
+      try {
+        expertVideoRef.current?.play().catch(() => {});
+      } catch (_) {}
       (async () => {
         await onDeductCoins?.(numericRate, {
           type: 'call',
@@ -496,7 +532,7 @@ export default function VideoCallScreen({
     if (graceSecondsLeft <= 0) {
       inGracePeriodRef.current = false;
       setGraceSecondsLeft(null);
-      onToast?.('Call ended: Coin balance exhausted!');
+      onToast?.('Call ended: Free preview ended & recharge expired.');
       handleEnd();
       return;
     }
@@ -508,6 +544,57 @@ export default function VideoCallScreen({
 
     return () => clearTimeout(timer);
   }, [graceSecondsLeft, coins, callRate, callDuration, onDeductCoins, expert]);
+
+  /* ── Confirm or Decline Continuing Call with Coins ── */
+  const handleConfirmContinueCall = async () => {
+    const currentCoins = Number(coinsRef.current ?? coins) || 0;
+    const numericRate = Number(callRate) || 30;
+
+    if (currentCoins < numericRate) {
+      showContinuePromptRef.current = false;
+      setShowContinuePrompt(false);
+      inGracePeriodRef.current = true;
+      pendingMinuteRef.current = 1;
+      setGraceSecondsLeft(15);
+      onToast?.('⚠️ Insufficient coins! Please recharge to continue the call.');
+      onOpenRecharge?.();
+      return;
+    }
+
+    showContinuePromptRef.current = false;
+    setShowContinuePrompt(false);
+    setIsDemoActive(false);
+    isDemoActiveRef.current = false;
+    hasDeductedFirstMinuteRef.current = true;
+
+    try {
+      expertVideoRef.current?.play().catch(() => {});
+    } catch (_) {}
+
+    // Deduct Minute 1 coins
+    try {
+      const success = onDeductCoins
+        ? await onDeductCoins(numericRate, {
+            type: 'call',
+            title: `Call with ${expert?.name || 'Expert'} (Min 1)`,
+            expertId: expert?.id,
+            expertName: expert?.name,
+          })
+        : true;
+
+      if (success) {
+        onToast?.(`✅ Call continued! -${numericRate} Coins`);
+      }
+    } catch (e) {
+      console.warn('Failed to deduct coins on continue:', e);
+    }
+  };
+
+  const handleDeclineContinueCall = () => {
+    showContinuePromptRef.current = false;
+    setShowContinuePrompt(false);
+    handleEnd();
+  };
 
   /* ── 4. User Camera & Mic (PiP) Setup ── */
   const setupUserCamera = async (isFront = isFrontCamera) => {
@@ -959,10 +1046,11 @@ export default function VideoCallScreen({
             <div className="call-timer-badge">
               <span className="record-red-dot" />
               <span className="timer-text">{formatTime(callDuration)}</span>
+              {isDemoActive && <span className="free-preview-pill">10s Free</span>}
             </div>
 
             {/* Low Coin Warning or Grace Countdown Alert Banner - Prompts user to recharge without screen going black */}
-            {!isDemo && (graceSecondsLeft !== null || numericCoins < callRate) && (
+            {(graceSecondsLeft !== null || (!isDemoActive && numericCoins < callRate)) && (
               <div
                 className="call-low-balance-banner"
                 onClick={() => onOpenRecharge?.()}
@@ -1200,6 +1288,49 @@ export default function VideoCallScreen({
                   <Wallet size={16} />
                   <span>{t('gift_recharge_btn', 'Recharge Coins to Send Bigger Gifts →')}</span>
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Continue Call With Coins Modal ── */}
+          {showContinuePrompt && (
+            <div className="continue-call-modal-overlay">
+              <div className="continue-call-modal-card" onClick={(e) => e.stopPropagation()}>
+                <div className="continue-call-icon-circle">
+                  <span>🪙</span>
+                </div>
+                <h3 className="continue-call-title">Continue Call with Coins?</h3>
+                <p className="continue-call-desc">
+                  Your 10s free preview with <strong>{expert?.name || 'Expert'}</strong> has ended. Keep talking using your coin balance?
+                </p>
+
+                <div className="continue-call-rate-box">
+                  <div className="continue-rate-row">
+                    <span className="continue-rate-label">Call Rate:</span>
+                    <span className="continue-rate-val">🪙 {callRate} Coins / min</span>
+                  </div>
+                  <div className="continue-rate-row">
+                    <span className="continue-rate-label">Your Balance:</span>
+                    <span className="continue-balance-val">🪙 {coins} Coins</span>
+                  </div>
+                </div>
+
+                <div className="continue-call-actions">
+                  <button
+                    type="button"
+                    className="continue-call-confirm-btn"
+                    onClick={handleConfirmContinueCall}
+                  >
+                    <span>Continue Call (-{callRate} Coins)</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="continue-call-decline-btn"
+                    onClick={handleDeclineContinueCall}
+                  >
+                    <span>End Call</span>
+                  </button>
+                </div>
               </div>
             </div>
           )}

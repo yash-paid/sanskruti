@@ -23,6 +23,7 @@ const { getCanonicalPackage, verifyFirebaseToken } = require('./_connect-db');
 const ALLOWED_ORIGINS = [
   'https://sanskrutiservice.in',
   'https://www.sanskrutiservice.in',
+  'https://connect.sanskrutiservice.in',
   'http://localhost:5173',
   'http://localhost:8888',
   'http://127.0.0.1:5173',
@@ -38,6 +39,7 @@ const getCorsOrigin = (event) => {
     ALLOWED_ORIGINS.includes(reqOrigin) ||
     (process.env.URL && reqOrigin === process.env.URL) ||
     (process.env.DEPLOY_PRIME_URL && reqOrigin === process.env.DEPLOY_PRIME_URL) ||
+    reqOrigin.endsWith('.sanskrutiservice.in') ||
     reqOrigin.endsWith('.netlify.app')
   ) {
     return reqOrigin;
@@ -97,6 +99,9 @@ const initFirebaseAdmin = () => {
 
         if (serviceAccount) {
           try {
+            if (serviceAccount.private_key && typeof serviceAccount.private_key === 'string') {
+              serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+            }
             adminApp = initializeApp({
               credential: cert(serviceAccount),
               projectId: serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
@@ -219,17 +224,41 @@ class LocalFirestoreAdapter {
   }
 
   _readStore() {
+    const isServerless = Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+    if (isServerless) {
+      try {
+        if (fs.existsSync(TMP_DB_FILE)) {
+          return JSON.parse(fs.readFileSync(TMP_DB_FILE, 'utf-8'));
+        }
+      } catch (e) {}
+    }
     try {
       if (fs.existsSync(this.filePath)) {
         return JSON.parse(fs.readFileSync(this.filePath, 'utf-8'));
+      }
+    } catch (e) {}
+    try {
+      if (fs.existsSync(TMP_DB_FILE)) {
+        return JSON.parse(fs.readFileSync(TMP_DB_FILE, 'utf-8'));
       }
     } catch (e) {}
     return {};
   }
 
   _writeStore(store) {
+    const isServerless = Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+    if (isServerless) {
+      try {
+        fs.writeFileSync(TMP_DB_FILE, JSON.stringify(store, null, 2), 'utf-8');
+        return;
+      } catch (e) {}
+    }
     try {
       fs.writeFileSync(this.filePath, JSON.stringify(store, null, 2), 'utf-8');
+      return;
+    } catch (e) {}
+    try {
+      fs.writeFileSync(TMP_DB_FILE, JSON.stringify(store, null, 2), 'utf-8');
     } catch (e) {}
   }
 
@@ -277,8 +306,11 @@ class LocalFirestoreAdapter {
         const store = self._readStore();
         if (!store[collPath]) store[collPath] = {};
         const targetColl = store[collPath];
-        const existing = targetColl[docId] || (collPath === 'users' ? store[docId] : undefined);
-        if (!existing) throw new Error(`Document ${docId} does not exist for update in ${collPath}`);
+        let existing = targetColl[docId] || (collPath === 'users' ? store[docId] : undefined);
+        if (!existing) {
+          existing = {};
+          targetColl[docId] = existing;
+        }
 
         for (const [key, val] of Object.entries(updates)) {
           if (key.includes('.')) {
@@ -849,7 +881,7 @@ const reconcileRollbackToLegacyArray = async (db, uid) => {
 exports.handler = async (event, context) => {
   const headers = {
     'Access-Control-Allow-Origin': getCorsOrigin(event),
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-user-uid',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Content-Type': 'application/json',
   };
@@ -872,6 +904,7 @@ exports.handler = async (event, context) => {
 
     // Health check is public (unauthenticated)
     if (action === 'health') {
+      const { adminAuth: currentAuth, adminFirestore: currentDbInstance } = initFirebaseAdmin();
       return {
         statusCode: 200,
         headers,
@@ -880,6 +913,11 @@ exports.handler = async (event, context) => {
           service: 'connect-user',
           timestamp: new Date().toISOString(),
           adminInitialized,
+          hasServiceAccountCredentials,
+          hasAdminApp: Boolean(adminApp),
+          hasAdminAuth: Boolean(currentAuth),
+          hasAdminFirestore: Boolean(currentDbInstance),
+          projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
         }),
       };
     }

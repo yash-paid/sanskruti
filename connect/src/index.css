@@ -3089,6 +3089,120 @@ html, body {
   box-shadow: 0 0 10px rgba(255, 215, 0, 0.45);
 }
 
+/* ── Dynamic VIP Tier Themes (Silver, Gold, Diamond & Upgrade) ── */
+.profile-vip-header-badge.tier-silver {
+  background: rgba(203, 213, 225, 0.1);
+  border-color: #cbd5e1;
+  color: #f1f5f9;
+  box-shadow: 0 0 12px rgba(203, 213, 225, 0.35);
+}
+
+.profile-vip-header-badge.tier-gold {
+  background: rgba(255, 215, 0, 0.1);
+  border-color: #ffd700;
+  color: #ffd700;
+  box-shadow: 0 0 14px rgba(255, 215, 0, 0.4);
+}
+
+.profile-vip-header-badge.tier-diamond {
+  background: rgba(0, 229, 255, 0.1);
+  border-color: #00e5ff;
+  color: #00e5ff;
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.4);
+}
+
+/* VIP Banner Card Tiers */
+.profile-vip-banner-card.tier-silver {
+  border-color: #cbd5e1;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(203, 213, 225, 0.25);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+}
+
+.profile-vip-banner-card.tier-gold {
+  border-color: #ffd700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 22px rgba(255, 215, 0, 0.28);
+  background: linear-gradient(135deg, rgba(46, 26, 4, 0.95) 0%, rgba(20, 5, 28, 0.98) 100%);
+}
+
+.profile-vip-banner-card.tier-diamond {
+  border-color: #00e5ff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 22px rgba(0, 229, 255, 0.28);
+  background: linear-gradient(135deg, rgba(8, 28, 58, 0.95) 0%, rgba(14, 5, 32, 0.98) 100%);
+}
+
+.profile-vip-banner-card.upgrade-vip-banner {
+  border-color: rgba(255, 215, 0, 0.55);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.18);
+  background: linear-gradient(135deg, rgba(32, 10, 48, 0.95) 0%, rgba(18, 2, 28, 0.98) 100%);
+}
+
+.vip-upgrade-subtext {
+  font-size: 11px;
+  color: #d8b4fe;
+  margin: 3px 0 0 0;
+  font-weight: 500;
+  letter-spacing: 0.1px;
+}
+
+/* Crown Circles */
+.vip-circle-crown.tier-silver {
+  background: linear-gradient(135deg, #e2e8f0 0%, #64748b 100%);
+  box-shadow: 0 0 14px rgba(203, 213, 225, 0.5);
+}
+
+.vip-circle-crown.tier-gold {
+  background: linear-gradient(135deg, #ffe066 0%, #d97706 100%);
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.55);
+}
+
+.vip-circle-crown.tier-diamond {
+  background: linear-gradient(135deg, #00e5ff 0%, #0072ff 100%);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.55);
+}
+
+.vip-circle-crown.tier-upgrade {
+  background: linear-gradient(135deg, #f59e0b 0%, #ec4899 100%);
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.45);
+}
+
+/* Status Pills */
+.vip-status-pill.activated.tier-silver {
+  background: rgba(203, 213, 225, 0.2);
+  color: #f1f5f9;
+  border: 1px solid rgba(203, 213, 225, 0.5);
+}
+
+.vip-status-pill.activated.tier-gold {
+  background: rgba(255, 215, 0, 0.2);
+  color: #ffd700;
+  border: 1px solid rgba(255, 215, 0, 0.55);
+}
+
+.vip-status-pill.activated.tier-diamond {
+  background: rgba(0, 229, 255, 0.2);
+  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.55);
+}
+
+/* User ID Chip VIP Badges */
+.userid-vip-tag.tier-silver {
+  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+  color: #0f172a;
+  box-shadow: 0 0 8px rgba(203, 213, 225, 0.45);
+}
+
+.userid-vip-tag.tier-gold {
+  background: linear-gradient(135deg, #ffd700 0%, #f59e0b 100%);
+  color: #12011b;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.userid-vip-tag.tier-diamond {
+  background: linear-gradient(135deg, #00e5ff 0%, #38bdf8 100%);
+  color: #04101e;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
 .home-vip-badge-pill {
   display: flex;
   align-items: center;
@@ -8162,6 +8276,181 @@ html, body {
     padding: 3px 6px;
   }
 }
+
+/* ── Incoming Call 10s Free Preview Pill ── */
+.free-preview-pill {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+  animation: pulse-green 1.8s infinite;
+}
+
+@keyframes pulse-green {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.95);
+    transform: scale(1.05);
+  }
+}
+
+/* ── Continue Call With Coins Modal ── */
+.continue-call-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 2, 16, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeInModal 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.continue-call-modal-card {
+  width: 100%;
+  max-width: 340px;
+  background: linear-gradient(145deg, #1f082e 0%, #12021c 100%);
+  border: 1.5px solid rgba(255, 42, 141, 0.5);
+  border-radius: 24px;
+  padding: 24px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 42, 141, 0.35);
+  position: relative;
+}
+
+.continue-call-icon-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.25) 0%, rgba(255, 42, 141, 0.25) 100%);
+  border: 2px solid #ffd700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  margin-bottom: 14px;
+}
+
+.continue-call-title {
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.2px;
+}
+
+.continue-call-desc {
+  color: #d1c4e9;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+}
+
+.continue-call-desc strong {
+  color: #ff2a8d;
+}
+
+.continue-call-rate-box {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 14px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.continue-rate-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.continue-rate-label {
+  color: #a79cb5;
+}
+
+.continue-rate-val {
+  color: #ffd700;
+  font-weight: 700;
+}
+
+.continue-balance-val {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.continue-call-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.continue-call-confirm-btn {
+  width: 100%;
+  padding: 13px 16px;
+  border-radius: 9999px;
+  border: none;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.continue-call-confirm-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+}
+
+.continue-call-confirm-btn:active {
+  transform: scale(0.98);
+}
+
+.continue-call-decline-btn {
+  width: 100%;
+  padding: 11px 16px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2d9f3;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.continue-call-decline-btn:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+.continue-call-decline-btn:active {
+  transform: scale(0.98);
+}
+
 
 
 

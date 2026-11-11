@@ -62,6 +62,9 @@ const initFirebaseAdmin = () => {
 
         if (serviceAccount) {
           try {
+            if (serviceAccount.private_key && typeof serviceAccount.private_key === 'string') {
+              serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+            }
             adminApp = initializeApp({
               credential: cert(serviceAccount),
               projectId: serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
@@ -151,17 +154,41 @@ class LocalFirestoreAdapter {
   }
 
   _readStore() {
+    const isServerless = Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+    if (isServerless) {
+      try {
+        if (fs.existsSync(TMP_DB_FILE)) {
+          return JSON.parse(fs.readFileSync(TMP_DB_FILE, 'utf-8'));
+        }
+      } catch (e) {}
+    }
     try {
       if (fs.existsSync(this.filePath)) {
         return JSON.parse(fs.readFileSync(this.filePath, 'utf-8'));
+      }
+    } catch (e) {}
+    try {
+      if (fs.existsSync(TMP_DB_FILE)) {
+        return JSON.parse(fs.readFileSync(TMP_DB_FILE, 'utf-8'));
       }
     } catch (e) {}
     return {};
   }
 
   _writeStore(store) {
+    const isServerless = Boolean(process.env.NETLIFY || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+    if (isServerless) {
+      try {
+        fs.writeFileSync(TMP_DB_FILE, JSON.stringify(store, null, 2), 'utf-8');
+        return;
+      } catch (e) {}
+    }
     try {
       fs.writeFileSync(this.filePath, JSON.stringify(store, null, 2), 'utf-8');
+      return;
+    } catch (e) {}
+    try {
+      fs.writeFileSync(TMP_DB_FILE, JSON.stringify(store, null, 2), 'utf-8');
     } catch (e) {}
   }
 
@@ -210,8 +237,11 @@ class LocalFirestoreAdapter {
         const store = self._readStore();
         if (!store[collPath]) store[collPath] = {};
         const targetColl = store[collPath];
-        const existing = targetColl[docId] || (collPath === 'users' ? store[docId] : undefined);
-        if (!existing) throw new Error(`Document ${docId} does not exist for update in ${collPath}`);
+        let existing = targetColl[docId] || (collPath === 'users' ? store[docId] : undefined);
+        if (!existing) {
+          existing = {};
+          targetColl[docId] = existing;
+        }
 
         for (const [key, val] of Object.entries(updates)) {
           if (key.includes('.')) {

@@ -23,7 +23,6 @@ const apiCall = async (action, options = {}) => {
 
   const headers = {
     'Content-Type': 'application/json',
-    'x-user-uid': uid,
   };
 
   try {

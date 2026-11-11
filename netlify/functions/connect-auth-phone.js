@@ -69,6 +69,9 @@ const initFirebaseAdmin = () => {
 
         if (serviceAccount) {
           try {
+            if (serviceAccount.private_key && typeof serviceAccount.private_key === 'string') {
+              serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+            }
             adminApp = initializeApp({
               credential: cert(serviceAccount),
               projectId: serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
@@ -219,6 +222,7 @@ const verifyPassword = async (password, storedHash) => {
 const ALLOWED_ORIGINS = [
   'https://sanskrutiservice.in',
   'https://www.sanskrutiservice.in',
+  'https://connect.sanskrutiservice.in',
   'http://localhost:5173',
   'http://localhost:8888',
   'http://127.0.0.1:5173',
@@ -234,6 +238,7 @@ const getCorsOrigin = (event) => {
     ALLOWED_ORIGINS.includes(reqOrigin) ||
     (process.env.URL && reqOrigin === process.env.URL) ||
     (process.env.DEPLOY_PRIME_URL && reqOrigin === process.env.DEPLOY_PRIME_URL) ||
+    reqOrigin.endsWith('.sanskrutiservice.in') ||
     reqOrigin.endsWith('.netlify.app')
   ) {
     return reqOrigin;
@@ -304,7 +309,7 @@ const checkPersistentIpRateLimit = async (db, clientIp, options = {}) => {
 exports.handler = async (event, context) => {
   const headers = {
     'Access-Control-Allow-Origin': getCorsOrigin(event),
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-user-uid',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Content-Type': 'application/json',
   };

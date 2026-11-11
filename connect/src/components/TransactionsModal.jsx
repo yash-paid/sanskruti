@@ -35,28 +35,22 @@ const getLocalLedger = (userId) => {
     const raw = localStorage.getItem(`connect_local_ledger_${userId}`);
     const list = raw ? JSON.parse(raw) : [];
 
-    // Reconcile any purchased packs from connect_purchased_packs if not in ledger
+    // Reconcile promo code redemption if not in ledger
     try {
-      const purchased = JSON.parse(localStorage.getItem('connect_purchased_packs') || '[]');
-      if (Array.isArray(purchased)) {
-        purchased.forEach((packId) => {
-          const cleanId = packId.replace(/^connect-/, '');
-          const info = PACK_META[cleanId] || PACK_META[`pack-${cleanId}`];
-          const exists = list.some((item) => item.metadata?.packId === cleanId || item.title?.includes(cleanId));
-          if (!exists && info) {
-            list.push({
-              id: `TXN-PACK-${cleanId}`,
-              type: 'purchase',
-              title: info.title,
-              coins: info.coins,
-              isCredit: true,
-              balanceAfter: info.coins,
-              status: 'Completed',
-              date: 'Recent',
-              timestamp: new Date().toISOString(),
-              metadata: { packId: cleanId, price: info.price },
-            });
-          }
+      const promoRedeemed = localStorage.getItem(`connect_promo_redeemed_YASH_${userId}`) === 'true';
+      const hasPromo = list.some((item) => item.type === 'promo_code' || item.metadata?.code === 'YASH' || item.title?.includes('YASH'));
+      if (promoRedeemed && !hasPromo) {
+        list.push({
+          id: `TXN-PROMO-YASH-${userId}`,
+          type: 'promo_code',
+          title: 'Promo Code (YASH)',
+          coins: 500,
+          isCredit: true,
+          balanceAfter: 500,
+          status: 'Completed',
+          date: 'Recent',
+          timestamp: new Date().toISOString(),
+          metadata: { code: 'YASH', coins: 500 },
         });
       }
     } catch (_) {}
@@ -85,11 +79,10 @@ const getLocalLedger = (userId) => {
       }
     } catch (_) {}
 
-    // Reconcile VIP membership purchase
+    // Reconcile VIP membership purchase (only if actually active)
     try {
-      const vipActive = localStorage.getItem(`connect_vip_active_${userId}`) === 'true';
       const vipEntitlement = JSON.parse(localStorage.getItem(`connect_vip_entitlement_${userId}`) || 'null');
-      if (vipActive || (vipEntitlement && vipEntitlement.active)) {
+      if (vipEntitlement && vipEntitlement.active) {
         const planName = vipEntitlement?.planName || 'Diamond VIP';
         const bonusCoins = Number(vipEntitlement?.dailyBonusCoins) || (planName.includes('Diamond') ? 1200 : planName.includes('Gold') ? 500 : 200);
         const exists = list.some((item) => item.type === 'vip_purchase' || item.type === 'vip_bonus' || item.title?.includes('VIP'));
