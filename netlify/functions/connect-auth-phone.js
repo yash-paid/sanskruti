@@ -16,139 +16,12 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const { getDb, initFirebaseAdmin } = require('./_connect-db');
 
 const hasServiceAccountCredentials = Boolean(
   process.env.FIREBASE_SERVICE_ACCOUNT_KEY ||
   (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL)
 );
-
-// Safe Firebase Admin initialization
-let adminApp = null;
-let adminAuth = null;
-let adminFirestore = null;
-let adminInitialized = false;
-let customFirestoreInjected = false;
-let customAuthInjected = false;
-
-const initFirebaseAdmin = () => {
-  if (adminInitialized && adminAuth) {
-    return { adminApp, adminAuth, adminFirestore };
-  }
-
-  try {
-    const { initializeApp, getApps, cert } = require('firebase-admin/app');
-    const { getAuth } = require('firebase-admin/auth');
-    const { getFirestore } = require('firebase-admin/firestore');
-
-    if (!adminApp) {
-      if (getApps().length > 0) {
-        adminApp = getApps()[0];
-      } else {
-        // Attempt 1: Safe parse of FIREBASE_SERVICE_ACCOUNT_KEY
-        let serviceAccount = null;
-        if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-          try {
-            let rawKey = String(process.env.FIREBASE_SERVICE_ACCOUNT_KEY).trim();
-            if (!rawKey.startsWith('{') && rawKey.length > 30) {
-              try {
-                const decoded = Buffer.from(rawKey, 'base64').toString('utf-8').trim();
-                if (decoded.startsWith('{')) rawKey = decoded;
-              } catch (_) {}
-            }
-            let parsed = JSON.parse(rawKey);
-            if (typeof parsed === 'string') {
-              try { parsed = JSON.parse(parsed); } catch (_) {}
-            }
-            if (parsed && typeof parsed === 'object') {
-              serviceAccount = parsed;
-            }
-          } catch (parseErr) {
-            console.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY in connect-auth-phone:', parseErr.message);
-          }
-        }
-
-        if (serviceAccount) {
-          try {
-            if (serviceAccount.private_key && typeof serviceAccount.private_key === 'string') {
-              serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
-            }
-            adminApp = initializeApp({
-              credential: cert(serviceAccount),
-              projectId: serviceAccount.project_id || process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-            });
-          } catch (certErr) {
-            console.warn('cert(serviceAccount) failed in connect-auth-phone, falling back:', certErr.message);
-            adminApp = null;
-          }
-        }
-
-        // Attempt 2: Use FIREBASE_PRIVATE_KEY and FIREBASE_CLIENT_EMAIL
-        if (!adminApp && process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL) {
-          try {
-            const privateKey = String(process.env.FIREBASE_PRIVATE_KEY).replace(/\\n/g, '\n');
-            adminApp = initializeApp({
-              credential: cert({
-                projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-                clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-                privateKey,
-              }),
-              projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-            });
-          } catch (certErr2) {
-            console.warn('cert(privateKey) failed in connect-auth-phone, falling back:', certErr2.message);
-            adminApp = null;
-          }
-        }
-
-        // Attempt 3: Project-only initialization
-        if (!adminApp) {
-          try {
-            adminApp = initializeApp({
-              projectId: process.env.FIREBASE_PROJECT_ID || 'mystic-now-482206-r1',
-            });
-          } catch (defaultErr) {
-            if (getApps().length > 0) {
-              adminApp = getApps()[0];
-            } else {
-              console.warn('Default initializeApp failed in connect-auth-phone:', defaultErr.message);
-            }
-          }
-        }
-      }
-    }
-
-    if (adminApp) {
-      if (!adminAuth && !customAuthInjected) {
-        try {
-          adminAuth = getAuth(adminApp);
-        } catch (e) {
-          console.warn('getAuth(adminApp) warning in connect-auth-phone:', e.message);
-          try {
-            adminAuth = getAuth();
-          } catch (_) {}
-        }
-      }
-      if (!adminFirestore && !customFirestoreInjected && hasServiceAccountCredentials) {
-        try {
-          adminFirestore = getFirestore(adminApp);
-          try {
-            adminFirestore.settings({ ignoreUndefinedProperties: true });
-          } catch (_) {}
-        } catch (e) {
-          console.warn('getFirestore warning in connect-auth-phone:', e.message);
-        }
-      }
-    }
-    adminInitialized = Boolean(adminApp && adminAuth);
-  } catch (e) {
-    console.warn('Firebase Admin init warning in connect-auth-phone:', e.message);
-  }
-
-  return { adminApp, adminAuth, adminFirestore };
-};
-
-// Auto-run init
-initFirebaseAdmin();
 
 // Read-only legacy fallback file for lazy migration
 const DB_FILE = path.join(__dirname, '_phone-users.json');
@@ -365,7 +238,8 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const { adminAuth: currentAuth, adminFirestore: currentDb } = initFirebaseAdmin();
+    const { adminAuth: currentAuth } = initFirebaseAdmin();
+    const currentDb = getDb();
 
     // Fail safely if Firestore is unavailable (no insecure local fallback writes)
     if (!currentDb) {
@@ -496,7 +370,7 @@ exports.handler = async (event, context) => {
 
         // Generate Firebase Custom Token (optional enhancement)
         let customToken = null;
-        if (currentAuth) {
+        if (hasServiceAccountCredentials && currentAuth) {
           try {
             customToken = await currentAuth.createCustomToken(uid, {
               phone_number: normalizedPhone,
@@ -632,7 +506,7 @@ exports.handler = async (event, context) => {
 
         // Generate Firebase Custom Token (optional enhancement)
         let customToken = null;
-        if (currentAuth) {
+        if (hasServiceAccountCredentials && currentAuth) {
           try {
             customToken = await currentAuth.createCustomToken(userRecord.uid, {
               phone_number: normalizedPhone,
