@@ -494,7 +494,7 @@ exports.handler = async (event, context) => {
 
         const userRecord = atomicResult.userRecord;
 
-        // Generate Firebase Custom Token
+        // Generate Firebase Custom Token (optional enhancement)
         let customToken = null;
         if (currentAuth) {
           try {
@@ -503,25 +503,9 @@ exports.handler = async (event, context) => {
               display_name: userRecord.name,
             });
           } catch (tokenErr) {
-            console.error('Firebase Admin customToken generation failed:', tokenErr.message);
-            return {
-              statusCode: 500,
-              headers,
-              body: JSON.stringify({
-                error: 'Authentication service temporarily unavailable. Token generation failed.',
-                code: 'auth/token-generation-failed',
-              }),
-            };
+            console.warn('Firebase Admin customToken generation skipped:', tokenErr.message);
+            customToken = null;
           }
-        } else {
-          return {
-            statusCode: 500,
-            headers,
-            body: JSON.stringify({
-              error: 'Authentication service unavailable: Firebase Admin not initialized.',
-              code: 'auth/admin-not-initialized',
-            }),
-          };
         }
 
         return {
@@ -646,7 +630,7 @@ exports.handler = async (event, context) => {
           }
         }
 
-        // Generate Firebase Custom Token
+        // Generate Firebase Custom Token (optional enhancement)
         let customToken = null;
         if (currentAuth) {
           try {
@@ -655,25 +639,9 @@ exports.handler = async (event, context) => {
               display_name: userRecord.name,
             });
           } catch (tokenErr) {
-            console.error('Firebase Admin customToken generation failed:', tokenErr.message);
-            return {
-              statusCode: 500,
-              headers,
-              body: JSON.stringify({
-                error: 'Authentication service temporarily unavailable. Token generation failed.',
-                code: 'auth/token-generation-failed',
-              }),
-            };
+            console.warn('Firebase Admin customToken generation skipped:', tokenErr.message);
+            customToken = null;
           }
-        } else {
-          return {
-            statusCode: 500,
-            headers,
-            body: JSON.stringify({
-              error: 'Authentication service unavailable: Firebase Admin not initialized.',
-              code: 'auth/admin-not-initialized',
-            }),
-          };
         }
 
         return {

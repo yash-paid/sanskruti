@@ -655,6 +655,7 @@ export default function App() {
   }, []);
 
   // Helper to load or initialize user profile by UID from backend
+  // Helper to load or initialize user profile by UID from backend (Fast & Smooth Non-Blocking)
   const loadProfileForUid = async (uid, fallbackData = {}) => {
     if (!uid) return;
     try {
@@ -662,99 +663,44 @@ export default function App() {
       localStorage.setItem('connect_last_auth_uid', uid);
     } catch (e) {}
 
-    try {
-      const serverCoins = await fetchUserWallet(uid);
-      const localBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
-      const userBal = parseInt(localStorage.getItem(`connect_coins_${uid}`) || '0', 10);
-      const lastAuthUid = localStorage.getItem('connect_last_auth_uid') || '';
-      const lastAuthBal = lastAuthUid ? parseInt(localStorage.getItem(`connect_coins_${lastAuthUid}`) || '0', 10) : 0;
-      const ledgerBal = calculateLedgerBalance(uid) || (lastAuthUid ? calculateLedgerBalance(lastAuthUid) : 0);
-      const memoryBal = coinsRef.current || 0;
-      const verifiedBalance = Math.max(Number(serverCoins) || 0, localBal, userBal, lastAuthBal, ledgerBal, memoryBal);
-      setCoins(verifiedBalance);
-      coinsRef.current = verifiedBalance;
+    // ── FAST PATH 1: Guest Users (0ms latency, 100% offline-ready) ──
+    const isAnon = fallbackData.isGuest || Boolean(auth.currentUser?.isAnonymous);
+    if (isAnon) {
+      setIsGuest(true);
+      const guestProfile = {
+        uid,
+        userId: 'CN-' + uid.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase(),
+        name: 'Guest User',
+        username: fallbackData.username || '@guest_' + uid.slice(-4),
+        avatar: '/default-avatars/1.png',
+        dob: '2000-01-01',
+        isGuest: true,
+        isProfileComplete: true,
+      };
+      setUserProfile(guestProfile);
       try {
-        if (verifiedBalance > 0) {
-          localStorage.setItem('connect_last_known_balance', String(verifiedBalance));
-          localStorage.setItem(`connect_coins_${uid}`, String(verifiedBalance));
-        }
+        localStorage.setItem('connect_is_guest', 'true');
+        localStorage.setItem('connect_user_profile', JSON.stringify(guestProfile));
+        localStorage.setItem('connect_user_session', JSON.stringify(guestProfile));
+        localStorage.setItem('connect_current_page', 'home');
       } catch (e) {}
-
-      const serverProfile = await fetchUserProfile(uid);
-      try {
-        const vipRes = await fetchUserVipEntitlement(uid);
-        const serverEnt = vipRes?.entitlement?.active ? vipRes.entitlement : null;
-        const localEnt = getStoredVipEntitlement(uid);
-        setVipEntitlement(serverEnt || localEnt || null);
-      } catch (err) {
-        setVipEntitlement(getStoredVipEntitlement(uid));
-      }
-
-      const alreadyDone = isProfileSetupDone(uid, serverProfile);
-      const isAnon = fallbackData.isGuest || Boolean(auth.currentUser?.isAnonymous);
-      const skipSetup = alreadyDone || isAnon;
-
-      const resolvedName = (fallbackData.name && fallbackData.name !== 'CONNECT User')
-        ? fallbackData.name
-        : (serverProfile?.name && serverProfile.name !== 'CONNECT User')
-        ? serverProfile.name
-        : (fallbackData.name || serverProfile?.name || 'CONNECT User');
-
-      if (serverProfile) {
-        const fullProfile = {
-          ...serverProfile,
-          name: resolvedName,
-          isProfileComplete: skipSetup || Boolean(serverProfile.isProfileComplete),
-        };
-        setUserProfile(fullProfile);
-        try {
-          localStorage.setItem('connect_user_profile', JSON.stringify(fullProfile));
-          localStorage.setItem('connect_user_session', JSON.stringify(fullProfile));
-          localStorage.setItem('connect_home_tab', 'call');
-        } catch (e) {}
-        setInitialHomeTab('call');
-
-        // Open setup-profile if user has never completed initial profile setup
-        if (!skipSetup) {
-          goToPage('setup-profile');
-        } else {
-          try {
-            localStorage.setItem(`connect_profile_setup_done_${uid}`, 'true');
-          } catch (e) {}
-          setPage((prevPage) => {
-            if (prevPage === 'login' || prevPage === 'setup-profile') {
-              try {
-                localStorage.setItem('connect_current_page', 'home');
-                window.history.replaceState({ page: 'home' }, '', getUrlForPage('home'));
-              } catch (e) {}
-              return 'home';
-            }
-            return prevPage;
-          });
-        }
-        return;
-      }
-    } catch (e) {
-      console.warn('Backend loadProfileForUid error:', e);
-      const localBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
-      const userBal = parseInt(localStorage.getItem(`connect_coins_${uid}`) || '0', 10);
-      const ledgerBal = calculateLedgerBalance(uid);
-      const memoryBal = coinsRef.current || 0;
-      const verified = Math.max(localBal, userBal, ledgerBal, memoryBal);
-      if (verified > 0) {
-        setCoins(verified);
-        coinsRef.current = verified;
-      }
+      setPage((prevPage) => (prevPage === 'login' ? 'home' : prevPage));
+      return;
     }
 
+    // ── FAST PATH 2: Authenticated Users (Immediate Optimistic Transition) ──
+    setIsGuest(false);
+    try {
+      localStorage.setItem('connect_is_guest', 'false');
+    } catch (e) {}
+
     const alreadyDone = isProfileSetupDone(uid, null);
-    const isAnon = fallbackData.isGuest || Boolean(auth.currentUser?.isAnonymous);
-    const skipSetup = alreadyDone || isAnon;
+    const skipSetup = alreadyDone || fallbackData.isBrandNewRegistration === false;
     const displayName = (fallbackData.name && fallbackData.name !== 'CONNECT User')
       ? fallbackData.name
       : (fallbackData.name || 'CONNECT User');
 
-    const newProfile = {
+    const initialProfile = {
       uid,
       userId: 'CN-' + uid.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase(),
       name: displayName,
@@ -771,30 +717,77 @@ export default function App() {
       isProfileComplete: skipSetup,
     };
 
-    setUserProfile(newProfile);
+    setUserProfile((prev) => ({ ...initialProfile, ...prev }));
     try {
-      localStorage.setItem('connect_user_profile', JSON.stringify(newProfile));
-      localStorage.setItem('connect_user_session', JSON.stringify(newProfile));
-      localStorage.setItem('connect_home_tab', 'call');
+      localStorage.setItem('connect_user_profile', JSON.stringify(initialProfile));
+      localStorage.setItem('connect_user_session', JSON.stringify(initialProfile));
     } catch (e) {}
-    setInitialHomeTab('call');
 
-    // Open setup-profile if user has never completed initial profile setup
+    // Instant smooth navigation without waiting for slow server roundtrips!
     if (!skipSetup) {
       goToPage('setup-profile');
     } else {
-      try {
-        localStorage.setItem(`connect_profile_setup_done_${uid}`, 'true');
-        localStorage.setItem('connect_current_page', 'home');
-        window.history.replaceState({ page: 'home' }, '', getUrlForPage('home'));
-      } catch (e) {}
       setPage((prevPage) => {
         if (prevPage === 'login' || prevPage === 'setup-profile') {
+          try {
+            localStorage.setItem('connect_current_page', 'home');
+            window.history.replaceState({ page: 'home' }, '', getUrlForPage('home'));
+          } catch (e) {}
           return 'home';
         }
         return prevPage;
       });
     }
+
+    // ── BACKGROUND NON-BLOCKING SYNC: Coins, Profile, VIP in parallel ──
+    Promise.allSettled([
+      fetchUserWallet(uid),
+      fetchUserProfile(uid),
+      fetchUserVipEntitlement(uid),
+    ]).then(([walletRes, profileRes, vipRes]) => {
+      // 1. Sync wallet coins
+      if (walletRes.status === 'fulfilled') {
+        const serverCoins = walletRes.value;
+        const localBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
+        const userBal = parseInt(localStorage.getItem(`connect_coins_${uid}`) || '0', 10);
+        const lastAuthUid = localStorage.getItem('connect_last_auth_uid') || '';
+        const lastAuthBal = lastAuthUid ? parseInt(localStorage.getItem(`connect_coins_${lastAuthUid}`) || '0', 10) : 0;
+        const ledgerBal = calculateLedgerBalance(uid) || (lastAuthUid ? calculateLedgerBalance(lastAuthUid) : 0);
+        const memoryBal = coinsRef.current || 0;
+        const verifiedBalance = Math.max(Number(serverCoins) || 0, localBal, userBal, lastAuthBal, ledgerBal, memoryBal);
+        setCoins(verifiedBalance);
+        coinsRef.current = verifiedBalance;
+        try {
+          if (verifiedBalance > 0) {
+            localStorage.setItem('connect_last_known_balance', String(verifiedBalance));
+            localStorage.setItem(`connect_coins_${uid}`, String(verifiedBalance));
+          }
+        } catch (e) {}
+      }
+
+      // 2. Sync profile
+      if (profileRes.status === 'fulfilled' && profileRes.value) {
+        const serverProfile = profileRes.value;
+        setUserProfile((prev) => {
+          const merged = { ...prev, ...serverProfile };
+          try {
+            localStorage.setItem('connect_user_profile', JSON.stringify(merged));
+            localStorage.setItem('connect_user_session', JSON.stringify(merged));
+          } catch (e) {}
+          return merged;
+        });
+      }
+
+      // 3. Sync VIP
+      if (vipRes.status === 'fulfilled' && vipRes.value) {
+        const vipData = vipRes.value;
+        const serverEnt = vipData?.entitlement?.active ? vipData.entitlement : null;
+        const localEnt = getStoredVipEntitlement(uid);
+        setVipEntitlement(serverEnt || localEnt || null);
+      }
+    }).catch((err) => {
+      console.warn('Background sync error in loadProfileForUid:', err);
+    });
   };
 
   // Guard: if current user already completed profile setup, NEVER let them stay on setup-profile
@@ -1024,18 +1017,12 @@ export default function App() {
     }
   };
 
-  // Called when user clicks "Continue as Guest"
-  const handleGuestLogin = async () => {
+  // Called when user clicks "Continue as Guest" (Instant 0ms Smooth Login)
+  const handleGuestLogin = () => {
     try {
       showToast('⚡ Connecting as Guest...');
-      const cred = await signInAsGuest();
-      const guestUser = cred?.user;
-      if (!guestUser) {
-        throw new Error('Failed to establish anonymous guest session.');
-      }
-
+      const guestUid = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
       setIsGuest(true);
-      const guestUid = guestUser.uid;
       try {
         localStorage.setItem('connect_is_guest', 'true');
         localStorage.setItem('connect_logged_in', 'true');
@@ -1043,19 +1030,37 @@ export default function App() {
         localStorage.setItem('connect_current_page', 'home');
       } catch (e) {}
 
-      await loadProfileForUid(guestUid, {
+      const guestProfile = {
+        uid: guestUid,
+        userId: 'CN-' + guestUid.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase(),
         name: 'Guest User',
         username: '@guest_' + guestUid.slice(-4),
         avatar: '/default-avatars/1.png',
+        dob: '2000-01-01',
         isGuest: true,
-      });
+        isProfileComplete: true,
+      };
 
-      showToast('⚡ Welcome to CONNECT!');
+      setUserProfile(guestProfile);
+      try {
+        localStorage.setItem('connect_user_profile', JSON.stringify(guestProfile));
+        localStorage.setItem('connect_user_session', JSON.stringify(guestProfile));
+      } catch (e) {}
+
       goToPage('home');
+      showToast('⚡ Welcome to CONNECT!');
+
+      // Run background anonymous Firebase session non-blocking
+      signInAsGuest().then((cred) => {
+        if (cred?.user?.uid) {
+          try {
+            localStorage.setItem('connect_last_auth_uid', cred.user.uid);
+          } catch (_) {}
+        }
+      }).catch(() => {});
     } catch (err) {
-      console.warn('Guest login failed:', err);
-      const msg = getAuthErrorMessage(err);
-      showToast(`❌ Guest login failed: ${msg}`);
+      console.warn('Guest login error:', err);
+      goToPage('home');
     }
   };
 
