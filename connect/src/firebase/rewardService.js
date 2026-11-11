@@ -144,6 +144,7 @@ export const claimDailyReward = async (uid) => {
         );
         if (typeof res.newBalance === 'number') {
           localStorage.setItem('connect_last_known_balance', String(res.newBalance));
+          localStorage.setItem(`connect_coins_${uid}`, String(res.newBalance));
         }
       } catch (_) {}
 
@@ -212,6 +213,7 @@ export const claimDailyReward = async (uid) => {
         })
       );
       localStorage.setItem('connect_last_known_balance', String(newBalance));
+      localStorage.setItem(`connect_coins_${uid}`, String(newBalance));
     } catch (_) {}
 
     recordLocalTransaction(uid, {
@@ -251,6 +253,7 @@ export const claimVipDailyBonus = async (uid) => {
         localStorage.setItem(`connect_vip_claimed_${today}_${uid}`, 'true');
         if (typeof res.newBalance === 'number') {
           localStorage.setItem('connect_last_known_balance', String(res.newBalance));
+          localStorage.setItem(`connect_coins_${uid}`, String(res.newBalance));
         } else {
           const lastBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
           localStorage.setItem('connect_last_known_balance', String(lastBal + res.bonusAmount));
@@ -276,6 +279,7 @@ export const claimVipDailyBonus = async (uid) => {
       const lastBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
       const newBal = lastBal + bonus;
       localStorage.setItem('connect_last_known_balance', String(newBal));
+      localStorage.setItem(`connect_coins_${uid}`, String(newBal));
       recordLocalTransaction(uid, {
         type: 'vip_bonus',
         title: `VIP Daily Bonus (${vip.planName || 'VIP'})`,

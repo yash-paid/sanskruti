@@ -306,12 +306,17 @@ export default function App() {
             const localBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
             const userBal = parseInt(localStorage.getItem(`connect_coins_${currentUid}`) || '0', 10);
             const ledgerBal = calculateLedgerBalance(currentUid);
-            const verifiedBalance = Math.max(Number(balance) || 0, localBal, userBal, ledgerBal);
+            const lastAuthUid = localStorage.getItem('connect_last_auth_uid') || '';
+            const lastAuthBal = lastAuthUid ? parseInt(localStorage.getItem(`connect_coins_${lastAuthUid}`) || '0', 10) : 0;
+            const memoryBal = coinsRef.current || 0;
+            const verifiedBalance = Math.max(Number(balance) || 0, localBal, userBal, lastAuthBal, ledgerBal, memoryBal);
             setCoins(verifiedBalance);
             coinsRef.current = verifiedBalance;
             try {
-              localStorage.setItem('connect_last_known_balance', String(verifiedBalance));
-              localStorage.setItem(`connect_coins_${currentUid}`, String(verifiedBalance));
+              if (verifiedBalance > 0) {
+                localStorage.setItem('connect_last_known_balance', String(verifiedBalance));
+                localStorage.setItem(`connect_coins_${currentUid}`, String(verifiedBalance));
+              }
             } catch (e) {}
 
             // If local balance was ahead of server (e.g. fresh recharge before cold server sync), sync to server
@@ -332,7 +337,8 @@ export default function App() {
             const localBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
             const userBal = parseInt(localStorage.getItem(`connect_coins_${currentUid}`) || '0', 10);
             const ledgerBal = calculateLedgerBalance(currentUid);
-            const verified = Math.max(localBal, userBal, ledgerBal);
+            const memoryBal = coinsRef.current || 0;
+            const verified = Math.max(localBal, userBal, ledgerBal, memoryBal);
             if (verified > 0) {
               setCoins(verified);
               coinsRef.current = verified;
@@ -394,6 +400,12 @@ export default function App() {
     const nextLocal = Math.max(0, previousBalance - amount);
     coinsRef.current = nextLocal;
     setCoins(nextLocal);
+    try {
+      localStorage.setItem('connect_last_known_balance', String(nextLocal));
+      if (currentUid) {
+        localStorage.setItem(`connect_coins_${currentUid}`, String(nextLocal));
+      }
+    } catch (e) {}
 
     if (currentUid) {
       const txnId = metadata.id || `TXN-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -652,8 +664,21 @@ export default function App() {
 
     try {
       const serverCoins = await fetchUserWallet(uid);
-      setCoins(serverCoins);
-      coinsRef.current = serverCoins;
+      const localBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
+      const userBal = parseInt(localStorage.getItem(`connect_coins_${uid}`) || '0', 10);
+      const lastAuthUid = localStorage.getItem('connect_last_auth_uid') || '';
+      const lastAuthBal = lastAuthUid ? parseInt(localStorage.getItem(`connect_coins_${lastAuthUid}`) || '0', 10) : 0;
+      const ledgerBal = calculateLedgerBalance(uid) || (lastAuthUid ? calculateLedgerBalance(lastAuthUid) : 0);
+      const memoryBal = coinsRef.current || 0;
+      const verifiedBalance = Math.max(Number(serverCoins) || 0, localBal, userBal, lastAuthBal, ledgerBal, memoryBal);
+      setCoins(verifiedBalance);
+      coinsRef.current = verifiedBalance;
+      try {
+        if (verifiedBalance > 0) {
+          localStorage.setItem('connect_last_known_balance', String(verifiedBalance));
+          localStorage.setItem(`connect_coins_${uid}`, String(verifiedBalance));
+        }
+      } catch (e) {}
 
       const serverProfile = await fetchUserProfile(uid);
       try {
@@ -711,6 +736,15 @@ export default function App() {
       }
     } catch (e) {
       console.warn('Backend loadProfileForUid error:', e);
+      const localBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
+      const userBal = parseInt(localStorage.getItem(`connect_coins_${uid}`) || '0', 10);
+      const ledgerBal = calculateLedgerBalance(uid);
+      const memoryBal = coinsRef.current || 0;
+      const verified = Math.max(localBal, userBal, ledgerBal, memoryBal);
+      if (verified > 0) {
+        setCoins(verified);
+        coinsRef.current = verified;
+      }
     }
 
     const alreadyDone = isProfileSetupDone(uid, null);
