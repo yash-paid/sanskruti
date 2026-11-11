@@ -165,6 +165,8 @@ export default function VideoCallScreen({
   const isDemoActiveRef = useRef(isDemo);
   const [showContinuePrompt, setShowContinuePrompt] = useState(false);
   const showContinuePromptRef = useRef(false);
+  const [isWaitingForRecharge, setIsWaitingForRecharge] = useState(false);
+  const isWaitingForRechargeRef = useRef(false);
 
   useEffect(() => {
     setIsDemoActive(isDemo);
@@ -406,8 +408,8 @@ export default function VideoCallScreen({
     if (callState === 'active') {
       durationTimerRef.current = setInterval(() => {
         setCallDuration((prev) => {
-          // If in low-balance grace countdown or showing continue prompt, hold duration
-          if (inGracePeriodRef.current || showContinuePromptRef.current) {
+          // If in low-balance grace countdown, showing continue prompt, or waiting for recharge, hold duration
+          if (inGracePeriodRef.current || showContinuePromptRef.current || isWaitingForRechargeRef.current) {
             return prev;
           }
 
@@ -427,10 +429,12 @@ export default function VideoCallScreen({
               } catch (_) {}
               return 10;
             } else {
-              // User does NOT have coins -> prompt for recharge with grace countdown!
-              inGracePeriodRef.current = true;
-              pendingMinuteRef.current = 1;
-              setGraceSecondsLeft(15);
+              // User does NOT have coins -> pause video & prompt for recharge immediately (no 15s extra time)
+              try {
+                expertVideoRef.current?.pause();
+              } catch (_) {}
+              isWaitingForRechargeRef.current = true;
+              setIsWaitingForRecharge(true);
               onToast?.(`⚠️ Free 10s preview ended! Please recharge to keep talking with ${expert?.name || 'Expert'}.`);
               if (onOpenRecharge) {
                 onOpenRecharge();
@@ -545,6 +549,32 @@ export default function VideoCallScreen({
     return () => clearTimeout(timer);
   }, [graceSecondsLeft, coins, callRate, callDuration, onDeductCoins, expert]);
 
+  // D. Resume call if user recharges while waiting for recharge at 10s preview end
+  useEffect(() => {
+    if (!isWaitingForRecharge) return;
+    const currentCoins = Number(coinsRef.current ?? coins) || 0;
+    const numericRate = Number(callRate) || 30;
+    if (currentCoins >= numericRate) {
+      isWaitingForRechargeRef.current = false;
+      setIsWaitingForRecharge(false);
+      setIsDemoActive(false);
+      isDemoActiveRef.current = false;
+      hasDeductedFirstMinuteRef.current = true;
+      try {
+        expertVideoRef.current?.play().catch(() => {});
+      } catch (_) {}
+      (async () => {
+        await onDeductCoins?.(numericRate, {
+          type: 'call',
+          title: `Call with ${expert?.name || 'Expert'} (Min 1)`,
+          expertId: expert?.id,
+          expertName: expert?.name,
+        });
+        onToast?.(`✅ Recharged! Continuing call with ${expert?.name || 'Expert'}.`);
+      })();
+    }
+  }, [coins, isWaitingForRecharge, callRate, onDeductCoins, expert]);
+
   /* ── Confirm or Decline Continuing Call with Coins ── */
   const handleConfirmContinueCall = async () => {
     const currentCoins = Number(coinsRef.current ?? coins) || 0;
@@ -553,9 +583,11 @@ export default function VideoCallScreen({
     if (currentCoins < numericRate) {
       showContinuePromptRef.current = false;
       setShowContinuePrompt(false);
-      inGracePeriodRef.current = true;
-      pendingMinuteRef.current = 1;
-      setGraceSecondsLeft(15);
+      try {
+        expertVideoRef.current?.pause();
+      } catch (_) {}
+      isWaitingForRechargeRef.current = true;
+      setIsWaitingForRecharge(true);
       onToast?.('⚠️ Insufficient coins! Please recharge to continue the call.');
       onOpenRecharge?.();
       return;
@@ -736,6 +768,8 @@ export default function VideoCallScreen({
     savePlaybackPosition();
     if (durationTimerRef.current) clearInterval(durationTimerRef.current);
     inGracePeriodRef.current = false;
+    isWaitingForRechargeRef.current = false;
+    setIsWaitingForRecharge(false);
     setGraceSecondsLeft(null);
     if (mediaStreamRef.current) {
       mediaStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -1046,7 +1080,6 @@ export default function VideoCallScreen({
             <div className="call-timer-badge">
               <span className="record-red-dot" />
               <span className="timer-text">{formatTime(callDuration)}</span>
-              {isDemoActive && <span className="free-preview-pill">10s Free</span>}
             </div>
 
             {/* Low Coin Warning or Grace Countdown Alert Banner - Prompts user to recharge without screen going black */}
