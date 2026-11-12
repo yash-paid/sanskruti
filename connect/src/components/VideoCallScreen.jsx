@@ -425,15 +425,15 @@ export default function VideoCallScreen({
 
             // Always STOP the video — call is CUT regardless of coins
             try { expertVideoRef.current?.pause(); } catch (_) {}
-            // Stop the interval so duration freezes at 10s
-            clearInterval(durationTimerRef.current);
 
             if (currentCoins >= numericRate) {
               // User HAS coins → cut call but show "Continue with Coins?" popup
+              // (Keep duration timer alive; line 415 holds duration at 10 while popup is open)
               showContinuePromptRef.current = true;
               setShowContinuePrompt(true);
             } else {
-              // User has NO coins → end call directly with a toast
+              // User has NO coins → clear interval & end call directly with a toast
+              if (durationTimerRef.current) clearInterval(durationTimerRef.current);
               onToast?.(`Free 10s preview ended! Add coins to call ${expert?.name || 'Expert'} again.`);
               setTimeout(() => {
                 onEndCall?.(0);
@@ -442,9 +442,9 @@ export default function VideoCallScreen({
             return 10;
           }
 
-          // Every 60 seconds of paid conversation, deduct coins for the next minute
-          if (!isDemoActiveRef.current && nextSec > 10 && (nextSec - 10) % 60 === 0) {
-            const nextMin = Math.floor((nextSec - 10) / 60) + 2;
+          // Every 60 seconds (at 60s, 120s, 180s, etc.), deduct coins for the next minute (Minute 2 at 1 min, Minute 3 at 2 min, etc.)
+          if (!isDemoActiveRef.current && nextSec > 0 && nextSec % 60 === 0) {
+            const nextMin = Math.floor(nextSec / 60) + 1;
             const numericCoins = Number(coinsRef.current ?? coins) || 0;
             const numericRate = Number(callRate) || 30;
 
@@ -601,12 +601,6 @@ export default function VideoCallScreen({
     try {
       expertVideoRef.current?.play().catch(() => {});
     } catch (_) {}
-
-    // Restart the duration timer (was cleared when call was cut at 10s)
-    clearInterval(durationTimerRef.current);
-    durationTimerRef.current = setInterval(() => {
-      setCallDuration((prev) => prev + 1);
-    }, 1000);
 
     // Deduct Minute 1 coins
     try {
