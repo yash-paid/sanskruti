@@ -142,10 +142,12 @@ export const claimDailyReward = async (uid) => {
             cycleCount: res.cycleCount || 0,
           })
         );
-        if (typeof res.newBalance === 'number') {
-          localStorage.setItem('connect_last_known_balance', String(res.newBalance));
-          localStorage.setItem(`connect_coins_${uid}`, String(res.newBalance));
-        }
+        // Update localStorage by ADDING awarded coins to current local balance
+        // (never blindly overwrite with server newBalance — server wallet.coins may be stale)
+        const localBal = parseInt(localStorage.getItem(`connect_coins_${uid}`) || localStorage.getItem('connect_last_known_balance') || '0', 10);
+        const safeNewBal = localBal + res.coinsAwarded;
+        localStorage.setItem('connect_last_known_balance', String(safeNewBal));
+        localStorage.setItem(`connect_coins_${uid}`, String(safeNewBal));
       } catch (_) {}
 
       recordLocalTransaction(uid, {
@@ -251,13 +253,11 @@ export const claimVipDailyBonus = async (uid) => {
       const today = getKolkataDateString();
       try {
         localStorage.setItem(`connect_vip_claimed_${today}_${uid}`, 'true');
-        if (typeof res.newBalance === 'number') {
-          localStorage.setItem('connect_last_known_balance', String(res.newBalance));
-          localStorage.setItem(`connect_coins_${uid}`, String(res.newBalance));
-        } else {
-          const lastBal = parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10);
-          localStorage.setItem('connect_last_known_balance', String(lastBal + res.bonusAmount));
-        }
+        // Update localStorage by ADDING bonus coins to current local balance
+        const localBal = parseInt(localStorage.getItem(`connect_coins_${uid}`) || localStorage.getItem('connect_last_known_balance') || '0', 10);
+        const safeNewBal = localBal + res.bonusAmount;
+        localStorage.setItem('connect_last_known_balance', String(safeNewBal));
+        localStorage.setItem(`connect_coins_${uid}`, String(safeNewBal));
       } catch (e) {}
       recordLocalTransaction(uid, {
         type: 'vip_bonus',

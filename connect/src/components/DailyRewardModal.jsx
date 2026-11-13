@@ -44,8 +44,9 @@ export default function DailyRewardModal({
       setClaimedReward(result);
       setShowCoinBurst(true);
 
-      // Notify parent to update wallet balance in app
-      onRewardClaimed?.(result.coinsAwarded, result.newBalance);
+      // Notify parent to ADD coins to current balance (never replace with server newBalance
+      // because server wallet.coins may be stale/0 and would override user's real balance)
+      onRewardClaimed?.(result.coinsAwarded, null);
       onToast?.(`🎉 Claimed Day ${result.dayNumber} Daily Reward! (+${result.coinsAwarded} Coins)`);
 
       // Refresh status to reflect claimed state
