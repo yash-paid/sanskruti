@@ -351,6 +351,12 @@
         return;
       }
 
+      // If a meeting order arrives at root payment-status.html, redirect directly to dedicated meeting status page
+      if (typeParam === 'meeting' || (txnid && txnid.startsWith('MT_'))) {
+        window.location.replace(`/meeting/payment-status.html${window.location.search}`);
+        return;
+      }
+
       // Handle Success
       if (statusParam === 'success') {
         card.className = 'status-card status-success';

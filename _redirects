@@ -68,6 +68,10 @@ https://connect.sanskrutiservice.in                   /connect/dist/index.html  
 /service/*                                /service-meet/:splat                      200!
 
 # 5. MEETING SPA ROUTES (physical assets in /meeting/ served directly by CDN)
+/meeting/payment-status.html              /meeting/payment-status.html              200!
+/meeting/payment-status                   /meeting/payment-status.html              200!
+/meeting/payment_status.html              /meeting/payment-status.html              200!
+/meeting/payment_status                   /meeting/payment-status.html              200!
 /meet                                     /meeting/                                 301
 /meet/                                    /meeting/                                 301
 /meet/*                                   /meeting/:splat                           301

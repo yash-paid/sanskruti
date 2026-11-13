@@ -81,7 +81,7 @@ exports.handler = async (event, context) => {
         return `${base}?status=${encodeURIComponent(status)}&txnid=${encodeURIComponent(txnid)}&msg=${encodeURIComponent(errorMsg)}`;
       }
     } else if (targetCategory === 'meeting') {
-      const base = `${config.siteUrl}/payment-status.html`;
+      const base = `${config.siteUrl}/meeting/payment-status.html`;
       return `${base}?status=${encodeURIComponent(status)}&type=meeting&txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}&amount=${encodeURIComponent(amount)}&mihpayid=${encodeURIComponent(mihpayid)}&msg=${encodeURIComponent(errorMsg)}`;
     } else if (targetCategory === 'connect') {
       const base = `${config.siteUrl}/connect/`;
