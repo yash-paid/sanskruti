@@ -34,7 +34,7 @@ const server = http.createServer((req, res) => {
     pathname = '/connect/index.html';
   } else if (pathname === '/meeting' || pathname === '/meeting/') {
     pathname = '/meeting/index.html';
-  } else if (pathname.startsWith('/meeting/profile/')) {
+  } else if (pathname.startsWith('/meeting/') && !path.extname(pathname)) {
     pathname = '/meeting/index.html';
   } else if (pathname === '/service' || pathname === '/service/') {
     pathname = '/service-meet/index.html';
