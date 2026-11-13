@@ -76,6 +76,7 @@ https://connect.sanskrutiservice.in                   /connect/dist/index.html  
 /meeting/location                         /meeting/index.html                       200
 /meeting/profiles                         /meeting/index.html                       200
 /meeting/profile/*                        /meeting/index.html                       200
+/meeting/*                                /meeting/index.html                       200
 
 # 6. WA.VC PAGES (explicit - no broad wildcard)
 /wa.vc/                                   /wa-vc/index.html                         200!
