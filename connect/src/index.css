@@ -4082,39 +4082,52 @@ html, body {
   font-weight: 700;
 }
 
-/* Call Timer Badge */
+/* Active In-Call Status Badge (Real Calling App Style) */
 .call-timer-badge {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(12, 18, 30, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 9999px;
-  padding: 4px 10px;
-  backdrop-filter: blur(8px);
+  padding: 4px 11px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   margin-top: 4px;
+  user-select: none;
 }
 
-.record-red-dot {
-  width: 8px;
-  height: 8px;
+.call-live-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: #ef4444;
-  box-shadow: 0 0 6px #ef4444;
-  animation: recBlink 1.2s infinite;
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34, 197, 94, 0.85);
+  animation: callLivePulse 2s infinite ease-in-out;
+  flex-shrink: 0;
 }
 
-@keyframes recBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.2; }
+@keyframes callLivePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.7);
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0.7;
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.95);
+  }
 }
 
 .timer-text {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 700;
   color: #ffffff;
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
+  line-height: 1;
 }
 
 /* User Camera PiP (Picture-in-Picture) */

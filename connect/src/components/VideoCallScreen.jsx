@@ -6,6 +6,7 @@ import {
   RefreshCw,
   Mic,
   MicOff,
+  Phone,
   PhoneOff,
   Volume2,
   VolumeX,
@@ -1075,9 +1076,10 @@ export default function VideoCallScreen({
               </div>
             </div>
 
-            {/* Top Center: Timer badge with red record dot */}
+            {/* Top Center: Active In-Call Status & Duration Badge */}
             <div className="call-timer-badge">
-              <span className="record-red-dot" />
+              <span className="call-live-dot" />
+              <Phone size={11} fill="#22c55e" color="#22c55e" strokeWidth={0} />
               <span className="timer-text">{formatTime(callDuration)}</span>
             </div>
 
