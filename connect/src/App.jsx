@@ -1214,8 +1214,8 @@ export default function App() {
             'pack-19': 50,
             'connect-pack-49': 160,
             'pack-49': 160,
-            'connect-pack-99': 440,
-            'pack-99': 440,
+            'connect-pack-99': 400,
+            'pack-99': 400,
             'connect-pack-149': 880,
             'pack-149': 880,
             'connect-pack-199': 1250,
@@ -1244,7 +1244,7 @@ export default function App() {
             if (!coinsToAdd) {
               if (urlAmount === 19) coinsToAdd = 50;
               else if (urlAmount === 49) coinsToAdd = 160;
-              else if (urlAmount === 99) coinsToAdd = 440;
+              else if (urlAmount === 99) coinsToAdd = 400;
               else if (urlAmount === 149) coinsToAdd = 880;
               else if (urlAmount === 199) coinsToAdd = 1250;
               else if (urlAmount === 499) coinsToAdd = 2400;

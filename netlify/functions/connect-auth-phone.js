@@ -18,6 +18,11 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 const { getDb, initFirebaseAdmin } = require('./_connect-db');
 
+let customFirestore = null;
+let customFirestoreInjected = false;
+let customAuth = null;
+let customAuthInjected = false;
+
 const hasServiceAccountCredentials = Boolean(
   process.env.FIREBASE_SERVICE_ACCOUNT_KEY ||
   (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL)
@@ -238,8 +243,9 @@ exports.handler = async (event, context) => {
       };
     }
 
-    const { adminAuth: currentAuth } = initFirebaseAdmin();
-    const currentDb = getDb();
+    const { adminAuth: defaultAuth } = initFirebaseAdmin();
+    const currentAuth = customAuthInjected ? customAuth : defaultAuth;
+    const currentDb = customFirestoreInjected ? customFirestore : getDb();
 
     // Fail safely if Firestore is unavailable (no insecure local fallback writes)
     if (!currentDb) {
@@ -558,11 +564,19 @@ exports.handler = async (event, context) => {
 
 // Test helper hooks for injecting mocks during offline automated testing
 exports._setFirestoreDb = (customDb) => {
-  adminFirestore = customDb;
+  customFirestore = customDb;
   customFirestoreInjected = true;
+  try {
+    const { _setFirestoreDb: setDb } = require('./_connect-db');
+    if (typeof setDb === 'function') setDb(customDb);
+  } catch (_) {}
 };
 
-exports._setAdminAuth = (customAuth) => {
-  adminAuth = customAuth;
+exports._setAdminAuth = (customAuthObj) => {
+  customAuth = customAuthObj;
   customAuthInjected = true;
+  try {
+    const { _setAdminAuth: setAuth } = require('./_connect-db');
+    if (typeof setAuth === 'function') setAuth(customAuthObj);
+  } catch (_) {}
 };
