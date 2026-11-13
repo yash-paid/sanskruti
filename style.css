@@ -2,7 +2,7 @@
    SANSKRUTI eBOOKS - LUXURY DIGITAL BOOKSTORE DESIGN SYSTEM
    ========================================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap');
+/* Fonts loaded via index.html link tags to eliminate render-blocking @import request chains */
 
 :root {
   /* Surface & Base Colors */
@@ -64,13 +64,26 @@
 }
 
 /* ==================== GLOBAL BASE ==================== */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family: var(--font-main);
-  scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
+}
+
+button,
+a,
+input,
+select,
+textarea,
+[role="button"] {
+  touch-action: manipulation;
 }
 
 body {
@@ -782,11 +795,13 @@ header {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: all 0.35s cubic-bezier(0.165, 0.84, 0.44, 1);
+  transition: transform 0.28s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.28s cubic-bezier(0.165, 0.84, 0.44, 1), border-color 0.28s ease;
   position: relative;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   box-shadow: var(--shadow-sm);
+  content-visibility: auto;
+  contain-intrinsic-size: auto 480px;
 }
 
 .book-card:hover {

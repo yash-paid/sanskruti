@@ -5,19 +5,57 @@
       "userId": "CN-7VWFX1",
       "name": "CONNECT User",
       "username": "@user_wfx1",
-      "email": "",
+      "email": "ytyash307@gmail.com",
       "phone": "",
       "avatar": "/default-avatars/1.png",
       "dob": "2000-01-01",
       "isProfileComplete": false,
       "createdAt": "2026-11-10T10:59:58.810Z",
-      "updatedAt": "2026-11-10T11:19:39.814Z"
+      "updatedAt": "2026-11-13T10:12:08.927Z"
     },
     "wallet": {
-      "coins": 60,
-      "updatedAt": "2026-11-10T13:00:00.000Z"
+      "coins": 5,
+      "updatedAt": "2026-11-13T10:12:13.434Z"
     },
+    "favourites": [],
+    "purchasedPacks": [],
     "ledger": [
+      {
+        "id": "TXN-MWETIAD6-2564",
+        "uid": "hWU2juol39SBwXfAuQuDNy7vwfx1",
+        "type": "call",
+        "title": "Call with Uma (Min 1)",
+        "description": "Call with Uma (Min 1)",
+        "coins": 65,
+        "amount": 65,
+        "isCredit": false,
+        "balanceAfter": 5,
+        "status": "Completed",
+        "date": "13 Nov 2026, 03:42 pm",
+        "timestamp": "2026-11-13T10:12:13.434Z",
+        "idempotencyKey": "TXN-MWETIAD6-2564",
+        "metadata": {
+          "type": "call",
+          "title": "Call with Uma (Min 1)",
+          "expertId": "uma",
+          "expertName": "Uma",
+          "txnId": "TXN-MWETIAD3-2886"
+        }
+      },
+      {
+        "id": "TXN-RWD-20261113-3895",
+        "uid": "hWU2juol39SBwXfAuQuDNy7vwfx1",
+        "type": "daily_reward",
+        "title": "Daily Login Reward - Day 1",
+        "description": "Daily Login Reward - Day 1",
+        "coins": 10,
+        "amount": 10,
+        "isCredit": true,
+        "balanceAfter": 70,
+        "status": "Completed",
+        "date": "13 Nov 2026, 03:42 pm",
+        "timestamp": "2026-11-13T10:12:08.919Z"
+      },
       {
         "id": "TXN-PURCHASE-19",
         "type": "purchase",
@@ -44,10 +82,10 @@
     "daily_rewards": {
       "state": {
         "currentStreak": 1,
-        "lastClaimDate": "2026-11-10",
-        "cycleCount": 0,
+        "lastClaimDate": "2026-11-13",
         "lastAwardedCoins": 10,
-        "updatedAt": "2026-11-10T10:59:58.811Z"
+        "cycleCount": 0,
+        "updatedAt": "2026-11-13T10:12:08.918Z"
       },
       "claims": {
         "2026-11-10": {
@@ -55,6 +93,13 @@
           "dayNumber": 1,
           "coinsAwarded": 10,
           "claimedAt": "2026-11-10T10:59:58.811Z",
+          "type": "daily_login"
+        },
+        "2026-11-13": {
+          "date": "2026-11-13",
+          "dayNumber": 1,
+          "coinsAwarded": 10,
+          "claimedAt": "2026-11-13T10:12:08.918Z",
           "type": "daily_login"
         }
       }
@@ -72,6 +117,17 @@
       "claims": {}
     },
     "calls": [
+      {
+        "id": "CALL-MWETIBW5",
+        "name": "Uma",
+        "type": "Video",
+        "duration": "1s",
+        "durationSeconds": 1,
+        "coins": 65,
+        "time": "13 Nov 2026, 03:42 pm",
+        "timestamp": "2026-11-13T10:12:15.414Z",
+        "status": "Completed"
+      },
       {
         "id": "CALL-MWALOP1G",
         "name": "Uma",
@@ -105,7 +161,9 @@
         "date": "10 Nov 2026, 06:30 pm",
         "timestamp": "2026-11-10T13:00:00.000Z"
       }
-    ]
+    ],
+    "createdAt": "2026-11-13T10:12:08.927Z",
+    "updatedAt": "2026-11-13T10:12:15.414Z"
   },
   "user_A_id_123": {
     "profile": {
@@ -151,5 +209,211 @@
     },
     "calls": [],
     "payments": []
+  },
+  "users": {
+    "hWU2juol39SBwXfAuQuDNy7vwfx1": {
+      "profile": {
+        "uid": "hWU2juol39SBwXfAuQuDNy7vwfx1",
+        "userId": "CN-7VWFX1",
+        "name": "CONNECT User",
+        "username": "@user_wfx1",
+        "email": "ytyash307@gmail.com",
+        "phone": "",
+        "avatar": "/default-avatars/1.png",
+        "dob": "2000-01-01",
+        "isProfileComplete": false,
+        "createdAt": "2026-11-10T10:59:58.810Z",
+        "updatedAt": "2026-11-13T10:12:08.927Z"
+      },
+      "wallet": {
+        "coins": 5,
+        "updatedAt": "2026-11-13T10:12:13.434Z"
+      },
+      "favourites": [],
+      "purchasedPacks": [],
+      "ledger": [
+        {
+          "id": "TXN-MWETIAD6-2564",
+          "uid": "hWU2juol39SBwXfAuQuDNy7vwfx1",
+          "type": "call",
+          "title": "Call with Uma (Min 1)",
+          "description": "Call with Uma (Min 1)",
+          "coins": 65,
+          "amount": 65,
+          "isCredit": false,
+          "balanceAfter": 5,
+          "status": "Completed",
+          "date": "13 Nov 2026, 03:42 pm",
+          "timestamp": "2026-11-13T10:12:13.434Z",
+          "idempotencyKey": "TXN-MWETIAD6-2564",
+          "metadata": {
+            "type": "call",
+            "title": "Call with Uma (Min 1)",
+            "expertId": "uma",
+            "expertName": "Uma",
+            "txnId": "TXN-MWETIAD3-2886"
+          }
+        },
+        {
+          "id": "TXN-RWD-20261113-3895",
+          "uid": "hWU2juol39SBwXfAuQuDNy7vwfx1",
+          "type": "daily_reward",
+          "title": "Daily Login Reward - Day 1",
+          "description": "Daily Login Reward - Day 1",
+          "coins": 10,
+          "amount": 10,
+          "isCredit": true,
+          "balanceAfter": 70,
+          "status": "Completed",
+          "date": "13 Nov 2026, 03:42 pm",
+          "timestamp": "2026-11-13T10:12:08.919Z"
+        },
+        {
+          "id": "TXN-PURCHASE-19",
+          "type": "purchase",
+          "title": "Coins Recharged - 50 Coins (₹19 Pack)",
+          "coins": 50,
+          "isCredit": true,
+          "balanceAfter": 60,
+          "status": "Completed",
+          "date": "10 Nov 2026, 06:30 pm",
+          "timestamp": "2026-11-10T13:00:00.000Z"
+        },
+        {
+          "id": "TXN-RWD-20261110-6873",
+          "type": "daily_reward",
+          "title": "Daily Login Reward - Day 1",
+          "coins": 10,
+          "isCredit": true,
+          "balanceAfter": 10,
+          "status": "Completed",
+          "date": "10 Nov 2026, 04:29 pm",
+          "timestamp": "2026-11-10T10:59:58.811Z"
+        }
+      ],
+      "daily_rewards": {
+        "state": {
+          "currentStreak": 1,
+          "lastClaimDate": "2026-11-13",
+          "lastAwardedCoins": 10,
+          "cycleCount": 0,
+          "updatedAt": "2026-11-13T10:12:08.918Z"
+        },
+        "claims": {
+          "2026-11-10": {
+            "date": "2026-11-10",
+            "dayNumber": 1,
+            "coinsAwarded": 10,
+            "claimedAt": "2026-11-10T10:59:58.811Z",
+            "type": "daily_login"
+          },
+          "2026-11-13": {
+            "date": "2026-11-13",
+            "dayNumber": 1,
+            "coinsAwarded": 10,
+            "claimedAt": "2026-11-13T10:12:08.918Z",
+            "type": "daily_login"
+          }
+        }
+      },
+      "vip": {
+        "entitlement": {
+          "planId": null,
+          "planName": null,
+          "status": "none",
+          "active": false,
+          "dailyBonusCoins": 0,
+          "expiryDate": null,
+          "activatedAt": null
+        },
+        "claims": {}
+      },
+      "calls": [
+        {
+          "id": "CALL-MWETIBW5",
+          "name": "Uma",
+          "type": "Video",
+          "duration": "1s",
+          "durationSeconds": 1,
+          "coins": 65,
+          "time": "13 Nov 2026, 03:42 pm",
+          "timestamp": "2026-11-13T10:12:15.414Z",
+          "status": "Completed"
+        },
+        {
+          "id": "CALL-MWALOP1G",
+          "name": "Uma",
+          "type": "Video",
+          "duration": "11s",
+          "durationSeconds": 11,
+          "coins": 65,
+          "time": "10 Nov 2026, 04:52 pm",
+          "timestamp": "2026-11-10T11:22:10.757Z",
+          "status": "Completed"
+        },
+        {
+          "id": "CALL-MWALOEFC",
+          "name": "Simran",
+          "type": "Video",
+          "duration": "2s",
+          "durationSeconds": 2,
+          "coins": 65,
+          "time": "10 Nov 2026, 04:51 pm",
+          "timestamp": "2026-11-10T11:21:57.001Z",
+          "status": "Completed"
+        }
+      ],
+      "payments": [
+        {
+          "id": "PAY-PACK-19",
+          "packId": "pack-19",
+          "amount": 19,
+          "coins": 50,
+          "status": "success",
+          "date": "10 Nov 2026, 06:30 pm",
+          "timestamp": "2026-11-10T13:00:00.000Z"
+        }
+      ],
+      "createdAt": "2026-11-13T10:12:08.927Z",
+      "updatedAt": "2026-11-13T10:12:15.414Z"
+    }
+  },
+  "users/hWU2juol39SBwXfAuQuDNy7vwfx1/ledger": {
+    "TXN-RWD-20261113-3895": {
+      "id": "TXN-RWD-20261113-3895",
+      "uid": "hWU2juol39SBwXfAuQuDNy7vwfx1",
+      "type": "daily_reward",
+      "title": "Daily Login Reward - Day 1",
+      "description": "Daily Login Reward - Day 1",
+      "coins": 10,
+      "amount": 10,
+      "isCredit": true,
+      "balanceAfter": 70,
+      "status": "Completed",
+      "date": "13 Nov 2026, 03:42 pm",
+      "timestamp": "2026-11-13T10:12:08.919Z"
+    },
+    "TXN-MWETIAD6-2564": {
+      "id": "TXN-MWETIAD6-2564",
+      "uid": "hWU2juol39SBwXfAuQuDNy7vwfx1",
+      "type": "call",
+      "title": "Call with Uma (Min 1)",
+      "description": "Call with Uma (Min 1)",
+      "coins": 65,
+      "amount": 65,
+      "isCredit": false,
+      "balanceAfter": 5,
+      "status": "Completed",
+      "date": "13 Nov 2026, 03:42 pm",
+      "timestamp": "2026-11-13T10:12:13.434Z",
+      "idempotencyKey": "TXN-MWETIAD6-2564",
+      "metadata": {
+        "type": "call",
+        "title": "Call with Uma (Min 1)",
+        "expertId": "uma",
+        "expertName": "Uma",
+        "txnId": "TXN-MWETIAD3-2886"
+      }
+    }
   }
 }

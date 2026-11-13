@@ -41,9 +41,10 @@ function StatusDot({ status }) {
   );
 }
 
-/* ─── Safe Expert Image with Graceful Initial Placeholder ──── */
+/* ─── Safe Expert Image with Graceful Initial Placeholder & Off-thread Lazy Decode ──── */
 function ExpertImage({ src, alt, name, className }) {
   const [hasError, setHasError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   if (hasError || !src) {
     return (
@@ -57,8 +58,11 @@ function ExpertImage({ src, alt, name, className }) {
     <img
       src={src}
       alt={alt || name}
-      className={className}
+      className={`${className} ${isLoaded ? 'img-loaded' : 'img-loading'}`}
       draggable="false"
+      loading="lazy"
+      decoding="async"
+      onLoad={() => setIsLoaded(true)}
       onError={() => setHasError(true)}
     />
   );
