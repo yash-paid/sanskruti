@@ -51,6 +51,8 @@ exports.handler = async (event, context) => {
   let category = (itemsPurchased && itemsPurchased[0] && itemsPurchased[0].category) || existingOrder.productCategory || 'ebook';
   if (udf5 === 'connect' || String(txnid).startsWith('CN_')) {
     category = 'connect';
+  } else if (udf5 === 'meeting' || String(txnid).startsWith('MT_') || (udf1 && udf1.startsWith('meeting:'))) {
+    category = 'meeting';
   }
 
   /**

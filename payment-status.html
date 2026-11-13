@@ -481,44 +481,81 @@
       // Handle Cancelled
       } else if (statusParam === 'cancelled' || statusParam === 'cancel') {
         card.className = 'status-card status-failed';
-        icon.textContent = '⚠️';
-        badge.textContent = 'Payment Cancelled';
-        heading.textContent = 'Transaction Cancelled';
-        msg.textContent = errorMsg || 'You cancelled the payment transaction. No amount was debited from your bank account or UPI app.';
-        actionButtons.innerHTML = `
-          <a href="index.html#catalog" class="btn-primary" style="text-decoration: none;">↻ Try Again / Choose Book</a>
-          <a href="https://wa.me/919183053829?text=${encodeURIComponent('Hello! I cancelled payment for Order ' + txnid + '. I have a question before purchasing.')}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none;">
-            💬 WhatsApp Inquiries
-          </a>
-        `;
+        icon.textContent = '✕';
+        if (typeParam === 'meeting') {
+          badge.textContent = 'Booking Cancelled';
+          heading.textContent = 'Payment Cancelled';
+          msg.textContent = 'You cancelled the advance booking checkout. Your bank account was not charged. You can re-select your preferred slot anytime.';
+          actionButtons.innerHTML = `
+            <a href="/meeting/profiles" class="btn-primary" style="text-decoration: none; background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #ea580c 100%);">↻ Return to Meeting Profiles</a>
+            <a href="https://wa.me/919183053829?text=${encodeURIComponent('Hello! I cancelled meeting advance booking for Order #' + txnid + '. I have a question.')}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none;">
+              💬 Chat on WhatsApp
+            </a>
+            <a href="/meeting/" style="text-decoration: underline; color: #a78bfa; font-size: 13px; margin-top: 8px; display: inline-block;">← Meeting Home</a>
+          `;
+        } else {
+          badge.textContent = 'Payment Cancelled';
+          heading.textContent = 'Transaction Cancelled';
+          msg.textContent = errorMsg || 'You cancelled the payment transaction. No amount was debited from your bank account or UPI app.';
+          actionButtons.innerHTML = `
+            <a href="index.html#catalog" class="btn-primary" style="text-decoration: none;">↻ Try Again / Choose Book</a>
+            <a href="https://wa.me/919183053829?text=${encodeURIComponent('Hello! I cancelled payment for Order ' + txnid + '. I have a question before purchasing.')}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none;">
+              💬 WhatsApp Inquiries
+            </a>
+          `;
+        }
 
       // Handle Failed
       } else if (statusParam === 'failed' || statusParam === 'failure') {
         card.className = 'status-card status-failed';
         icon.textContent = '✕';
-        badge.textContent = 'Payment Unsuccessful';
-        heading.textContent = 'Payment Failed';
-        msg.textContent = errorMsg || 'The transaction could not be completed. Your bank account was not charged. You can retry checkout anytime.';
-        actionButtons.innerHTML = `
-          <a href="index.html#catalog" class="btn-primary" style="text-decoration: none;">↻ Try Again / Choose Book</a>
-          <a href="https://wa.me/919183053829?text=${encodeURIComponent('Hello! My payment for Order ' + txnid + ' failed: ' + errorMsg)}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none;">
-            💬 Need Payment Help?
-          </a>
-        `;
+        if (typeParam === 'meeting') {
+          badge.textContent = 'Booking Payment Unsuccessful';
+          heading.textContent = 'Payment Failed';
+          msg.textContent = errorMsg || 'The transaction could not be completed by your bank/UPI. Your bank account was not charged. You can retry booking anytime.';
+          actionButtons.innerHTML = `
+            <a href="/meeting/profiles" class="btn-primary" style="text-decoration: none; background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #ea580c 100%);">↻ Try Again / Choose Profile</a>
+            <a href="https://wa.me/919183053829?text=${encodeURIComponent('Hello! My meeting booking payment for Order #' + txnid + ' failed: ' + (errorMsg || 'Bank decline'))}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none;">
+              💬 Need Payment Help?
+            </a>
+            <a href="/meeting/" style="text-decoration: underline; color: #a78bfa; font-size: 13px; margin-top: 8px; display: inline-block;">← Meeting Home</a>
+          `;
+        } else {
+          badge.textContent = 'Payment Unsuccessful';
+          heading.textContent = 'Payment Failed';
+          msg.textContent = errorMsg || 'The transaction could not be completed. Your bank account was not charged. You can retry checkout anytime.';
+          actionButtons.innerHTML = `
+            <a href="index.html#catalog" class="btn-primary" style="text-decoration: none;">↻ Try Again / Choose Book</a>
+            <a href="https://wa.me/919183053829?text=${encodeURIComponent('Hello! My payment for Order ' + txnid + ' failed: ' + errorMsg)}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none;">
+              💬 Need Payment Help?
+            </a>
+          `;
+        }
 
       // Handle Tampered / Error
       } else {
         card.className = 'status-card status-failed';
         icon.textContent = '⚠️';
         badge.textContent = 'Verification Alert';
-        heading.textContent = 'Transaction Notice';
-        msg.textContent = errorMsg || 'Could not verify transaction integrity. If money was debited from your account, please contact our support team immediately.';
-        actionButtons.innerHTML = `
-          <a href="index.html" class="btn-primary" style="text-decoration: none;">Return to Home</a>
-          <a href="https://wa.me/919183053829?text=${encodeURIComponent('Payment inquiry for txnid: ' + txnid)}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none;">
-            💬 WhatsApp Support
-          </a>
-        `;
+        if (typeParam === 'meeting') {
+          heading.textContent = 'Meeting Transaction Notice';
+          msg.textContent = errorMsg || 'Could not verify transaction integrity. If money was debited from your account, please contact our support team immediately.';
+          actionButtons.innerHTML = `
+            <a href="/meeting/profiles" class="btn-primary" style="text-decoration: none; background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #ea580c 100%);">← Return to Meeting Profiles</a>
+            <a href="https://wa.me/919183053829?text=${encodeURIComponent('Payment inquiry for meeting txnid: ' + txnid)}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none;">
+              💬 WhatsApp Support
+            </a>
+          `;
+        } else {
+          heading.textContent = 'Transaction Notice';
+          msg.textContent = errorMsg || 'Could not verify transaction integrity. If money was debited from your account, please contact our support team immediately.';
+          actionButtons.innerHTML = `
+            <a href="index.html" class="btn-primary" style="text-decoration: none;">Return to Home</a>
+            <a href="https://wa.me/919183053829?text=${encodeURIComponent('Payment inquiry for txnid: ' + txnid)}" target="_blank" class="whatsapp-nav-btn" style="text-decoration: none;">
+              💬 WhatsApp Support
+            </a>
+          `;
+        }
       }
     });
   </script>

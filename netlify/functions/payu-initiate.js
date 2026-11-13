@@ -101,9 +101,10 @@ exports.handler = async (event, context) => {
 
     // 4. Generate unique transaction ID (max 30 chars for PayU)
     const isConnect = itemType === 'connect' || (body && body.source === 'connect-web');
+    const isMeeting = itemType === 'meeting' || (body && body.source === 'meeting');
     const connectUid = body.uid || '';
     const randomSuffix = crypto.randomBytes(3).toString('hex').toUpperCase();
-    const txnid = isConnect ? `CN_${Date.now()}_${randomSuffix}` : `SKT_${Date.now()}_${randomSuffix}`;
+    const txnid = isConnect ? `CN_${Date.now()}_${randomSuffix}` : (isMeeting ? `MT_${Date.now()}_${randomSuffix}` : `SKT_${Date.now()}_${randomSuffix}`);
 
     // Callback URLs
     const surl = `${config.siteUrl}/.netlify/functions/payu-response`;
@@ -114,7 +115,7 @@ exports.handler = async (event, context) => {
     const udf2 = (isConnect ? (itemId || 'connect-pack-19') : cleanPhone).substring(0, 50);
     const udf3 = isConnect ? 'connect_wallet_recharge' : (orderCalc.appliedCoupon ? `COUPON_${orderCalc.appliedCoupon}` : (orderCalc.appliedOffer ? `OFFER_${orderCalc.appliedOffer.offerId}` : 'NO_COUPON'));
     const udf4 = isConnect ? String(orderCalc.itemsPurchased[0]?.coins || 50) : `${orderCalc.itemsPurchased.length}_items`;
-    const udf5 = isConnect ? 'connect' : ((body && body.source === 'index-php') ? 'index-php' : 'sanskruti-web');
+    const udf5 = isConnect ? 'connect' : (isMeeting ? 'meeting' : ((body && body.source === 'index-php') ? 'index-php' : 'sanskruti-web'));
 
     // 5. Generate secure SHA-512 request hash server-side
     const hash = generateRequestHash({
