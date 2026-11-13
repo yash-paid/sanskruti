@@ -22,6 +22,7 @@ import {
   authenticateWithPhone,
   getStoredPhoneUser,
   clearPhoneAuthSession,
+  signInAsGuest,
 } from './firebase/authService';
 import {
   fetchUserProfile,
@@ -36,6 +37,7 @@ import {
   recordLocalTransaction,
   getStoredVipEntitlement,
   saveStoredVipEntitlement,
+  getKolkataDateString,
 } from './firebase/rewardService';
 
 const VALID_PAGES = ['login', 'setup-profile', 'home', 'wallet', 'profile', 'vip'];
@@ -318,17 +320,6 @@ export default function App() {
                 localStorage.setItem(`connect_coins_${currentUid}`, String(verifiedBalance));
               }
             } catch (e) {}
-
-            // If local balance was ahead of server (e.g. fresh recharge before cold server sync), sync to server
-            if (verifiedBalance > (Number(balance) || 0)) {
-              transactUserCoins(currentUid, {
-                amount: verifiedBalance - (Number(balance) || 0),
-                isCredit: true,
-                type: 'balance_sync',
-                title: 'Wallet Balance Sync',
-                clientBalance: verifiedBalance,
-              }).catch(() => {});
-            }
           }
         })
         .catch((err) => {
@@ -1845,6 +1836,10 @@ export default function App() {
               } else if (tab === 'stars') {
                 changeHomeTab('stars');
                 goToPage('home');
+              } else if (tab === 'wallet') {
+                goToPage('wallet');
+              } else if (tab === 'profile') {
+                goToPage('profile');
               }
             }}
             onOpenWallet={() => goToPage('wallet')}

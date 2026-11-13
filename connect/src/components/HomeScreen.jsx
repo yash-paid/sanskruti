@@ -10,6 +10,11 @@ import {
   Wallet,
   User,
   Crown,
+  LogOut,
+  X,
+  Gift,
+  FileText,
+  AlertTriangle,
 } from 'lucide-react';
 import { TOP_EXPERTS, NORMAL_EXPERTS } from '../data/experts';
 import TransactionsModal from './TransactionsModal';
@@ -287,6 +292,8 @@ export default function HomeScreen({
   const [notification, setNotification] = useState(false);
   const [showTransactions, setShowTransactions] = useState(false);
   const [showDailyReward, setShowDailyReward] = useState(false);
+  const [showMenuDrawer, setShowMenuDrawer] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // ── CONNECT Demo Incoming Call Experience ──
   const [incomingDemoCall, setIncomingDemoCall] = useState(null);
@@ -579,8 +586,8 @@ export default function HomeScreen({
         <button
           className="header-menu-btn"
           aria-label="Menu"
-          onClick={onLogout}
-          title="Logout"
+          onClick={() => setShowMenuDrawer(true)}
+          title="Menu"
         >
           <Menu size={22} color="#ff5eb0" />
         </button>
@@ -929,6 +936,377 @@ export default function HomeScreen({
           onStartRealCall={handleStartRealCallFromDemo}
           onClose={handleCloseDemoPostCall}
         />
+      )}
+
+      {/* ── Slide-Out / Popup Menu Drawer (MED-07) ── */}
+      {showMenuDrawer && (
+        <div
+          className="menu-drawer-overlay"
+          onClick={() => setShowMenuDrawer(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            backdropFilter: 'blur(5px)',
+            zIndex: 999,
+            display: 'flex',
+            justifyContent: 'flex-start',
+            alignItems: 'stretch',
+          }}
+        >
+          <div
+            className="menu-drawer-panel"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '82%',
+              maxWidth: '320px',
+              height: '100%',
+              background: 'linear-gradient(180deg, #18081f 0%, #0d0414 100%)',
+              borderRight: '1px solid rgba(255, 42, 141, 0.25)',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '4px 0 24px rgba(255, 42, 141, 0.25)',
+              overflowY: 'auto',
+              padding: '20px 16px',
+            }}
+          >
+            {/* Header with Close */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <img src={heartLogoImg} alt="CONNECT" style={{ width: '28px', height: 'auto' }} />
+                <span style={{ color: '#fff', fontWeight: 800, fontSize: '18px', letterSpacing: '0.5px' }}>CONNECT</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMenuDrawer(false)}
+                style={{
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#fff',
+                }}
+                aria-label="Close menu"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* User Profile Summary Card */}
+            <div
+              style={{
+                background: 'rgba(255, 42, 141, 0.08)',
+                border: '1px solid rgba(255, 42, 141, 0.25)',
+                borderRadius: '16px',
+                padding: '14px',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+              }}
+            >
+              <img
+                src={userProfile?.avatar || '/default-avatars/1.png'}
+                alt="Profile"
+                style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '50%',
+                  border: '2px solid #ff2a8d',
+                  objectFit: 'cover',
+                }}
+                onError={(e) => {
+                  e.target.src = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80';
+                }}
+              />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ color: '#fff', fontWeight: 700, fontSize: '15px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {userProfile?.name || (isGuest ? 'Guest User' : 'CONNECT User')}
+                </div>
+                <div style={{ color: '#a0a0a0', fontSize: '12px' }}>
+                  {userProfile?.phone || (isGuest ? 'Guest Session' : (uid ? `ID: ${uid.slice(0, 8)}...` : ''))}
+                </div>
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    background: 'rgba(255, 215, 0, 0.12)',
+                    border: '1px solid rgba(255, 215, 0, 0.3)',
+                    borderRadius: '12px',
+                    padding: '2px 8px',
+                    marginTop: '6px',
+                    fontSize: '11px',
+                    color: '#FFD700',
+                    fontWeight: 700,
+                  }}
+                >
+                  <span>🪙 {coins} Coins</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Menu Navigation Items */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMenuDrawer(false);
+                  onOpenProfile?.();
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  color: '#fff',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <User size={18} color="#ff5eb0" />
+                <span>{t('nav_profile', 'My Profile')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMenuDrawer(false);
+                  onOpenWallet?.();
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  color: '#fff',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <Wallet size={18} color="#FFD700" />
+                <span>{t('nav_wallet', 'Wallet & Coins')}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMenuDrawer(false);
+                  onOpenVip?.();
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  color: '#fff',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <Crown size={18} color="#FFD700" />
+                <span>VIP Membership</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMenuDrawer(false);
+                  setShowTransactions(true);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  color: '#fff',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <FileText size={18} color="#4ade80" />
+                <span>Transaction History</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMenuDrawer(false);
+                  setShowDailyReward(true);
+                }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px 14px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.04)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  color: '#fff',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                }}
+              >
+                <Gift size={18} color="#f472b6" />
+                <span>Daily Login Reward</span>
+              </button>
+            </div>
+
+            {/* Logout button at bottom of drawer */}
+            <div style={{ marginTop: 'auto', paddingTop: '16px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMenuDrawer(false);
+                  setShowLogoutConfirm(true);
+                }}
+                style={{
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  padding: '12px',
+                  borderRadius: '12px',
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.28)',
+                  color: '#f87171',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                <LogOut size={16} />
+                <span>{t('logout', 'Log Out')}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Logout Confirmation Dialog (MED-07) ── */}
+      {showLogoutConfirm && (
+        <div
+          className="logout-confirm-overlay"
+          onClick={() => setShowLogoutConfirm(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.8)',
+            backdropFilter: 'blur(6px)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+        >
+          <div
+            className="logout-confirm-card"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '340px',
+              background: '#160820',
+              border: '1px solid rgba(255, 42, 141, 0.3)',
+              borderRadius: '20px',
+              padding: '24px 20px',
+              textAlign: 'center',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
+            }}
+          >
+            <div
+              style={{
+                width: '54px',
+                height: '54px',
+                borderRadius: '50%',
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}
+            >
+              <LogOut size={26} color="#ef4444" />
+            </div>
+
+            <h3 style={{ color: '#fff', fontSize: '18px', fontWeight: 800, margin: '0 0 8px' }}>
+              Log Out of CONNECT?
+            </h3>
+            <p style={{ color: '#9ca3af', fontSize: '13px', lineHeight: 1.5, margin: '0 0 22px' }}>
+              Are you sure you want to log out? Your coin balance and progress are securely saved.
+            </p>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setShowLogoutConfirm(false)}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '12px',
+                  background: 'rgba(255, 255, 255, 0.08)',
+                  border: '1px solid rgba(255, 255, 255, 0.16)',
+                  color: '#fff',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLogoutConfirm(false);
+                  onLogout?.();
+                }}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(239, 68, 68, 0.4)',
+                }}
+              >
+                Yes, Log Out
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -351,7 +351,13 @@ export default function WalletScreen({
         </button>
 
         {/* 3. Wallet (Active highlighted pill) */}
-        <button className="bottom-nav-item nav-active">
+        <button
+          className="bottom-nav-item nav-active"
+          onClick={() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            onNavigateTab?.('wallet');
+          }}
+        >
           <div className="bottom-nav-wallet-pill">
             <Wallet size={20} strokeWidth={2} />
           </div>

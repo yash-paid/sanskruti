@@ -877,7 +877,13 @@ export default function ProfileScreen({
         </button>
 
         {/* 4. My Profile (Active highlighted pill) */}
-        <button className="bottom-nav-item nav-active">
+        <button
+          className="bottom-nav-item nav-active"
+          onClick={() => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            onNavigateTab?.('profile');
+          }}
+        >
           <div className="bottom-nav-wallet-pill">
             <User size={20} strokeWidth={2} />
           </div>
