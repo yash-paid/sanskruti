@@ -239,10 +239,5 @@ export const resetPurchasedPacks = () => {
   } catch (e) {}
 };
 
-if (typeof window !== 'undefined') {
-  window.resetPurchasedPacks = resetPurchasedPacks;
-  window.getPurchasedPackIds = getPurchasedPackIds;
-}
-
 export const SAMPLE_TRANSACTIONS = [];
 

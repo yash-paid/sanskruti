@@ -151,7 +151,6 @@ export default function WalletScreen({
             onClick={() => onToast?.('🔔 No new notifications')}
           >
             <Bell size={22} color="#c9b4d5" />
-            <span className="notif-dot" />
           </button>
         </div>
       </header>

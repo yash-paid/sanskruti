@@ -258,18 +258,29 @@ export default function App() {
     };
   });
 
-  const currentUid =
-    auth.currentUser?.uid ||
-    getStoredPhoneUser()?.uid ||
-    userProfile?.uid ||
-    (() => {
-      try {
-        return localStorage.getItem('connect_last_auth_uid') || null;
-      } catch (e) {
-        return null;
-      }
-    })() ||
-    null;
+  const [currentUid, setCurrentUid] = useState(() => {
+    return (
+      auth.currentUser?.uid ||
+      getStoredPhoneUser()?.uid ||
+      userProfile?.uid ||
+      (() => {
+        try {
+          return localStorage.getItem('connect_last_auth_uid') || null;
+        } catch (e) {
+          return null;
+        }
+      })() ||
+      null
+    );
+  });
+
+  // Keep currentUid reactive when userProfile changes
+  useEffect(() => {
+    const activeUid = auth.currentUser?.uid || getStoredPhoneUser()?.uid || userProfile?.uid || null;
+    if (activeUid && activeUid !== currentUid) {
+      setCurrentUid(activeUid);
+    }
+  }, [userProfile?.uid]);
 
   // Confirmed coins balance: preserved across browser reloads via multi-tier fallback
   const [coins, setCoins] = useState(() => {
@@ -668,6 +679,7 @@ export default function App() {
         isGuest: true,
         isProfileComplete: true,
       };
+      setCurrentUid(guestUid);
       setUserProfile(guestProfile);
       try {
         localStorage.setItem('connect_is_guest', 'true');
@@ -680,13 +692,15 @@ export default function App() {
     }
 
     // ── FAST PATH 2: Authenticated Users (Immediate Optimistic Transition) ──
+    setCurrentUid(uid);
     setIsGuest(false);
     try {
       localStorage.setItem('connect_is_guest', 'false');
     } catch (e) {}
 
-    const alreadyDone = isProfileSetupDone(uid, null);
-    const skipSetup = alreadyDone || fallbackData.isBrandNewRegistration === false;
+    const alreadyDone = isProfileSetupDone(uid, fallbackData);
+    // Never skip setup on a brand new registration. For returning users, skip setup only if already completed.
+    const skipSetup = !fallbackData.isBrandNewRegistration && alreadyDone;
     const displayName = (fallbackData.name && fallbackData.name !== 'CONNECT User')
       ? fallbackData.name
       : (fallbackData.name || 'CONNECT User');
@@ -1032,6 +1046,7 @@ export default function App() {
         isProfileComplete: true,
       };
 
+      setCurrentUid(guestUid);
       setUserProfile(guestProfile);
       try {
         localStorage.setItem('connect_user_profile', JSON.stringify(guestProfile));
@@ -1092,6 +1107,7 @@ export default function App() {
       await logOut();
     } catch (e) {}
     clearPhoneAuthSession();
+    setCurrentUid(null);
     setIsGuest(false);
     setCoins(0);
     coinsRef.current = 0;
@@ -1425,54 +1441,13 @@ export default function App() {
         } else if (status === 'failure' || status === 'cancel') {
           const msg = params.get('msg') || 'Payment was cancelled or failed.';
           showToast(`❌ ${msg}`);
+          try {
+            localStorage.removeItem('connect_pending_recharge_pack');
+          } catch (_) {}
         }
       }
     } catch (e) {}
   }, []);
-
-  // ── Auto-Reconcile Pending Payment (e.g. ₹19 recharge if callback was missed) ──
-  useEffect(() => {
-    try {
-      const pendingPack = JSON.parse(localStorage.getItem('connect_pending_recharge_pack') || 'null');
-      if (pendingPack && (pendingPack.id === 'pack-19' || pendingPack.price === 19 || pendingPack.id === 'connect-pack-19')) {
-        const activeUid = currentUid || localStorage.getItem('connect_last_auth_uid') || '';
-        if (activeUid) {
-          const localLedgerRaw = localStorage.getItem(`connect_local_ledger_${activeUid}`);
-          const list = localLedgerRaw ? JSON.parse(localLedgerRaw) : [];
-          const alreadyHas19 = list.some((item) => item.metadata?.packId === 'pack-19' || item.title?.includes('₹19'));
-          if (!alreadyHas19) {
-            const coinsToAdd = 50;
-            const currentBase = Math.max(coinsRef.current || 0, parseInt(localStorage.getItem('connect_last_known_balance') || '0', 10));
-            const nextBalance = currentBase + coinsToAdd;
-            setCoins(nextBalance);
-            coinsRef.current = nextBalance;
-            try {
-              localStorage.setItem('connect_last_known_balance', String(nextBalance));
-            } catch (_) {}
-            markPackAsPurchased('pack-19', activeUid);
-            recordLocalTransaction(activeUid, {
-              type: 'purchase',
-              title: 'Coins Recharged - 50 Coins (₹19)',
-              amount: coinsToAdd,
-              coins: coinsToAdd,
-              isCredit: true,
-              balanceAfter: nextBalance,
-              metadata: { packId: 'pack-19', price: 19, source: 'payu_recovered' },
-            });
-            transactUserCoins(activeUid, {
-              amount: coinsToAdd,
-              isCredit: true,
-              type: 'purchase',
-              title: 'Coins Recharged - 50 Coins (₹19)',
-              metadata: { packId: 'pack-19', price: 19 },
-            }).catch(() => {});
-            showToast('🎉 Payment recovered! Added 50 Coins to your balance.');
-            localStorage.removeItem('connect_pending_recharge_pack');
-          }
-        }
-      }
-    } catch (_) {}
-  }, [currentUid]);
 
   // ── Initiate PayU Checkout for Recharge Pack ──
   const handleInitiateRecharge = async (pack, pendingExpert) => {
