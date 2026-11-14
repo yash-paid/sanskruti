@@ -319,6 +319,80 @@ export default function HomeScreen({
   const activeNavRef = useRef(activeNav);
   activeNavRef.current = activeNav;
 
+  // ── Hardware Back Button Interception ──
+  useEffect(() => {
+    const handleBackButton = (ev) => {
+      if (callingExpertRef.current || activeDemoCall) {
+        setCallingExpert(null);
+        setActiveDemoCall(null);
+        ev.preventDefault();
+        return;
+      }
+      if (incomingDemoCall) {
+        setIncomingDemoCall(null);
+        ev.preventDefault();
+        return;
+      }
+      if (demoPostCall) {
+        setDemoPostCall(null);
+        ev.preventDefault();
+        return;
+      }
+      if (showLogoutConfirm) {
+        setShowLogoutConfirm(false);
+        ev.preventDefault();
+        return;
+      }
+      if (showMenuDrawer) {
+        setShowMenuDrawer(false);
+        ev.preventDefault();
+        return;
+      }
+      if (insufficientModal) {
+        setInsufficientModal(false);
+        setPendingCallExpert(null);
+        ev.preventDefault();
+        return;
+      }
+      if (loginReqAction) {
+        setLoginReqAction(null);
+        ev.preventDefault();
+        return;
+      }
+      if (showDailyReward) {
+        setShowDailyReward(false);
+        ev.preventDefault();
+        return;
+      }
+      if (showTransactions) {
+        setShowTransactions(false);
+        ev.preventDefault();
+        return;
+      }
+      if (activeNav !== 'home') {
+        setActiveNav('home');
+        ev.preventDefault();
+        return;
+      }
+    };
+
+    window.addEventListener('connect:backbutton', handleBackButton);
+    return () => {
+      window.removeEventListener('connect:backbutton', handleBackButton);
+    };
+  }, [
+    activeDemoCall,
+    incomingDemoCall,
+    demoPostCall,
+    showLogoutConfirm,
+    showMenuDrawer,
+    insufficientModal,
+    loginReqAction,
+    showDailyReward,
+    showTransactions,
+    activeNav
+  ]);
+
   const demoTimerRef = useRef(null);
   const lastDemoCallerRef = useRef(null);
 

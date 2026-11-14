@@ -6,6 +6,7 @@
  */
 
 import { auth } from './config';
+import { getApiUrl } from '../utils/apiConfig';
 
 const API_BASE = '/.netlify/functions/connect-user';
 
@@ -19,7 +20,7 @@ const apiCall = async (action, options = {}) => {
   }
 
   const queryParams = new URLSearchParams({ action, uid, ...query });
-  const url = `${API_BASE}?${queryParams.toString()}`;
+  const url = `${getApiUrl(API_BASE)}?${queryParams.toString()}`;
 
   const headers = {
     'Content-Type': 'application/json',

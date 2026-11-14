@@ -19,6 +19,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { getVideoUrl } from '../utils/apiConfig';
 
 /* ── Live Stream Gift Animation Overlay Component ── */
 function GiftAnimationOverlay({ gift, expertName, onComplete }) {
@@ -150,6 +151,8 @@ export default function VideoCallScreen({
   const [callState, setCallState] = useState('connecting');
   const [connectingStage, setConnectingStage] = useState('Initializing Video...');
   const [callDuration, setCallDuration] = useState(0);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const hasRetriedRef = useRef(false);
 
   // In-call grace window states (prevents abrupt disconnects when balance is low)
   const [graceSecondsLeft, setGraceSecondsLeft] = useState(null);
@@ -208,8 +211,9 @@ export default function VideoCallScreen({
   const hasSeekedRef = useRef(false);
   const lastSavedTimeRef = useRef(0);
 
-  // Video source for expert (maps to 1.mp4 ... 23.mp4)
-  const videoSrc = expert?.videoUrl || (expert?.index ? `/assets/videos/${expert.index}.mp4` : '/assets/videos/1.mp4');
+  // Video source for expert (maps to 1.mp4 ... 23.mp4 via HTTPS Range streaming)
+  const rawVideoSrc = expert?.videoUrl || (expert?.index ? `/assets/videos/${expert.index}.mp4` : '/assets/videos/1.mp4');
+  const videoSrc = getVideoUrl(rawVideoSrc);
 
   /* ── 0. Video Progress Memory (Per-Account & Per-Expert Resume) ── */
   const getStorageKey = () => (uid ? `connect_video_progress_${uid}` : 'connect_video_progress');
@@ -352,8 +356,17 @@ export default function VideoCallScreen({
     // If video naturally ends, allow it to loop without resetting to 0
   };
 
-  const handleVideoError = () => {
-    setErrorMsg(`Video for ${expert?.name || 'expert'} not found or still uploading. Please drop ${expert?.videoUrl?.split('/')?.pop()} into the 'upload-videos-here' folder.`);
+  const handleVideoError = (e) => {
+    console.warn('Video stream error, attempting reconnect...', e);
+    setIsBuffering(false);
+    if (!hasRetriedRef.current && expertVideoRef.current) {
+      hasRetriedRef.current = true;
+      setTimeout(() => {
+        expertVideoRef.current?.load();
+      }, 1200);
+      return;
+    }
+    setErrorMsg(`Video stream for ${expert?.name || 'expert'} temporarily interrupted. Please check network connection.`);
     setCallState('error');
   };
 
@@ -949,14 +962,41 @@ export default function VideoCallScreen({
           playsInline
           autoPlay
           loop
+          preload="metadata"
           className={`video-call-fullscreen ${callState === 'active' ? 'visible' : 'hidden'}`}
           onLoadedMetadata={handleLoadedMetadata}
           onCanPlay={handleVideoCanPlay}
           onTimeUpdate={handleTimeUpdate}
           onEnded={handleVideoEnded}
           onError={handleVideoError}
+          onWaiting={() => setIsBuffering(true)}
+          onPlaying={() => setIsBuffering(false)}
           muted={!isSpeakerOn}
         />
+
+        {isBuffering && callState === 'active' && (
+          <div style={{
+            position: 'absolute',
+            top: '80px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 40,
+            background: 'rgba(0,0,0,0.65)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '9999px',
+            padding: '6px 14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#fff',
+            fontSize: '12px',
+            fontWeight: 500,
+            border: '1px solid rgba(255,255,255,0.15)'
+          }}>
+            <RefreshCw size={13} className="animate-spin text-pink-400" />
+            <span>Buffering stream...</span>
+          </div>
+        )}
 
       {/* ══════════════════════════════════════════════════════════
          SCREEN 1: CONNECTING CALL (Reference Left Image)

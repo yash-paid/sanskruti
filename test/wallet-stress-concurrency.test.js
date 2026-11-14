@@ -32,19 +32,19 @@ const {
   handler: userHandler,
   _setFirestoreDb: _setUserFirestoreDb,
   _setAdminAuth: _setUserAdminAuth,
-} = require('./netlify/functions/connect-user');
+} = require('../netlify/functions/connect-user');
 
 const {
   handler: payuResponseHandler,
-} = require('./netlify/functions/payu-response');
+} = require('../netlify/functions/payu-response');
 
 const {
   LocalFirestoreAdapter,
   _setFirestoreDb: _setGlobalFirestoreDb,
   _setAdminAuth: _setGlobalAdminAuth,
-} = require('./netlify/functions/_connect-db');
+} = require('../netlify/functions/_connect-db');
 
-const { getPayUConfig } = require('./netlify/functions/_payu-config');
+const { getPayUConfig } = require('../netlify/functions/_payu-config');
 
 const sandboxDb = new LocalFirestoreAdapter(SANDBOX_DB_PATH);
 _setGlobalFirestoreDb(sandboxDb);

@@ -11,6 +11,7 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth';
 import { auth, googleProvider } from './config';
+import { getApiUrl, isNativePlatform } from '../utils/apiConfig';
 
 /**
  * Maps Firebase Auth error codes to user-friendly messages.
@@ -51,6 +52,8 @@ export const getAuthErrorMessage = (error) => {
       return 'Anonymous sign-in is currently restricted by administrator.';
     case 'auth/too-many-requests':
       return 'Too many failed login attempts. Please try again later or reset password.';
+    case 'auth/native-android-phone-recommended':
+      return 'For instant login on Android, please use your Mobile Number or Email!';
     default:
       return error.message || 'Authentication failed. Please try again.';
   }
@@ -60,6 +63,17 @@ export const getAuthErrorMessage = (error) => {
  * Sign in with Google (Popup on desktop, with redirect fallback for mobile).
  */
 export const signInWithGoogle = async () => {
+  if (isNativePlatform()) {
+    try {
+      return await signInWithPopup(auth, googleProvider);
+    } catch (nativeErr) {
+      console.warn('Google sign-in inside native WebView:', nativeErr);
+      const err = new Error('Google Sign-in on Android is restricted by Google OAuth policies. Please log in with Mobile Number or Email for instant access!');
+      err.code = 'auth/native-android-phone-recommended';
+      throw err;
+    }
+  }
+
   const isMobile =
     typeof navigator !== 'undefined' &&
     /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
@@ -211,7 +225,7 @@ export const authenticateWithPhone = async ({ mode, phone, password, name = '' }
     throw err;
   }
 
-  const endpoint = '/.netlify/functions/connect-auth-phone';
+  const endpoint = getApiUrl('/.netlify/functions/connect-auth-phone');
   let response;
   try {
     response = await fetch(endpoint, {
@@ -225,7 +239,7 @@ export const authenticateWithPhone = async ({ mode, phone, password, name = '' }
       }),
     });
     if (!response.ok && response.status === 404) {
-      response = await fetch('/api/connect-auth-phone', {
+      response = await fetch(getApiUrl('/api/connect-auth-phone'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

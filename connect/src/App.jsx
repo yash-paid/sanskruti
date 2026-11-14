@@ -39,6 +39,8 @@ import {
   saveStoredVipEntitlement,
   getKolkataDateString,
 } from './firebase/rewardService';
+import { getApiUrl, isNativePlatform } from './utils/apiConfig';
+import { App as CapApp } from '@capacitor/app';
 
 const VALID_PAGES = ['login', 'setup-profile', 'home', 'wallet', 'profile', 'vip'];
 
@@ -390,6 +392,35 @@ export default function App() {
       isMounted = false;
     };
   }, [currentUid]);
+
+  // ── Native Android Hardware Back Button Handling ──
+  useEffect(() => {
+    let handler;
+    const registerBackButton = async () => {
+      try {
+        if (CapApp && typeof CapApp.addListener === 'function') {
+          handler = await CapApp.addListener('backButton', () => {
+            const ev = new CustomEvent('connect:backbutton', { cancelable: true });
+            window.dispatchEvent(ev);
+            if (ev.defaultPrevented) {
+              return;
+            }
+            if (page !== 'home' && page !== 'login') {
+              setPage('home');
+              return;
+            }
+            CapApp.exitApp();
+          });
+        }
+      } catch (e) {
+        console.warn('Capacitor backButton listener error:', e);
+      }
+    };
+    registerBackButton();
+    return () => {
+      handler?.remove?.();
+    };
+  }, [page]);
 
   const handleDeductCoins = async (amount, metadata = {}) => {
     if (typeof amount !== 'number' || amount <= 0) return false;
@@ -1309,11 +1340,11 @@ export default function App() {
               if (token) {
                 try {
                   let res = await fetch(
-                    `/.netlify/functions/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`
+                    getApiUrl(`/.netlify/functions/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`)
                   );
                   if (res.status === 404) {
                     res = await fetch(
-                      `/api/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`
+                      getApiUrl(`/api/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`)
                     );
                   }
                   if (res.ok) {
@@ -1476,18 +1507,18 @@ export default function App() {
       name: userProfile?.name || 'CONNECT User',
       phone: (userProfile?.phone || localStorage.getItem('connect_user_phone') || '9876543210').replace(/[^0-9]/g, '').slice(-10) || '9876543210',
       email: `${(userProfile?.username || 'user').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'user'}@connect.local`,
-      source: 'connect-web',
+      source: isNativePlatform() ? 'connect-android' : 'connect-web',
     };
 
     let response;
     try {
-      response = await fetch('/api/payu-initiate', {
+      response = await fetch(getApiUrl('/api/payu-initiate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       if (!response.ok) {
-        response = await fetch('/.netlify/functions/payu-initiate', {
+        response = await fetch(getApiUrl('/.netlify/functions/payu-initiate'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -1496,7 +1527,7 @@ export default function App() {
     } catch (netErr) {
       console.warn('Primary payu-initiate call failed, trying direct endpoint:', netErr);
       try {
-        response = await fetch('/.netlify/functions/payu-initiate', {
+        response = await fetch(getApiUrl('/.netlify/functions/payu-initiate'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
@@ -1579,18 +1610,18 @@ export default function App() {
       name: userProfile?.name || 'CONNECT VIP User',
       phone: (userProfile?.phone || '9876543210').replace(/[^0-9]/g, '').slice(-10),
       email: `${(userProfile?.username || 'user').replace(/[^a-zA-Z0-9]/g, '').toLowerCase() || 'user'}@connect.local`,
-      source: 'connect-web',
+      source: isNativePlatform() ? 'connect-android' : 'connect-web',
     };
 
     let response;
     try {
-      response = await fetch('/.netlify/functions/payu-initiate', {
+      response = await fetch(getApiUrl('/.netlify/functions/payu-initiate'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
       if (response.status === 404) {
-        response = await fetch('/api/payu-initiate', {
+        response = await fetch(getApiUrl('/api/payu-initiate'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
