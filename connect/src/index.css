@@ -768,12 +768,14 @@ html, body {
   align-items: center;
   gap: 10px;
   padding: 14px 16px 12px 14px;
-  background: rgba(16, 2, 24, 0.95);
+  background: rgba(16, 2, 24, 0.96);
   border-bottom: 1px solid rgba(255, 42, 141, 0.2);
   position: sticky;
   top: 0;
   z-index: 30;
   flex-shrink: 0;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .header-menu-btn {
@@ -1387,17 +1389,17 @@ html, body {
   position: fixed;
   bottom: 0;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate3d(-50%, 0, 0);
+  will-change: transform;
   width: 100%;
   max-width: 440px;
   display: flex;
   align-items: center;
   justify-content: space-around;
-  background: rgba(14, 2, 20, 0.97);
+  background: rgba(14, 2, 20, 0.98);
   border-top: 1.5px solid rgba(255, 42, 141, 0.3);
   padding: 10px 8px 14px 8px;
   z-index: 50;
-  backdrop-filter: blur(16px);
   box-shadow: 0 -4px 20px rgba(255, 42, 141, 0.18);
 }
 

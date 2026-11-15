@@ -960,6 +960,9 @@ export default function VideoCallScreen({
           ref={expertVideoRef}
           src={videoSrc}
           playsInline
+          webkit-playsinline="true"
+          x5-playsinline="true"
+          x5-video-player-type="h5-page"
           autoPlay
           loop
           preload="metadata"
@@ -1189,6 +1192,7 @@ export default function VideoCallScreen({
                 }}
                 autoPlay
                 playsInline
+                webkit-playsinline="true"
                 muted
                 className={`user-pip-video ${isFrontCamera ? 'mirror' : ''}`}
               />
