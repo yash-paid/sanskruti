@@ -25,6 +25,7 @@ import {
   claimUserVipBonus,
   activateUserVip,
 } from '../firebase/userService';
+import LoginRequiredModal from './LoginRequiredModal';
 
 const VIP_PLANS = [
   {
@@ -109,15 +110,19 @@ export default function VipScreen({
   uid,
   userProfile,
   vipEntitlement: propVipEntitlement,
+  isGuest = false,
   onBack,
   onNavigateTab,
   onOpenWallet,
   onAddCoins,
   onRewardClaimed,
   onInitiateVipPayment,
+  onRequireLogin,
+  onGoogleLogin,
   onToast,
 }) {
   const { t } = useLanguage();
+  const [showLoginRequired, setShowLoginRequired] = useState(false);
   const [activeVip, setActiveVip] = useState(() => {
     return propVipEntitlement || getStoredVipEntitlement(uid);
   });
@@ -221,12 +226,16 @@ export default function VipScreen({
   };
 
   const handleSubscribe = async () => {
-    if (!uid) {
-      onToast?.('Please log in to upgrade to VIP.');
-      return;
-    }
     if (isCurrentActivePlan(selectedPlan.id)) {
       onToast?.(`⚠️ You already have an active ${selectedPlan.name} membership valid till ${activeVip?.expiryDate}. It cannot be repurchased until expired.`);
+      return;
+    }
+    if (isGuest) {
+      setShowLoginRequired(true);
+      return;
+    }
+    if (!uid) {
+      onToast?.('Please log in to upgrade to VIP.');
       return;
     }
     if (onInitiateVipPayment) {
@@ -670,6 +679,32 @@ export default function VipScreen({
           <span className="bottom-nav-label">{t('nav_profile', 'My Profile')}</span>
         </button>
       </nav>
+
+      {/* ── Login Required Modal for Guests (Offers Log In OR Skip) ── */}
+      {showLoginRequired && (
+        <LoginRequiredModal
+          actionType="vip"
+          onClose={() => setShowLoginRequired(false)}
+          onSkip={async () => {
+            setShowLoginRequired(false);
+            if (onInitiateVipPayment) {
+              try {
+                await onInitiateVipPayment(selectedPlan);
+              } catch (err) {
+                onToast?.(err.message || 'VIP payment initiation failed.');
+              }
+            }
+          }}
+          onGoToAuth={(mode) => {
+            setShowLoginRequired(false);
+            onRequireLogin?.(mode);
+          }}
+          onGoogleLogin={() => {
+            setShowLoginRequired(false);
+            onGoogleLogin?.();
+          }}
+        />
+      )}
     </div>
   );
 }

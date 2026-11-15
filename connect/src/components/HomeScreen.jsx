@@ -583,6 +583,7 @@ export default function HomeScreen({
   // Intercept call: verify guest status and coin balance
   const handleCall = (expert) => {
     if (isGuest) {
+      setPendingCallExpert(expert);
       setLoginReqAction('call');
       return;
     }
@@ -693,13 +694,7 @@ export default function HomeScreen({
           )}
           <div
             className="coin-wallet"
-            onClick={() => {
-              if (isGuest) {
-                setLoginReqAction('recharge');
-                return;
-              }
-              onOpenWallet();
-            }}
+            onClick={onOpenWallet}
             title="Open Wallet"
           >
             <span className="coin-wallet-icon">🪙</span>
@@ -709,10 +704,6 @@ export default function HomeScreen({
               aria-label="Add Coins"
               onClick={(e) => {
                 e.stopPropagation();
-                if (isGuest) {
-                  setLoginReqAction('recharge');
-                  return;
-                }
                 onOpenWallet();
               }}
             >

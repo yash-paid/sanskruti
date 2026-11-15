@@ -1918,7 +1918,10 @@ export default function App() {
             uid={currentUid}
             userProfile={userProfile}
             vipEntitlement={vipEntitlement}
+            isGuest={isGuest}
             onInitiateVipPayment={handleInitiateVipPayment}
+            onRequireLogin={handleRequireLogin}
+            onGoogleLogin={handleGoogleLogin}
             onAddCoins={handleAddCoins}
             onRewardClaimed={(awarded, newBalance) => {
               if (typeof newBalance === 'number') {

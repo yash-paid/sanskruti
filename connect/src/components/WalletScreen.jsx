@@ -232,10 +232,6 @@ export default function WalletScreen({
             className="w-vip-view-btn"
             onClick={(e) => {
               e.stopPropagation();
-              if (isGuest) {
-                setShowLoginRequired(true);
-                return;
-              }
               onOpenVip?.();
             }}
           >

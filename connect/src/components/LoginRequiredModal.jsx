@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Lock, Phone, Wallet, Star, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
+import { X, Lock, Phone, Wallet, Crown, ShieldCheck, Zap, ArrowRight } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 export function GoogleIcon({ size = 20 }) {
@@ -31,9 +31,12 @@ export default function LoginRequiredModal({
   onGoToAuth,
   onGoogleLogin,
   expert = null,
-  actionType = 'call', // 'call' | 'recharge'
+  actionType = 'call', // 'call' | 'recharge' | 'vip'
 }) {
   const { t } = useLanguage();
+
+  const isRecharge = actionType === 'recharge';
+  const isVip = actionType === 'vip';
 
   return (
     <div className="login-req-overlay" onClick={onClose} role="dialog" aria-modal="true">
@@ -43,7 +46,7 @@ export default function LoginRequiredModal({
           <X size={18} color="#fff" strokeWidth={2.4} />
         </button>
 
-        {/* Expert Call Header or Generic Lock Header */}
+        {/* Expert Call Header or Generic Lock / Recharge Header */}
         {expert ? (
           <div className="login-req-expert-header">
             <div className="login-req-expert-avatar-wrap">
@@ -62,6 +65,38 @@ export default function LoginRequiredModal({
             </h2>
             <p className="login-req-subtitle">
               {t('login_req_call_subtitle', 'Log in to save your coins & private session, or Skip to call directly as Guest.')}
+            </p>
+          </div>
+        ) : isRecharge ? (
+          <div className="login-req-generic-header">
+            <div className="login-req-icon-wrap">
+              <div className="login-req-lock-glow" />
+              <div className="login-req-lock-circle">
+                <Wallet size={30} color="#FFD700" strokeWidth={2.2} />
+              </div>
+              <span className="login-req-badge">🪙</span>
+            </div>
+            <h2 className="login-req-title">
+              {t('login_req_recharge_title', 'Recharge & Payment')}
+            </h2>
+            <p className="login-req-subtitle">
+              {t('login_req_recharge_sub', 'Log in to link these coins permanently, or Skip to pay directly as Guest.')}
+            </p>
+          </div>
+        ) : isVip ? (
+          <div className="login-req-generic-header">
+            <div className="login-req-icon-wrap">
+              <div className="login-req-lock-glow" />
+              <div className="login-req-lock-circle">
+                <Crown size={30} color="#FFD700" strokeWidth={2.2} />
+              </div>
+              <span className="login-req-badge">👑</span>
+            </div>
+            <h2 className="login-req-title">
+              {t('login_req_vip_title', 'Upgrade to VIP')}
+            </h2>
+            <p className="login-req-subtitle">
+              {t('login_req_vip_sub', 'Log in to sync your VIP benefits, or Skip to pay directly as Guest.')}
             </p>
           </div>
         ) : (
@@ -84,18 +119,52 @@ export default function LoginRequiredModal({
 
         {/* Value Highlights */}
         <div className="login-req-features">
-          <div className="login-req-feature-item">
-            <div className="req-feat-icon call">
-              <Phone size={15} color="#00e5ff" />
-            </div>
-            <span>{t('login_req_f1', 'HD 1-on-1 Video & Voice Calling')}</span>
-          </div>
-          <div className="login-req-feature-item">
-            <div className="req-feat-icon wallet">
-              <ShieldCheck size={15} color="#FFD700" />
-            </div>
-            <span>{t('login_req_f2', '100% Private & End-to-End Encrypted')}</span>
-          </div>
+          {expert ? (
+            <>
+              <div className="login-req-feature-item">
+                <div className="req-feat-icon call">
+                  <Phone size={15} color="#00e5ff" />
+                </div>
+                <span>{t('login_req_f1', 'HD 1-on-1 Video & Voice Calling')}</span>
+              </div>
+              <div className="login-req-feature-item">
+                <div className="req-feat-icon wallet">
+                  <ShieldCheck size={15} color="#FFD700" />
+                </div>
+                <span>{t('login_req_f2', '100% Private & End-to-End Encrypted')}</span>
+              </div>
+            </>
+          ) : isVip ? (
+            <>
+              <div className="login-req-feature-item">
+                <div className="req-feat-icon call">
+                  <Crown size={15} color="#FFD700" />
+                </div>
+                <span>{t('login_req_vip_f1', 'Daily Free Bonus Coins & Crown Badge')}</span>
+              </div>
+              <div className="login-req-feature-item">
+                <div className="req-feat-icon wallet">
+                  <ShieldCheck size={15} color="#00e5ff" />
+                </div>
+                <span>{t('login_req_secure', '100% Safe & Secure PayU Checkout')}</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="login-req-feature-item">
+                <div className="req-feat-icon wallet">
+                  <Zap size={15} color="#00e5ff" />
+                </div>
+                <span>{t('login_req_instant_credit', 'Instant Coin Credit to Balance')}</span>
+              </div>
+              <div className="login-req-feature-item">
+                <div className="req-feat-icon call">
+                  <ShieldCheck size={15} color="#FFD700" />
+                </div>
+                <span>{t('login_req_secure', '100% Safe & Secure PayU Checkout')}</span>
+              </div>
+            </>
+          )}
         </div>
 
         {/* ════ OPTION 1: LOG IN / CREATE ACCOUNT ════ */}
@@ -145,10 +214,14 @@ export default function LoginRequiredModal({
             <span className="skip-btn-title">
               {expert
                 ? t('skip_and_call', 'Skip & Call as Guest')
+                : isRecharge || isVip
+                ? t('skip_and_pay', 'Skip & Pay as Guest')
                 : t('skip_and_continue', 'Skip & Continue as Guest')}
             </span>
             <span className="skip-btn-sub">
-              {t('skip_btn_sub', 'Proceed directly without login')}
+              {expert
+                ? t('skip_btn_sub_call', 'Proceed directly to call without login')
+                : t('skip_btn_sub_pay', 'Proceed directly to payment without login')}
             </span>
           </div>
           <ArrowRight size={18} className="skip-btn-arrow" />
