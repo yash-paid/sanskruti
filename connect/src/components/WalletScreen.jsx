@@ -79,7 +79,14 @@ export default function WalletScreen({
 
   const handleBuyPack = async (e, pkg) => {
     e?.stopPropagation?.();
-    if (isGuest) {
+    const isGuestSession =
+      Boolean(isGuest) ||
+      (typeof uid === 'string' && uid.startsWith('guest_')) ||
+      (typeof userProfile?.uid === 'string' && userProfile.uid.startsWith('guest_')) ||
+      userProfile?.isGuest === true ||
+      localStorage.getItem('connect_is_guest') === 'true' ||
+      !uid;
+    if (isGuestSession) {
       setShowLoginRequired(true);
       return;
     }

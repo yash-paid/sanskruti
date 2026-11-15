@@ -52,10 +52,12 @@ export default function LoginRequiredModal({
 
         {/* Title & Subtitle */}
         <h2 className="login-req-title">
-          {t('login_req_title', 'Log In Required')}
+          {actionType === 'call' ? 'Log In to do Video Call' : t('login_req_title', 'Log In Required')}
         </h2>
         <p className="login-req-subtitle">
-          {t('login_req_subtitle', 'Please log in or create an account to start calling and recharge coins.')}
+          {actionType === 'call'
+            ? 'Please log in or create an account to start live video call with real experts.'
+            : t('login_req_subtitle', 'Please log in or create an account to recharge coins and start calling.')}
         </p>
 
         {/* Value Highlights */}

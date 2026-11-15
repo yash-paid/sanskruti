@@ -740,7 +740,12 @@ export default function App() {
     } catch (e) {}
 
     // ── FAST PATH 1: Guest Users (0ms latency, 100% offline-ready) ──
-    const isAnon = fallbackData.isGuest || Boolean(auth.currentUser?.isAnonymous);
+    const isAnon =
+      fallbackData.isGuest ||
+      Boolean(auth.currentUser?.isAnonymous) ||
+      (typeof uid === 'string' && uid.startsWith('guest_')) ||
+      localStorage.getItem('connect_is_guest') === 'true';
+
     if (isAnon) {
       setIsGuest(true);
       const guestProfile = {
@@ -753,7 +758,7 @@ export default function App() {
         isGuest: true,
         isProfileComplete: true,
       };
-      setCurrentUid(guestUid);
+      setCurrentUid(uid);
       setUserProfile(guestProfile);
       try {
         localStorage.setItem('connect_is_guest', 'true');
