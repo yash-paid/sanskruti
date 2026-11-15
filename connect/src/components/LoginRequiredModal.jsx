@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Lock, Phone, Wallet, Star, ArrowRight, ShieldCheck } from 'lucide-react';
+import { X, Lock, Phone, Wallet, Star, ArrowRight, ShieldCheck, Zap } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 export function GoogleIcon({ size = 20 }) {
@@ -27,8 +27,10 @@ export function GoogleIcon({ size = 20 }) {
 
 export default function LoginRequiredModal({
   onClose,
+  onSkip,
   onGoToAuth,
   onGoogleLogin,
+  expert = null,
   actionType = 'call', // 'call' | 'recharge'
 }) {
   const { t } = useLanguage();
@@ -41,24 +43,44 @@ export default function LoginRequiredModal({
           <X size={18} color="#fff" strokeWidth={2.4} />
         </button>
 
-        {/* Lock / Alert Illustration */}
-        <div className="login-req-icon-wrap">
-          <div className="login-req-lock-glow" />
-          <div className="login-req-lock-circle">
-            <Lock size={30} color="#ff2a8d" strokeWidth={2.2} />
+        {/* Expert Call Header or Generic Lock Header */}
+        {expert ? (
+          <div className="login-req-expert-header">
+            <div className="login-req-expert-avatar-wrap">
+              <img
+                src={expert.photo}
+                alt={expert.name}
+                className="login-req-expert-avatar"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+              <span className="login-req-expert-badge">📹</span>
+            </div>
+            <h2 className="login-req-title">
+              {t('call_with_expert', 'Call with {name}').replace('{name}', expert.name)}
+            </h2>
+            <p className="login-req-subtitle">
+              {t('login_req_call_subtitle', 'Log in to save your coins & private session, or Skip to call directly as Guest.')}
+            </p>
           </div>
-          <span className="login-req-badge">!</span>
-        </div>
-
-        {/* Title & Subtitle */}
-        <h2 className="login-req-title">
-          {actionType === 'call' ? 'Log In to do Video Call' : t('login_req_title', 'Log In Required')}
-        </h2>
-        <p className="login-req-subtitle">
-          {actionType === 'call'
-            ? 'Please log in or create an account to start live video call with real experts.'
-            : t('login_req_subtitle', 'Please log in or create an account to recharge coins and start calling.')}
-        </p>
+        ) : (
+          <div className="login-req-generic-header">
+            <div className="login-req-icon-wrap">
+              <div className="login-req-lock-glow" />
+              <div className="login-req-lock-circle">
+                <Lock size={30} color="#ff2a8d" strokeWidth={2.2} />
+              </div>
+              <span className="login-req-badge">!</span>
+            </div>
+            <h2 className="login-req-title">
+              {t('login_req_title', 'Log In Required')}
+            </h2>
+            <p className="login-req-subtitle">
+              {t('login_req_subtitle', 'Log in or create an account to save coins, or Skip to continue as Guest.')}
+            </p>
+          </div>
+        )}
 
         {/* Value Highlights */}
         <div className="login-req-features">
@@ -70,60 +92,73 @@ export default function LoginRequiredModal({
           </div>
           <div className="login-req-feature-item">
             <div className="req-feat-icon wallet">
-              <Wallet size={15} color="#FFD700" />
+              <ShieldCheck size={15} color="#FFD700" />
             </div>
             <span>{t('login_req_f2', '100% Private & End-to-End Encrypted')}</span>
           </div>
-          <div className="login-req-feature-item">
-            <div className="req-feat-icon star">
-              <Star size={15} color="#ff2a8d" />
-            </div>
-            <span>{t('login_req_f3', 'Instant Coin Wallet & VIP Benefits')}</span>
-          </div>
         </div>
 
-        {/* Google Sign-In Action */}
-        <button
-          type="button"
-          className="btn-google-auth"
-          onClick={() => {
-            onGoogleLogin?.();
-          }}
-        >
-          <GoogleIcon size={20} />
-          <span>{t('continue_google', 'Continue with Google')}</span>
-        </button>
-
-        {/* Divider */}
-        <div className="login-req-divider">
-          <div className="req-div-line" />
-          <span className="req-div-text">{t('or', 'OR')}</span>
-          <div className="req-div-line" />
-        </div>
-
-        {/* Main Sign Up Button (Redirects to signup page) */}
-        <button
-          type="button"
-          className="btn-primary-action req-signup-btn"
-          onClick={() => onGoToAuth?.('signup')}
-        >
-          <span>{t('create_account', 'Create New Account')}</span>
-          <ArrowRight size={19} className="btn-action-arrow" />
-        </button>
-
-        {/* Existing User Login Link */}
-        <div className="login-req-footer">
-          <span>{t('already_account', 'Already have an account?')} </span>
+        {/* ════ OPTION 1: LOG IN / CREATE ACCOUNT ════ */}
+        <div className="login-req-action-block">
           <button
             type="button"
-            className="login-req-switch-btn"
+            className="btn-primary-action req-signup-btn req-option-login-btn"
             onClick={() => onGoToAuth?.('login')}
           >
-            {t('login_link', 'Log In')}
+            <span>🔐 {t('login_or_create', 'Log In / Create Account')}</span>
+            <ArrowRight size={18} className="btn-action-arrow" />
           </button>
+
+          <button
+            type="button"
+            className="btn-google-auth req-google-btn"
+            onClick={() => {
+              onGoogleLogin?.();
+            }}
+          >
+            <GoogleIcon size={19} />
+            <span>{t('continue_google', 'Continue with Google')}</span>
+          </button>
+        </div>
+
+        {/* ════ DIVIDER: OR ════ */}
+        <div className="login-req-divider">
+          <div className="req-div-line" />
+          <span className="req-div-text">{t('or_label', 'OR')}</span>
+          <div className="req-div-line" />
+        </div>
+
+        {/* ════ OPTION 2: SKIP TO PROCEED AS GUEST ════ */}
+        <button
+          type="button"
+          className="btn-skip-guest-action"
+          onClick={() => {
+            if (onSkip) {
+              onSkip();
+            } else {
+              onClose?.();
+            }
+          }}
+        >
+          <span className="skip-btn-badge">⚡</span>
+          <div className="skip-btn-text">
+            <span className="skip-btn-title">
+              {expert
+                ? t('skip_and_call', 'Skip & Call as Guest')
+                : t('skip_and_continue', 'Skip & Continue as Guest')}
+            </span>
+            <span className="skip-btn-sub">
+              {t('skip_btn_sub', 'Proceed directly without login')}
+            </span>
+          </div>
+          <ArrowRight size={18} className="skip-btn-arrow" />
+        </button>
+
+        {/* Bottom subtle note */}
+        <div className="login-req-footer">
+          <span>{t('guest_can_login_anytime', 'You can log in anytime from the menu.')}</span>
         </div>
       </div>
     </div>
   );
 }
-

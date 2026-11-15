@@ -63,6 +63,7 @@ export default function WalletScreen({
   });
   const [showTransactions, setShowTransactions] = useState(false);
   const [showLoginRequired, setShowLoginRequired] = useState(false);
+  const [pendingRechargePack, setPendingRechargePack] = useState(null);
 
   // Sync selected pack if the selected one gets purchased
   useEffect(() => {
@@ -79,14 +80,8 @@ export default function WalletScreen({
 
   const handleBuyPack = async (e, pkg) => {
     e?.stopPropagation?.();
-    const isGuestSession =
-      Boolean(isGuest) ||
-      (typeof uid === 'string' && uid.startsWith('guest_')) ||
-      (typeof userProfile?.uid === 'string' && userProfile.uid.startsWith('guest_')) ||
-      userProfile?.isGuest === true ||
-      localStorage.getItem('connect_is_guest') === 'true' ||
-      !uid;
-    if (isGuestSession) {
+    if (isGuest) {
+      setPendingRechargePack(pkg);
       setShowLoginRequired(true);
       return;
     }
@@ -385,11 +380,26 @@ export default function WalletScreen({
         <TransactionsModal uid={uid} coins={coins} onClose={() => setShowTransactions(false)} />
       )}
 
-      {/* ── Login Required Modal for Guests ── */}
+      {/* ── Login Required Modal for Guests (Offers Log In OR Skip) ── */}
       {showLoginRequired && (
         <LoginRequiredModal
           actionType="recharge"
-          onClose={() => setShowLoginRequired(false)}
+          onClose={() => {
+            setShowLoginRequired(false);
+            setPendingRechargePack(null);
+          }}
+          onSkip={async () => {
+            const pkg = pendingRechargePack;
+            setShowLoginRequired(false);
+            setPendingRechargePack(null);
+            if (pkg && onInitiateRecharge) {
+              try {
+                await onInitiateRecharge(pkg);
+              } catch (err) {
+                onToast?.(err.message || 'Payment initiation failed.');
+              }
+            }
+          }}
           onGoToAuth={(mode) => {
             setShowLoginRequired(false);
             onRequireLogin?.(mode);

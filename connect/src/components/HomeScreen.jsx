@@ -582,15 +582,7 @@ export default function HomeScreen({
 
   // Intercept call: verify guest status and coin balance
   const handleCall = (expert) => {
-    const isGuestSession =
-      Boolean(isGuest) ||
-      (typeof uid === 'string' && uid.startsWith('guest_')) ||
-      (typeof userProfile?.uid === 'string' && userProfile.uid.startsWith('guest_')) ||
-      userProfile?.isGuest === true ||
-      localStorage.getItem('connect_is_guest') === 'true' ||
-      !uid;
-
-    if (isGuestSession) {
+    if (isGuest) {
       setLoginReqAction('call');
       return;
     }
@@ -702,13 +694,7 @@ export default function HomeScreen({
           <div
             className="coin-wallet"
             onClick={() => {
-              const isGuestSession =
-                Boolean(isGuest) ||
-                (typeof uid === 'string' && uid.startsWith('guest_')) ||
-                userProfile?.isGuest === true ||
-                localStorage.getItem('connect_is_guest') === 'true' ||
-                !uid;
-              if (isGuestSession) {
+              if (isGuest) {
                 setLoginReqAction('recharge');
                 return;
               }
@@ -723,13 +709,7 @@ export default function HomeScreen({
               aria-label="Add Coins"
               onClick={(e) => {
                 e.stopPropagation();
-                const isGuestSession =
-                  Boolean(isGuest) ||
-                  (typeof uid === 'string' && uid.startsWith('guest_')) ||
-                  userProfile?.isGuest === true ||
-                  localStorage.getItem('connect_is_guest') === 'true' ||
-                  !uid;
-                if (isGuestSession) {
+                if (isGuest) {
                   setLoginReqAction('recharge');
                   return;
                 }
@@ -976,11 +956,33 @@ export default function HomeScreen({
         />
       )}
 
-      {/* ── Login Required Modal for Guests ── */}
+      {/* ── Login Required Modal for Guests (Offers Log In OR Skip) ── */}
       {loginReqAction && (
         <LoginRequiredModal
           actionType={loginReqAction}
-          onClose={() => setLoginReqAction(null)}
+          expert={pendingCallExpert}
+          onClose={() => {
+            setLoginReqAction(null);
+            setPendingCallExpert(null);
+          }}
+          onSkip={() => {
+            const expert = pendingCallExpert;
+            setLoginReqAction(null);
+            if (expert) {
+              const isTop = expert.id === 'simran' || expert.id === 'uma' || expert.top;
+              const callRate = isTop ? 65 : (Number(expert.price) || 30);
+              const userCoins = Number(coins) || 0;
+              if (userCoins < callRate) {
+                // Open Recharge coins modal directly for this expert so guest can pay & call!
+                setInsufficientModal(true);
+              } else {
+                // Sufficient coins -> start call directly as guest!
+                setCallingExpert(expert);
+              }
+            } else if (onOpenWallet) {
+              onOpenWallet();
+            }
+          }}
           onGoToAuth={(targetMode) => {
             setLoginReqAction(null);
             onRequireLogin?.(targetMode);

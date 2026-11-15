@@ -6611,6 +6611,124 @@ html, body {
   color: #ff5eb0;
 }
 
+/* ── Expert Call Header in Login Req Modal ── */
+.login-req-expert-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.login-req-expert-avatar-wrap {
+  position: relative;
+  width: 74px;
+  height: 74px;
+  margin-bottom: 10px;
+}
+
+.login-req-expert-avatar {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2.5px solid var(--primary-pink);
+  box-shadow: 0 0 20px rgba(255, 42, 141, 0.55);
+}
+
+.login-req-expert-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #00e5ff, #0091ea);
+  border: 2px solid #1f072c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.login-req-action-block {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.req-option-login-btn {
+  width: 100%;
+  height: 48px;
+  margin-bottom: 0;
+  box-shadow: 0 4px 18px rgba(255, 42, 141, 0.45);
+}
+
+.req-google-btn {
+  height: 46px;
+  margin-bottom: 0;
+  font-size: 14px;
+}
+
+/* ── Option 2: Skip Button ── */
+.btn-skip-guest-action {
+  width: 100%;
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  color: #fff;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  margin-bottom: 12px;
+}
+
+.btn-skip-guest-action:hover {
+  background: rgba(255, 42, 141, 0.16);
+  border-color: rgba(255, 42, 141, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(255, 42, 141, 0.25);
+}
+
+.skip-btn-badge {
+  font-size: 18px;
+}
+
+.skip-btn-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+  margin-left: 10px;
+}
+
+.skip-btn-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.skip-btn-sub {
+  font-size: 11px;
+  color: #c9b4d5;
+  font-weight: 400;
+}
+
+.skip-btn-arrow {
+  color: #c9b4d5;
+  transition: transform 0.2s ease;
+}
+
+.btn-skip-guest-action:hover .skip-btn-arrow {
+  color: #ff5eb0;
+  transform: translateX(3px);
+}
+
 /* ══════════════════════════════════════════════════════════════
    PART 1: DAILY LOGIN REWARD POPUP MODAL
    ══════════════════════════════════════════════════════════════ */
