@@ -109,30 +109,70 @@ const getUrlForPage = (pageName) => {
   return `/connect/${pageName}`;
 };
 
-const getInitialPage = () => {
-  const urlPage = getPageFromUrl();
-  const isGuest = (() => {
-    try {
-      return localStorage.getItem('connect_is_guest') === 'true';
-    } catch (e) {
+// Default Guest profile template for frictionless 0ms instant browsing
+const createDefaultGuestProfile = (existingUid) => {
+  const guestUid = existingUid || `guest_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+  return {
+    uid: guestUid,
+    userId: 'CN-' + guestUid.replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase(),
+    name: 'Guest User',
+    username: '@guest_' + guestUid.slice(-4),
+    avatar: '/default-avatars/1.png',
+    dob: '2000-01-01',
+    isGuest: true,
+    isProfileComplete: true,
+  };
+};
+
+// Ensure guest credentials exist if user has no active authenticated account
+const ensureGuestIfNoAuth = () => {
+  try {
+    const storedPhone = getStoredPhoneUser();
+    const storedSessionRaw = localStorage.getItem('connect_user_session');
+    let storedSession = null;
+    if (storedSessionRaw) {
+      try { storedSession = JSON.parse(storedSessionRaw); } catch (_) {}
+    }
+    const isLoggedIn = localStorage.getItem('connect_logged_in') === 'true';
+    const isGuestFlag = localStorage.getItem('connect_is_guest') === 'true';
+
+    // If user has a real account, preserve it
+    if (isLoggedIn && (storedPhone || (storedSession && !storedSession.isGuest)) && !isGuestFlag) {
       return false;
     }
-  })();
+
+    // Auto-setup guest session if not logged in with real account
+    let guestUid = localStorage.getItem('connect_last_auth_uid');
+    if (!guestUid || !guestUid.startsWith('guest_')) {
+      guestUid = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    }
+    const guestProfile = createDefaultGuestProfile(guestUid);
+    localStorage.setItem('connect_is_guest', 'true');
+    localStorage.setItem('connect_logged_in', 'true');
+    localStorage.setItem('connect_last_auth_uid', guestUid);
+    if (!localStorage.getItem('connect_user_profile')) {
+      localStorage.setItem('connect_user_profile', JSON.stringify(guestProfile));
+    }
+    if (!localStorage.getItem('connect_user_session')) {
+      localStorage.setItem('connect_user_session', JSON.stringify(guestProfile));
+    }
+    return true;
+  } catch (e) {
+    return true;
+  }
+};
+
+const getInitialPage = () => {
+  const urlPage = getPageFromUrl();
+  ensureGuestIfNoAuth();
+
   const storedPhone = getStoredPhoneUser();
-  const hasPhoneSession = Boolean(storedPhone);
   const storedSession = (() => {
     try {
       const raw = localStorage.getItem('connect_user_session');
       return raw ? JSON.parse(raw) : null;
     } catch (e) {
       return null;
-    }
-  })();
-  const isLoggedInFlag = (() => {
-    try {
-      return localStorage.getItem('connect_logged_in') === 'true';
-    } catch (e) {
-      return false;
     }
   })();
   const lastAuthUid = (() => {
@@ -142,14 +182,6 @@ const getInitialPage = () => {
       return '';
     }
   })();
-
-  const hasAuth =
-    isLoggedInFlag ||
-    Boolean(storedSession) ||
-    Boolean(lastAuthUid) ||
-    Boolean(auth.currentUser) ||
-    hasPhoneSession ||
-    isGuest;
 
   const currentUid =
     auth.currentUser?.uid ||
@@ -175,10 +207,8 @@ const getInitialPage = () => {
   }
 
   if (urlPage) {
-    // Protected pages require authentication
-    if (!hasAuth && (urlPage === 'wallet' || urlPage === 'profile' || urlPage === 'vip' || urlPage === 'setup-profile')) {
-      return 'login';
-    }
+    // Only go to login if URL explicitly requested /connect/login
+    if (urlPage === 'login') return 'login';
     return urlPage;
   }
 
@@ -186,22 +216,19 @@ const getInitialPage = () => {
   try {
     const savedPage = localStorage.getItem('connect_current_page');
     if (savedPage && VALID_PAGES.includes(savedPage)) {
-      if (!hasAuth && (savedPage === 'wallet' || savedPage === 'profile' || savedPage === 'vip' || savedPage === 'setup-profile')) {
-        return 'login';
-      }
-      if (savedPage === 'setup-profile' && currentUid && isProfileSetupDone(currentUid)) {
+      if (savedPage === 'login') {
+        // When opening the URL fresh, default to home instead of staying on login
         return 'home';
       }
-      // If user has an active authenticated session, never show login page
-      if (hasAuth && savedPage === 'login') {
+      if (savedPage === 'setup-profile' && currentUid && isProfileSetupDone(currentUid)) {
         return 'home';
       }
       return savedPage;
     }
   } catch (e) {}
 
-  // 3. Fallback to home if authenticated or guest, else login
-  return hasAuth ? 'home' : 'login';
+  // 3. Fallback: ALWAYS 'home' by default!
+  return 'home';
 };
 
 const calculateLedgerBalance = (uid) => {
@@ -228,7 +255,7 @@ export default function App() {
   // Pages: 'login' | 'setup-profile' | 'home' | 'wallet' | 'profile' | 'vip'
   const [page, setPage] = useState(getInitialPage);
 
-  // User Profile state for authenticated user (instant restore from session)
+  // User Profile state for authenticated user (instant restore from session or default guest)
   const [userProfile, setUserProfile] = useState(() => {
     try {
       const raw = localStorage.getItem('connect_user_session') || localStorage.getItem('connect_user_profile');
@@ -249,15 +276,17 @@ export default function App() {
         };
       }
     } catch (e) {}
-    return {
-      name: '',
-      username: '',
-      phone: '',
-      userId: '',
-      avatar: '/default-avatars/1.png',
-      dob: '2000-01-01',
-      isProfileComplete: false,
-    };
+    // Automatic fallback to Guest User
+    const guestUid = localStorage.getItem('connect_last_auth_uid') || `guest_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const guestProf = createDefaultGuestProfile(guestUid);
+    try {
+      localStorage.setItem('connect_user_profile', JSON.stringify(guestProf));
+      localStorage.setItem('connect_user_session', JSON.stringify(guestProf));
+      localStorage.setItem('connect_is_guest', 'true');
+      localStorage.setItem('connect_logged_in', 'true');
+      localStorage.setItem('connect_last_auth_uid', guestUid);
+    } catch (_) {}
+    return guestProf;
   });
 
   const [currentUid, setCurrentUid] = useState(() => {
@@ -272,6 +301,7 @@ export default function App() {
           return null;
         }
       })() ||
+      userProfile?.uid ||
       null
     );
   });
@@ -496,12 +526,23 @@ export default function App() {
     return getStoredVipEntitlement(initialUid);
   });
 
-  // Guest user status (Guests can browse but cannot call or buy coins without logging in)
+  // Guest user status (Default to true so first-time visitors automatically browse as guest)
   const [isGuest, setIsGuest] = useState(() => {
     try {
-      return localStorage.getItem('connect_is_guest') === 'true';
+      const storedPhone = getStoredPhoneUser();
+      const raw = localStorage.getItem('connect_user_session');
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p && !p.isGuest && (p.uid || p.userId) && localStorage.getItem('connect_is_guest') === 'false') {
+          return false;
+        }
+      }
+      if (storedPhone && localStorage.getItem('connect_is_guest') === 'false') {
+        return false;
+      }
+      return true;
     } catch (e) {
-      return false;
+      return true;
     }
   });
 
@@ -622,8 +663,10 @@ export default function App() {
         Boolean(localStorage.getItem('connect_last_auth_uid')) ||
         isGuestUser;
 
-      if (!targetPage || targetPage === 'home' || targetPage === 'login') {
-        targetPage = hasAuth ? 'home' : 'login';
+      if (!targetPage || targetPage === 'home') {
+        targetPage = 'home';
+      } else if (targetPage === 'login') {
+        targetPage = 'login';
       } else if (!hasAuth && (targetPage === 'wallet' || targetPage === 'profile' || targetPage === 'vip' || targetPage === 'setup-profile')) {
         targetPage = 'login';
       } else if (targetPage === 'setup-profile' && (auth.currentUser?.uid || getStoredPhoneUser()?.uid)) {
@@ -911,16 +954,18 @@ export default function App() {
         }
 
         if (!isGuestUser && !isLoggedInFlag) {
-          setPage((prevPage) => {
-            if (prevPage !== 'login') {
-              try {
-                localStorage.setItem('connect_current_page', 'login');
-                window.history.replaceState({ page: 'login' }, '', getUrlForPage('login'));
-              } catch (e) {}
-              return 'login';
-            }
-            return prevPage;
-          });
+          ensureGuestIfNoAuth();
+          const guestUid = localStorage.getItem('connect_last_auth_uid');
+          const guestProfile = createDefaultGuestProfile(guestUid);
+          setIsGuest(true);
+          setCurrentUid(guestUid);
+          setUserProfile(guestProfile);
+          const explicitUrlPage = getPageFromUrl();
+          if (explicitUrlPage === 'login') {
+            setPage('login');
+          } else {
+            setPage((prevPage) => (prevPage === 'login' ? 'home' : (prevPage || 'home')));
+          }
         }
       }
     });
