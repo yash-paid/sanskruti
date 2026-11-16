@@ -472,6 +472,29 @@ export default function VipScreen({
                     </div>
                   ))}
                 </div>
+
+                <div className="vip-plan-action-row">
+                  <button
+                    type="button"
+                    className={`vip-plan-card-btn ${isSelected ? 'selected-plan-btn' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelectPlan(plan);
+                      if (!isPlanActive) {
+                        handleSubscribe();
+                      }
+                    }}
+                  >
+                    <span>
+                      {isPlanActive
+                        ? '🔒 Currently Active'
+                        : isSelected
+                        ? `⚡ Upgrade to ${plan.name} • ₹${plan.price}`
+                        : `Select ${plan.name} • ₹${plan.price}`}
+                    </span>
+                    {!isPlanActive && <ArrowRight size={16} />}
+                  </button>
+                </div>
               </div>
             );
           })}

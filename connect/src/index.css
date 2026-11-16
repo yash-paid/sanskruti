@@ -4897,12 +4897,21 @@ html, body {
 
 /* Scrollable Content */
 .vip-content {
-  flex: 1;
+  flex: 1 1 0%;
+  min-height: 0;
   overflow-y: auto;
-  padding: 16px 16px 100px 16px;
+  overflow-x: hidden;
+  padding: 16px 16px 120px 16px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+.vip-content > * {
+  flex-shrink: 0;
+  min-height: min-content;
 }
 
 /* Hero Status Card */
@@ -4912,11 +4921,13 @@ html, body {
   border-radius: 24px;
   padding: 22px 18px;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 25px rgba(255, 215, 0, 0.25);
   display: flex;
   align-items: flex-start;
   gap: 16px;
+  flex-shrink: 0;
+  min-height: fit-content;
 }
 
 .vip-hero-card.active-vip-hero {
@@ -5008,17 +5019,53 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  flex-shrink: 0;
 }
 
 .vip-plan-card {
   background: rgba(22, 3, 30, 0.9);
   border: 1.5px solid rgba(255, 255, 255, 0.12);
   border-radius: 22px;
-  padding: 18px 16px;
+  padding: 18px 16px 16px 16px;
   position: relative;
   cursor: pointer;
   transition: all 0.22s ease;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+  min-height: fit-content;
+}
+
+.vip-plan-action-row {
+  margin-top: 14px;
+  width: 100%;
+}
+
+.vip-plan-card-btn {
+  width: 100%;
+  padding: 11px 16px;
+  border-radius: 9999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-main);
+}
+
+.vip-plan-card-btn.selected-plan-btn {
+  background: linear-gradient(90deg, #ff2a8d 0%, #ff5eb0 100%);
+  border-color: #ff2a8d;
+  box-shadow: 0 4px 18px rgba(255, 42, 141, 0.55);
+}
+
+.vip-plan-card-btn:hover {
+  transform: translateY(-1px);
 }
 
 .vip-plan-card.selected {
@@ -5198,14 +5245,16 @@ html, body {
   background: linear-gradient(135deg, rgba(32, 6, 44, 0.98) 0%, rgba(14, 2, 22, 0.99) 100%);
   border: 1.5px solid var(--plan-accent, #ff2a8d);
   border-radius: 22px;
-  padding: 16px 18px 18px 18px;
+  padding: 18px 20px 20px 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.8), 0 0 25px var(--plan-glow, rgba(255, 42, 141, 0.35));
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.3s ease;
+  flex-shrink: 0;
+  min-height: fit-content;
 }
 
 .vip-cta-card.locked-cta-card {
