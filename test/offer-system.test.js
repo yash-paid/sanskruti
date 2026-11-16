@@ -201,12 +201,12 @@ it('should apply 50% discount on eBooks when SANSKRUTI50 coupon is used', () => 
 
 // Group 9: Daily-Fixed Deterministic Offer Pair (Zero Refresh Randomness)
 console.log('\n9. Daily-Fixed Deterministic Offer Pair (Zero Refresh Randomness):');
-it('should return exactly 2 items where first is membership and second is non-membership', () => {
+it('should return exactly 2 items where first is 15-day membership and second is non-membership', () => {
   const pair = getDailyOfferPair(new Date('2026-11-09T12:00:00+05:30'));
   assert.strictEqual(pair.length, 2);
-  const isFirstSub = pair[0].itemId === 'service-sub-7' || pair[0].itemId === 'service-sub-15';
+  const isFirstSub = pair[0].itemId === 'service-sub-15';
   const isSecondNotSub = pair[1].itemId !== 'service-sub-7' && pair[1].itemId !== 'service-sub-15';
-  assert.strictEqual(isFirstSub, true, 'First offer must be a membership');
+  assert.strictEqual(isFirstSub, true, 'First offer must always be 15-day membership');
   assert.strictEqual(isSecondNotSub, true, 'Second offer must not be a membership');
 });
 
@@ -221,13 +221,22 @@ it('should produce identical results 1000/1000 times on the same date (zero rand
   }
 });
 
-it('should include dailyOfferPair in getActiveOfferPayload API response', () => {
+it('should include dailyOfferPair in getActiveOfferPayload API response with 15-day membership as offer 1', () => {
   const payload = getActiveOfferPayload(new Date('2026-11-09T14:30:00+05:30'));
   assert.strictEqual(payload.success, true);
   assert(Array.isArray(payload.dailyOfferPair));
   assert.strictEqual(payload.dailyOfferPair.length, 2);
-  assert.strictEqual(payload.dailyOfferPair[0].itemId, 'service-sub-7');
+  assert.strictEqual(payload.dailyOfferPair[0].itemId, 'service-sub-15');
   assert.strictEqual(payload.dailyOfferPair[1].itemId, 'service-vid-5');
+});
+
+it('should always select 15-day membership (service-sub-15) across every day of the year', () => {
+  for (let d = 1; d <= 365; d++) {
+    const testDate = new Date('2026-01-01T12:00:00+05:30');
+    testDate.setDate(d);
+    const pair = getDailyOfferPair(testDate);
+    assert.strictEqual(pair[0].itemId, 'service-sub-15', `Day ${d} did not return service-sub-15 as first offer`);
+  }
 });
 
 it('should prioritize photo/video highest (>60%), video call second (>20%), and chat/voice lowest (<15%)', () => {

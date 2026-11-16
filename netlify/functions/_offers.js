@@ -308,7 +308,7 @@ const SECOND_OFFER_ROTATION = [
 
 /**
  * Returns a deterministic, daily-fixed pair of offers for Asia/Kolkata date
- * First offer: Always a membership (alternates between 7-day and 15-day)
+ * First offer: Always 15-day VIP Membership (service-sub-15)
  * Second offer: High-priority product rotating deterministically per day
  * Guarantees zero randomness: all visitors on the same date see identical offers
  */
@@ -316,8 +316,8 @@ function getDailyOfferPair(dateObj) {
   const kolkataDate = getKolkataTime(dateObj);
   const dayOfYear = getDayOfYear(kolkataDate);
 
-  // Rule 2: First offer is always a membership (7-day or 15-day)
-  const membershipId = (dayOfYear % 2 === 0) ? 'service-sub-15' : 'service-sub-7';
+  // Rule 2: First offer is always the 15-day membership
+  const membershipId = 'service-sub-15';
   // Rule 3: Second offer rotates deterministically through high-priority items
   const secondOfferId = SECOND_OFFER_ROTATION[dayOfYear % SECOND_OFFER_ROTATION.length];
 
@@ -337,7 +337,7 @@ function getActiveOfferPayload(customTime) {
   const dailyOfferPair = getDailyOfferPair(kolkataDate);
 
   // Backward compatible default single offer mapping
-  const defaultSub = APPROVED_DISCOUNTS['service-sub-7'] || discountsList[0];
+  const defaultSub = APPROVED_DISCOUNTS['service-sub-15'] || discountsList[0];
   const legacyOffer = {
     offerId: `${campaign.campaignId}_${defaultSub.itemId}`,
     type: campaign.type,

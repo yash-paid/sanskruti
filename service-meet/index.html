@@ -1450,7 +1450,7 @@
           const now = data.serverTime ? new Date(data.serverTime) : new Date();
           const startOfYear = new Date(now.getFullYear(), 0, 1);
           const dayOfYear = Math.floor((now - startOfYear) / 86400000) + 1;
-          const membershipId = (dayOfYear % 2 === 0) ? 'service-sub-15' : 'service-sub-7';
+          const membershipId = 'service-sub-15';
           const secondRotation = [
             'service-vid-5', 'service-combo-1', 'service-vc-30', 'service-pic-10',
             'service-vid-5', 'service-vc-10', 'service-combo-1', 'service-pic-5',
@@ -1460,7 +1460,7 @@
             'service-combo-1'
           ];
           const secondId = secondRotation[dayOfYear % secondRotation.length];
-          const firstOffer = allDiscounts.find(d => d.itemId === membershipId) || allDiscounts.find(d => d.itemId === 'service-sub-7');
+          const firstOffer = allDiscounts.find(d => d.itemId === membershipId) || allDiscounts.find(d => d.itemId === 'service-sub-15');
           const secondOffer = allDiscounts.find(d => d.itemId === secondId) || allDiscounts.find(d => d.itemId === 'service-vid-5');
           selectedPair = [firstOffer, secondOffer];
         }
