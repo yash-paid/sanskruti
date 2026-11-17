@@ -663,7 +663,7 @@
       <!-- Quick Details Form -->
       <div class="vc-cust-form">
         <input type="text" id="vcCustName" value="Guest" placeholder="Your Name" class="vc-input">
-        <input type="tel" id="vcCustPhone" maxlength="10" value="9183053829" placeholder="10-digit WhatsApp Phone" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="vc-input">
+        <input type="tel" id="vcCustPhone" maxlength="10" value="8820182713" placeholder="10-digit WhatsApp Phone" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="vc-input">
         <input type="email" id="vcCustEmail" value="paid32041@gmail.com" placeholder="Email" class="vc-input">
         <div id="vcCustError" style="display: none; color: #ef4444; font-size: 11px; margin-top: 4px; font-weight: 600;"></div>
       </div>
@@ -751,7 +751,7 @@
       const btn = document.getElementById('vcUpgradePayBtn');
 
       const name = (nameInput && nameInput.value.trim()) || 'Guest';
-      const phone = (phoneInput && phoneInput.value.trim().replace(/[^0-9]/g, '')) || '9183053829';
+      const phone = (phoneInput && phoneInput.value.trim().replace(/[^0-9]/g, '')) || '8820182713';
       const email = (emailInput && emailInput.value.trim()) || 'paid32041@gmail.com';
 
       if (!phone || phone.length !== 10) {
@@ -881,7 +881,7 @@
           <a id="btnMediaAccess" href="${mediaFolderUrl}" class="btn-whatsapp-action" style="background: linear-gradient(135deg, #ff2a74, #8a2be2); box-shadow: 0 4px 18px rgba(255, 42, 116, 0.45); margin-bottom: 0.6rem;">
             📥 View & Download Your Photos / Videos Now →
           </a>
-          <a href="https://wa.me/919183053829?text=${initialWaText}" target="_blank" class="btn-whatsapp-action">
+          <a href="https://wa.me/918820182713?text=${initialWaText}" target="_blank" class="btn-whatsapp-action">
             💬 Activate / Chat on WhatsApp
           </a>
           <a href="/service/" class="btn-secondary-action">
@@ -901,7 +901,7 @@
           const upgradeWaText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for the Video Call VIP Upgrade (₹${amount})! Order #${txnid || 'N/A'}. PayU Ref: ${mihpayid || 'N/A'}. Please start my Full Face, Body & Audio VIP Video Call.`);
           const waBtn = actionButtons.querySelector('a[href*="wa.me"]');
           if (waBtn) {
-            waBtn.href = `https://wa.me/919183053829?text=${upgradeWaText}`;
+            waBtn.href = `https://wa.me/918820182713?text=${upgradeWaText}`;
           }
         } else {
           let vcType = null;
@@ -979,7 +979,7 @@
 
                 const waBtn = actionButtons.querySelector('a[href*="wa.me"]');
                 if (waBtn) {
-                  waBtn.href = `https://wa.me/919183053829?text=${verifiedWaText}`;
+                  waBtn.href = `https://wa.me/918820182713?text=${verifiedWaText}`;
                 }
               }
             }
@@ -1002,7 +1002,7 @@
           <a href="/service/#services" class="btn-primary-action">
             ↻ Choose Package & Try Again
           </a>
-          <a href="https://wa.me/919183053829?text=${encodeURIComponent('Hello Sanskruti, I cancelled payment for order ' + txnid + '. I have a question before paying.')}" target="_blank" class="btn-whatsapp-action">
+          <a href="https://wa.me/918820182713?text=${encodeURIComponent('Hello Sanskruti, I cancelled payment for order ' + txnid + '. I have a question before paying.')}" target="_blank" class="btn-whatsapp-action">
             💬 Have Questions? Ask on WhatsApp
           </a>
           <a href="/service/" class="btn-secondary-action">
@@ -1024,7 +1024,7 @@
           <a href="/service/#services" class="btn-primary-action">
             ↻ Retry Booking / Choose Package
           </a>
-          <a href="https://wa.me/919183053829?text=${encodeURIComponent('Hello Sanskruti, my payment failed for Order ' + txnid + '. Error: ' + errorMsg)}" target="_blank" class="btn-whatsapp-action">
+          <a href="https://wa.me/918820182713?text=${encodeURIComponent('Hello Sanskruti, my payment failed for Order ' + txnid + '. Error: ' + errorMsg)}" target="_blank" class="btn-whatsapp-action">
             💬 Payment Help via WhatsApp
           </a>
           <a href="/service/" class="btn-secondary-action">
@@ -1044,7 +1044,7 @@
 
         actionButtons.innerHTML = `
           <button onclick="window.location.reload()" class="btn-primary-action">🔄 Refresh Status</button>
-          <a href="https://wa.me/919183053829?text=${encodeURIComponent('Hello Sanskruti, my payment is pending for Order ' + txnid)}" target="_blank" class="btn-whatsapp-action">
+          <a href="https://wa.me/918820182713?text=${encodeURIComponent('Hello Sanskruti, my payment is pending for Order ' + txnid)}" target="_blank" class="btn-whatsapp-action">
             💬 Inquire on WhatsApp
           </a>
           <a href="/service/" class="btn-secondary-action">
@@ -1064,7 +1064,7 @@
 
         actionButtons.innerHTML = `
           <a href="/service/" class="btn-secondary-action">← Return to Services</a>
-          <a href="https://wa.me/919183053829" target="_blank" class="btn-whatsapp-action">💬 WhatsApp Support</a>
+          <a href="https://wa.me/918820182713" target="_blank" class="btn-whatsapp-action">💬 WhatsApp Support</a>
         `;
       }
     });
