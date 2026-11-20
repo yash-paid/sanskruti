@@ -29,6 +29,18 @@ sanskruti_orders.json
 Thumbs.db
 Desktop.ini
 
+# Android builds and APKs/AABs
+*.apk
+*.aab
+connect/android/
+connect/assets/videos-backup/
+
+# Migration backups and temporary scratch
+BACKUP_BEFORE_PS_ROOT_MIGRATION_2026/
+scratch/
+.vscode/
+sanskruti_ps_store.json
+
 # Local Netlify folder
 .netlify
 

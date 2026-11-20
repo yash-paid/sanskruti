@@ -2,9 +2,14 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const querystring = require('querystring');
 
 const PORT = process.env.PORT || 3000;
+if (!process.env.SITE_URL) {
+  process.env.SITE_URL = `http://localhost:${PORT}`;
+}
 const ROOT = __dirname;
+const FUNCTIONS_DIR = path.join(ROOT, 'netlify', 'functions');
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -29,17 +34,84 @@ const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url);
   let pathname = decodeURIComponent(parsedUrl.pathname);
 
+  // ==================== NETLIFY FUNCTIONS DISPATCHER ====================
+  let functionName = null;
+  if (pathname.startsWith('/api/')) {
+    functionName = pathname.slice(5).split('/')[0];
+  } else if (pathname.startsWith('/.netlify/functions/')) {
+    functionName = pathname.slice(20).split('/')[0];
+  }
+
+  if (functionName) {
+    const fnFile = path.join(FUNCTIONS_DIR, `${functionName}.js`);
+    if (fs.existsSync(fnFile)) {
+      let bodyData = '';
+      req.on('data', chunk => {
+        bodyData += chunk;
+      });
+      req.on('end', async () => {
+        try {
+          // Clear require cache for live development reloads
+          delete require.cache[require.resolve(fnFile)];
+          const { handler } = require(fnFile);
+          const netlifyEvent = {
+            path: pathname,
+            httpMethod: req.method,
+            headers: req.headers,
+            queryStringParameters: parsedUrl.query ? querystring.parse(parsedUrl.query) : {},
+            body: bodyData
+          };
+          const context = {};
+          const result = await handler(netlifyEvent, context);
+
+          res.writeHead(result.statusCode || 200, {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, X-Idempotency-Key',
+            'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+            ...(result.headers || {})
+          });
+          res.end(result.body || '');
+        } catch (err) {
+          console.error(`[DEV SERVER FUNCTION ERROR] ${functionName}:`, err);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: err.message }));
+        }
+      });
+      return;
+    }
+  }
+
+  // Security block: Prevent public access to backup files
+  if (pathname.toUpperCase().includes('BACKUP_')) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    res.end('404 Not Found');
+    return;
+  }
+
   // Normalize path
-  if (pathname === '/connect' || pathname === '/connect/') {
-    pathname = '/connect/index.html';
+  if (pathname.toLowerCase() === '/ps' || pathname.toLowerCase() === '/ps/') {
+    res.writeHead(301, { 'Location': '/' });
+    res.end();
+    return;
+  } else if (pathname.startsWith('/ps/')) {
+    pathname = '/PS/' + pathname.slice(4);
+  } else if (pathname === '/ebook' || pathname === '/ebook/') {
+    pathname = '/ebook-home.html';
+  } else if (pathname === '/connect' || pathname === '/connect/') {
+    pathname = '/connect/dist/index.html';
   } else if (pathname === '/meeting' || pathname === '/meeting/') {
     pathname = '/meeting/index.html';
   } else if (pathname.startsWith('/meeting/') && !path.extname(pathname)) {
     pathname = '/meeting/index.html';
   } else if (pathname === '/service' || pathname === '/service/') {
     pathname = '/service-meet/index.html';
-  } else if (pathname === '/') {
+  } else if (pathname.startsWith('/service/') && !path.extname(pathname)) {
     pathname = '/service-meet/index.html';
+  } else if (pathname === '/wa.vc' || pathname === '/wa.vc/' || pathname === '/wa-vc' || pathname === '/wa-vc/') {
+    pathname = '/wa-vc/index.html';
+  } else if (pathname === '/') {
+    // Primary Homepage is now the PlayStation Events Platform
+    pathname = '/index.html';
   }
 
   let filePath = path.join(ROOT, pathname);

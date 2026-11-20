@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="whiteFin" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#f1f5f9"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="whiteFinShadow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="80%" stop-color="#cbd5e1"/>
+      <stop offset="100%" stop-color="#94a3b8"/>
+    </linearGradient>
+    <linearGradient id="darkCenter" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="60%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="blueGlow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <filter id="softDrop" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Ground Soft Shadow -->
+  <ellipse cx="280" cy="405" rx="220" ry="18" fill="#0f172a" opacity="0.08"/>
+  <ellipse cx="280" cy="405" rx="140" ry="10" fill="#0f172a" opacity="0.12"/>
+
+  <!-- ==================== PS5 SLIM CONSOLE ==================== -->
+  <g transform="translate(100, 25)" filter="url(#softDrop)">
+    <!-- Stand Base -->
+    <ellipse cx="120" cy="365" rx="70" ry="10" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5"/>
+    <circle cx="120" cy="365" r="28" fill="#cbd5e1"/>
+
+    <!-- Left White Plate -->
+    <path d="M 65 30 Q 50 180 70 350 L 105 350 Q 80 190 100 30 Z" 
+          fill="url(#whiteFin)" stroke="#cbd5e1" stroke-width="1.2"/>
+    <!-- Left Plate Slim Slit -->
+    <line x1="70" y1="180" x2="100" y2="180" stroke="#94a3b8" stroke-width="1.5"/>
+
+    <!-- Glossy Obsidian Center -->
+    <path d="M 100 30 Q 80 190 105 350 L 145 350 Q 155 190 140 30 Z" 
+          fill="url(#darkCenter)"/>
+
+    <!-- PlayStation Blue LED Indicator Strip -->
+    <path d="M 101 36 Q 83 190 106 344" stroke="url(#blueGlow)" stroke-width="2.5" fill="none"/>
+    <path d="M 139 36 Q 153 190 144 344" stroke="url(#blueGlow)" stroke-width="2.5" fill="none"/>
+
+    <!-- Ports on Front -->
+    <line x1="122" y1="285" x2="122" y2="297" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="122" cy="310" r="2.5" fill="#64748b"/>
+    <line x1="122" y1="330" x2="122" y2="336" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round"/>
+
+    <!-- Right White Plate (With Disc Bulge) -->
+    <path d="M 140 30 Q 155 190 145 350 L 185 350 Q 200 270 195 190 Q 175 140 165 30 Z" 
+          fill="url(#whiteFinShadow)" stroke="#cbd5e1" stroke-width="1.2"/>
+    <!-- Right Plate Slim Slit -->
+    <line x1="145" y1="180" x2="192" y2="180" stroke="#94a3b8" stroke-width="1.5"/>
+    <!-- Disc Slot -->
+    <line x1="156" y1="220" x2="156" y2="310" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- ==================== DUALSENSE CONTROLLER ==================== -->
+  <g transform="translate(260, 180)" filter="url(#softDrop)">
+    <!-- Controller Body -->
+    <path d="M 35 140 C 22 90 40 50 72 35 C 92 25 112 32 116 35 C 120 32 140 25 160 35 C 192 50 210 90 197 140 C 188 175 168 190 160 165 C 152 140 148 118 144 110 C 132 116 100 116 88 110 C 84 118 80 140 72 165 C 64 190 44 175 35 140 Z" 
+          fill="url(#whiteFin)" stroke="#cbd5e1" stroke-width="1.5"/>
+
+    <!-- Bottom Ergonomic Dark Section -->
+    <path d="M 68 106 C 78 114 98 118 116 118 C 134 118 154 114 164 106 C 158 145 150 164 140 164 C 130 164 125 148 116 148 C 107 148 102 164 92 164 C 82 164 74 145 68 106 Z" 
+          fill="url(#darkCenter)"/>
+
+    <!-- Touchpad with Blue Lightbar Accent -->
+    <path d="M 80 37 L 152 37 L 145 85 L 87 85 Z" fill="#0f172a"/>
+    <path d="M 78 35 L 154 35" stroke="url(#blueGlow)" stroke-width="2.5"/>
+    <path d="M 78 35 L 85 86" stroke="url(#blueGlow)" stroke-width="1.5"/>
+    <path d="M 154 35 L 147 86" stroke="url(#blueGlow)" stroke-width="1.5"/>
+
+    <!-- D-Pad -->
+    <g transform="translate(56, 56)" fill="#1e293b">
+      <rect x="8" y="0" width="6" height="22" rx="1.5"/>
+      <rect x="0" y="8" width="22" height="6" rx="1.5"/>
+    </g>
+
+    <!-- Action Buttons -->
+    <g transform="translate(154, 56)">
+      <circle cx="11" cy="3" r="4.5" fill="#1e293b"/>
+      <polygon points="11,1 9.5,4.5 12.5,4.5" fill="none" stroke="#22c55e" stroke-width="1"/>
+      <circle cx="19" cy="11" r="4.5" fill="#1e293b"/>
+      <circle cx="19" cy="11" r="2" fill="none" stroke="#ef4444" stroke-width="1"/>
+      <circle cx="11" cy="19" r="4.5" fill="#1e293b"/>
+      <line x1="9.5" y1="17.5" x2="12.5" y2="20.5" stroke="#38bdf8" stroke-width="1"/>
+      <line x1="12.5" y1="17.5" x2="9.5" y2="20.5" stroke="#38bdf8" stroke-width="1"/>
+      <circle cx="3" cy="11" r="4.5" fill="#1e293b"/>
+      <rect x="1.5" y="9.5" width="3" height="3" fill="none" stroke="#e879f9" stroke-width="1"/>
+    </g>
+
+    <!-- Thumbsticks -->
+    <circle cx="92" cy="116" r="15" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <circle cx="92" cy="116" r="10" fill="#1e293b"/>
+    <circle cx="140" cy="116" r="15" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+    <circle cx="140" cy="116" r="10" fill="#1e293b"/>
+  </g>
+</svg>

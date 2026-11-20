@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Montserrat', Arial, sans-serif;
+    color: #202027;
+    background-color: #ffffff;
+  }
+  
+  h1, h2, h3, h4 {
+    font-family: 'Lexend Deca', sans-serif;
+  }
+}
+
+/* Custom scrollbar hiding utility */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ============================================================
+   FEBRIC / SANSKRUTI EXACT REPLICA STYLES
+   ============================================================ */
+
+/* Product Main Buy Button */
+.febric-main-buy-button {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 58px;
+  padding: 8px 12px;
+  margin: 10px 0 0;
+  border: 0;
+  border-radius: 6px;
+  background: #e60055 !important;
+  color: #ffffff !important;
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 17px !important;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  transition: transform .12s ease !important;
+}
+.febric-main-buy-button:hover {
+  background: #e60055 !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+.febric-main-buy-button:active {
+  transform: translateY(1px) scale(.99) !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.10) !important;
+}
+
+/* Sample Videos Heading & Grid */
+.febric-sample-videos-heading {
+  font-family: 'Poppins', sans-serif !important;
+  font-size: clamp(21px, 5.5vw, 71px) !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  text-align: center !important;
+  line-height: 1.15 !important;
+  margin-bottom: 24px !important;
+}
+
+.febric-sample-videos-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 4px double #000000;
+  background: #000000;
+  gap: 0;
+  overflow: hidden;
+}
+@media (max-width: 768px) {
+  .febric-sample-videos-grid {
+    grid-template-columns: repeat(2, 1fr);
+    border: 3px double #000000;
+  }
+}
+
+/* Product Details (.fsb-) Container */
+.fsb-container {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #f1d8cf;
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-top: 20px;
+}
+@media (max-width: 640px) {
+  .fsb-container {
+    padding: 16px 14px;
+    border-radius: 10px;
+  }
+}
+
+.fsb-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.fsb-heading span {
+  font-size: 22px;
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+.fsb-heading h2 {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  line-height: 1.55 !important;
+  margin: 0 !important;
+  color: #202020 !important;
+}
+@media (min-width: 1024px) {
+  .fsb-heading h2 {
+    font-size: 21px !important;
+  }
+}
+@media (max-width: 640px) {
+  .fsb-heading h2 {
+    font-size: 15px !important;
+  }
+}
+
+.fsb-section {
+  margin-bottom: 26px;
+}
+.fsb-section:last-child {
+  margin-bottom: 0;
+}
+.fsb-section h3 {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  margin: 0 0 12px !important;
+  line-height: 1.5 !important;
+  color: #252525 !important;
+}
+@media (min-width: 1024px) {
+  .fsb-section h3 {
+    font-size: 16px !important;
+  }
+}
+
+.fsb-section p {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.85 !important;
+  color: #555555 !important;
+  margin: 0 0 12px !important;
+}
+
+.fsb-box {
+  background: #fff8f5;
+  border: 1px solid #ffbba8;
+  border-left: 3px solid #ff673c;
+  border-radius: 7px;
+  padding: 14px 16px;
+  margin: 14px 0;
+}
+
+.fsb-story-line,
+.fsb-feature,
+.fsb-check {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  line-height: 1.85 !important;
+  color: #333333;
+}
+
+.fsb-check::before {
+  content: "✓";
+  color: #ef5151;
+  font-weight: 800;
+  margin-right: 8px;
+}
+
+.fsb-final {
+  background: #fff3e9;
+  border: 1px solid #ffc9a6;
+  border-radius: 8px;
+  padding: 14px;
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.7 !important;
+  text-align: center !important;
+  color: #ab421b !important;
+  margin-top: 18px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

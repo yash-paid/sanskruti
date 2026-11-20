@@ -1,0 +1,421 @@
+/**
+ * Shoptimizer Theme Compatibility Styles
+ *
+ * Loaded conditionally only when the Shoptimizer theme is active.
+ * File-level enqueuing scopes all rules to Shoptimizer — .theme-shoptimizer
+ * selectors are used for specificity, not additional theme-gating.
+ */
+
+/* ==========================================================================
+   Gallery Templates
+   ==========================================================================
+   Source: pdp-gallery-grid.php, pdp-gallery-scroll.php,
+           pdp-attributes-gallery-grid.php, pdp-attributes-gallery-scroll.php
+   Applies to: grid and scroll gallery layouts only.
+   Excluded: swiper layouts (horizontal, vertical-left, vertical-right) — those
+             layouts use a full-width flex structure that does not include
+             .product-details-wrapper, so sticky summary positioning and the
+             mobile full-bleed wrapper do not apply there.
+   Mechanism: CommerceGurus_Gallery::add_gallery_type_body_class() adds
+              cgkit-gallery-type-swiper to <body> when a swiper layout is active.
+   ========================================================================== */
+
+/*
+ * Shoptimizer wraps the gallery + summary in .product-details-wrapper which
+ * is display:block by default. Switch to flex so the summary can be made
+ * sticky (align-self:flex-start requires a flex container ancestor).
+ * overflow:visible is required — the default overflow:hidden clips sticky
+ * children before they can pin.
+ */
+@media (min-width: 993px) {
+    .theme-shoptimizer:not(.cgkit-gallery-type-swiper) .product-details-wrapper {
+        overflow: visible;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    /* Pin the summary column so it stays in view while the gallery scrolls. */
+    .theme-shoptimizer:not(.cgkit-gallery-type-swiper).single-product div.product .summary {
+        position: sticky;
+        top: 30px;
+        align-self: flex-start;
+    }
+
+    /* Raise top offset when the CommerceKit sticky ATC bar is present. */
+    .theme-shoptimizer:not(.cgkit-gallery-type-swiper).single-product .commercekit-sticky-add-to-cart + .summary.entry-summary {
+        top: 70px;
+    }
+
+    /* Same as above with WordPress admin bar. */
+    .theme-shoptimizer:not(.cgkit-gallery-type-swiper).admin-bar.single-product .commercekit-sticky-add-to-cart + .summary.entry-summary {
+        top: 100px;
+    }
+
+    /* Raise top offset when Shoptimizer's sticky header (sticky-t) is active. */
+    .theme-shoptimizer:not(.cgkit-gallery-type-swiper).sticky-t.single-product:not(.ckit_stickyatc_active) div.product .summary {
+        top: 90px;
+    }
+
+    /* Admin bar only, no sticky ATC. */
+    .theme-shoptimizer:not(.cgkit-gallery-type-swiper).admin-bar.single-product #page div.product .summary {
+        top: 60px;
+    }
+
+    /* Sticky header + admin bar combined. */
+    .theme-shoptimizer:not(.cgkit-gallery-type-swiper).sticky-t.admin-bar.single-product:not(.ckit_stickyatc_active) div.product .summary {
+        top: 120px;
+    }
+
+}
+
+/*
+ * Shoptimizer's content column has 1em horizontal padding. On mobile, expand
+ * the gallery wrapper to bleed edge-to-edge by negating that padding.
+ * ckit-mobile-pdp-gallery-active is added by the gallery template when
+ * pdp_mobile_layout is 'show-edge' or 'minimal', or when pdp_mobile_optimized
+ * is enabled.
+ */
+@media (max-width: 770px) {
+    .theme-shoptimizer:not(.cgkit-gallery-type-swiper) #commercegurus-pdp-gallery-wrapper.ckit-mobile-pdp-gallery-active {
+        margin-left: -1em;
+        width: calc(100% + 2em);
+        margin-bottom: 10px;
+    }
+}
+
+/* ==========================================================================
+   Badge Module
+   ==========================================================================
+   Source: includes/module-badge.php
+   ========================================================================== */
+
+/*
+ * Shoptimizer's product image wrapper has different padding than WooCommerce
+ * default, so circle badges need a left offset correction.
+ */
+.theme-shoptimizer .woocommerce-image__wrapper .product-label.type-circle {
+    left: 10px;
+}
+
+/*
+ * When a sale badge and a custom badge stack, push the custom badge down
+ * to clear the sale badge above it.
+ */
+.theme-shoptimizer .sale-item.product-label.type-circle + .ckit-badge_wrapper {
+    top: 50px;
+}
+
+/* ==========================================================================
+   Size Guide Module
+   ==========================================================================
+   Source: includes/module-size-guide.php
+   ========================================================================== */
+
+/*
+ * Shoptimizer applies a global :focus outline that conflicts with the modal
+ * close button. Remove it and restore a custom outline only for keyboard
+ * navigation (keyboard-active is added by the Shoptimizer focus script).
+ */
+.theme-shoptimizer .ckit-modal .ckit-modal--button_close:focus {
+    outline: none;
+}
+
+.theme-shoptimizer.keyboard-active .ckit-modal .ckit-modal--button_close:focus-visible {
+    outline: 0.2rem solid #2491ff;
+    outline-offset: 0;
+    border-color: transparent;
+    box-shadow: none;
+}
+
+/* Match Shoptimizer's button typography for the size guide trigger. */
+.theme-shoptimizer .commercekit-size-guide button {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.theme-shoptimizer .commercekit-size-guide button:hover span {
+    text-decoration: underline;
+    text-decoration-thickness: .5px;
+    text-underline-offset: .18em;
+}
+
+/* ==========================================================================
+   Wishlist Module
+   ==========================================================================
+   Source: assets/css/wishlist.css
+   ========================================================================== */
+
+/* Extra bottom spacing so the wishlist link sits clear of the ATC button. */
+.theme-shoptimizer .commercekit-wishlist.full {
+    margin-bottom: 15px;
+}
+
+/* Match Shoptimizer's small-text link style used throughout the product page. */
+.theme-shoptimizer .commercekit-wishlist a {
+    font-size: 13px;
+    font-weight: 600;
+    color: #111;
+}
+
+.theme-shoptimizer .commercekit-wishlist a:hover {
+    color: #111;
+}
+
+.theme-shoptimizer .commercekit-wishlist a:hover span {
+    text-decoration: underline;
+    text-decoration-thickness: 0.5px;
+    text-underline-offset: 0.18em;
+}
+
+/*
+ * Mini wishlist heart on product cards: Shoptimizer's card padding means the
+ * default right:0 sits outside the visible image area. Pull it inward.
+ */
+.theme-shoptimizer .commercekit-wishlist.mini {
+    left: auto;
+    right: 15px;
+}
+
+/* Tighter inset on the 2-column mobile grid (m-grid-2 body class). */
+@media screen and (max-width: 600px) {
+    .theme-shoptimizer.m-grid-2 .commercekit-wishlist.mini {
+        top: 10px;
+        right: 10px;
+    }
+}
+
+/* RTL: mirror the horizontal offset. */
+.rtl.theme-shoptimizer .commercekit-wishlist.mini {
+    left: 10px;
+    right: auto;
+}
+
+/* When the mini wishlist appears in a nav menu item, reset to menu-relative position. */
+.theme-shoptimizer li.menu-item .commercekit-wishlist.mini {
+    left: auto;
+    right: 10px;
+}
+
+/* On desktop, Shoptimizer's card has more padding so a larger inset is needed. */
+@media screen and (min-width: 993px) {
+    .theme-shoptimizer .commercekit-wishlist.mini {
+        right: 30px;
+    }
+
+    .rtl.theme-shoptimizer .commercekit-wishlist.mini {
+        left: 30px;
+        right: auto;
+    }
+}
+
+/* ==========================================================================
+   Sticky Add to Cart Module
+   ==========================================================================
+   Source: assets/css/commercekit-sticky-atc.css
+   ========================================================================== */
+
+@media (min-width: 993px) {
+    /*
+     * Header-4 layout: Shoptimizer's header-4 uses position:sticky itself.
+     * Adding position:relative to its container prevents the sticky ATC bar
+     * from being clipped by an ancestor overflow context.
+     */
+    body.sticky-d.theme-shoptimizer.header-4.single-product .header-4-container {
+        position: relative;
+    }
+
+    /*
+     * Non-header-4 layouts with admin bar: the stuck nav inherits an explicit
+     * top value from WooCommerce or the theme that conflicts with the sticky
+     * ATC bar. Reset to let the browser's natural stacking take over.
+     */
+    body:not(.header-4).theme-shoptimizer.sticky-d.admin-bar.single-product .col-full-nav.is_stuck {
+        top: inherit;
+    }
+
+    /*
+     * When the sticky ATC bar is active, Shoptimizer shows a logo mark inside
+     * the stuck nav. Hide it — the sticky bar itself carries branding context.
+     */
+    .theme-shoptimizer.sticky-d.single-product .logo-mark {
+        display: none;
+    }
+
+    /*
+     * With-logo navigation adds a left margin to accommodate the logo mark.
+     * Since the logo mark is hidden above, remove the compensating margin.
+     */
+    .theme-shoptimizer.sticky-d.single-product .is_stuck .primary-navigation.with-logo .menu-primary-menu-container {
+        margin-left: 0;
+    }
+
+    /*
+     * In the sticky ATC clone, the variation table select inherits full width
+     * from Shoptimizer's form styles, which causes it to overflow its cell.
+     * Reserve 10px for the cell padding.
+     */
+    .theme-shoptimizer .summary form.cart.commercekit_sticky-atc .commercekit-pdp-variation-table select {
+        width: calc(100% - 10px);
+    }
+
+}
+
+/*
+ * Single ATC wrap button on PLP cards: Shoptimizer's card layout makes the
+ * ATC button a flex child that doesn't auto-fill its row. Force it to fill
+ * the available width and use relative positioning for the loading spinner.
+ */
+ul.products li.product .cgkit-as-single-atc-wrap .button {
+	position: relative;
+	width: 100%;
+}
+
+/*
+ * When the inventory notice sits directly above the short description, the
+ * description inherits no top spacing. Add a minimal gap to prevent overlap.
+ */
+.commercekit-inventory + .woocommerce-product-details__short-description {
+    padding-top: 1px;
+}
+
+@media (max-width: 992px) {
+    #cgkit-mobile-commercekit-sticky-atc button,
+    .commercekit-pdp-before-form_wrapper span.price {
+        font-weight: bold;
+    }
+}
+
+/* ==========================================================================
+   Order Bump Module
+   ========================================================================== */
+.commercekit-order-bump .ckobp-price, .commercekit-order-bump .ckobp-price ins { 
+    color: #DE9915; 
+}
+
+/* ==========================================================================
+   Waitlist Module
+   ==========================================================================
+   Source: assets/css/waitlist.css
+   ========================================================================== */
+ #cgkit-waitlist-trigger { 
+    width: 100%;
+    padding: 13px 0;
+    text-decoration: none;
+    cursor: pointer;
+    background-color: #43454b;
+    color: #fff;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: 0.2s background-color;
+}
+
+#cgkit-waitlist-trigger:hover { 
+    background-color: #111;
+}
+
+button.cgkit-sticky-waitlist-button,
+li#cgkit-mobile-commercekit-sticky-atc button {
+    background: #43454b;
+    border-color: #43454b;
+    color: #fff;
+    border-radius: 4px;
+}
+
+li#cgkit-tab-commercekit-sticky-atc-title button {
+	font-weight: bold;
+    border-radius: 4px;
+}
+
+form.variations_form #cgkit-waitlist-button,
+button.cgkit-sticky-waitlist-button {
+	display: none;
+	position: relative;
+	background: #43454b;
+	border-color: #43454b;
+	color: #fff;
+	font-size: 16px;
+	font-weight: 600;
+	letter-spacing: 0px;
+	text-transform: none;
+	float: left; width:
+	calc(100% - 95px);
+	height: 52px;
+	margin-left: 40px;
+	padding-top: 0;
+	padding-bottom: 0;
+	border-radius: 4px;
+	outline: 0;
+	line-height: 52px;
+	text-align: center;
+	transition: all .2s;
+}
+form.commercekit_sticky-atc button.cgkit-sticky-waitlist-button {
+	width: calc(100% - 95px);
+	height: 52px;
+	padding-top: 0;
+	padding-bottom: 0;
+	line-height: 52px;
+}
+
+/* ==========================================================================
+   Waitlist Module
+   ==========================================================================
+   Source: assets/css/size-guide.css
+   ========================================================================== */
+.size-guide-modal p,
+.single-ckit_size_guide .entry-content p {
+	font-size: 15px;
+	margin-block-start: 0.5rem;
+}
+.size-guide-modal table,
+.single-ckit_size_guide .entry-content table,
+.commercekit-Tabs-panel--commercekit-sg table {
+	font-size: 14px; margin: 2.5em 0 0 0;
+}
+.single-ckit_size_guide .entry-content table thead,
+.commercekit-Tabs-panel--commercekit-sg table thead {
+	border: none;
+}
+.size-guide-modal table th,
+.single-ckit_size_guide .entry-content table th,
+.commercekit-Tabs-panel--commercekit-sg table th {
+	background: #111; color: #fff;
+}
+.size-guide-modal table th,
+.size-guide-modal table td,
+.single-ckit_size_guide .entry-content table th,
+.single-ckit_size_guide .entry-content table td,
+.commercekit-Tabs-panel--commercekit-sg table th,
+.commercekit-Tabs-panel--commercekit-sg table td {
+	padding: 0.8em 1.41575em;
+	border: none;
+}
+.size-guide-modal table td,
+.single-ckit_size_guide .entry-content table td,
+.commercekit-Tabs-panel--commercekit-sg table td {
+	background: #f8f8f8;
+}
+.size-guide-modal table tbody tr:nth-child(2n) td,
+.single-ckit_size_guide .entry-content table tbody tr:nth-child(2n) td,
+.commercekit-Tabs-panel--commercekit-sg table tbody tr:nth-child(2n) td {
+	background: 0 0;
+}
+.commercekit-Tabs-panel--commercekit-sg .wp-block-table td, .commercekit-Tabs-panel--commercekit-sg .wp-block-table th {
+	border: none;
+}
+@media (min-width: 771px) {
+	.cgkit-active.single-product:has(.cg-layout-vertical-left) .product-details-wrapper .ckit-badge_wrapper {
+		margin-left: 100px;
+	}
+	.rtl.cgkit-active.single-product:has(.cg-layout-vertical-left) .product-details-wrapper .ckit-badge_wrapper {
+		margin-right: 100px;
+		margin-left: 0;
+	}
+    .cgkit-active.single-product:has(.cgkit-single-gallery) .product-details-wrapper .ckit-badge_wrapper {
+        margin-left: 0px;
+    }
+    .rtl.cgkit-active.single-product:has(.cgkit-single-gallery) .product-details-wrapper .ckit-badge_wrapper {
+        margin-right: 0px;
+        margin-left: 0;
+    }
+}

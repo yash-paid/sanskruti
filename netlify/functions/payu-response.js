@@ -53,6 +53,14 @@ exports.handler = async (event, context) => {
     category = 'connect';
   } else if (udf5 === 'meeting' || String(txnid).startsWith('MT_') || (udf1 && udf1.startsWith('meeting:'))) {
     category = 'meeting';
+  } else if (udf5 === 'ps_event' || String(txnid).startsWith('TXN_PS_') || String(txnid).startsWith('PS_')) {
+    category = 'ps_event';
+  }
+
+  // Delegate PlayStation Event callbacks to specialized ps-payu-response handler
+  if (category === 'ps_event') {
+    const psHandler = require('./ps-payu-response');
+    return psHandler.handler(event, context);
   }
 
   /**

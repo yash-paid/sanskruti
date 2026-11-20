@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>PlayStation Prize Events — Production Architecture & Verified Audit</title>
+
+  <meta name="description"
+    content="Official PlayStation 5 and PlayStation 5 Pro prize events with structured entry amounts, persistent server database and verified audit trail.">
+  <meta name="keywords"
+    content="PlayStation 5, PS5 Pro, gaming events, prize events, giveaway, Sony India, verified audit">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/PS/assets/favicon.svg">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="PlayStation Prize Events — Verified Audit Architecture">
+  <meta property="og:description"
+    content="Explore PlayStation 5 and PlayStation 5 Pro prize events with persistent server records.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://sanskrutiservice.in/PS">
+  <meta property="og:image" content="/PS/assets/ps5-console.png">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Clean Light-Themed Stylesheet -->
+  <link rel="stylesheet" href="/PS/ps-style.css">
+</head>
+
+<body>
+
+  <!-- ==================== COMPACT HEADER ==================== -->
+  <header class="ps-header">
+    <div class="ps-container">
+      <div class="ps-nav-wrap">
+
+        <!-- Brand / Logo -->
+        <a href="/PS" class="ps-brand" aria-label="PlayStation Events Home">
+          <div class="ps-brand-icon">
+            <i data-lucide="gamepad-2" style="width:20px; height:20px;"></i>
+          </div>
+          <div>
+            <span class="ps-brand-title">PlayStation Events</span>
+            <span class="ps-live-badge" style="margin-left: 6px;">
+              <span class="ps-live-dot"></span>
+              <span>EVENT IS LIVE</span>
+            </span>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation -->
+        <nav>
+          <ul class="ps-nav-links">
+            <li><a href="#hero" class="ps-nav-link" data-tab="all">Home</a></li>
+            <li><a href="#ps5-section" class="ps-nav-link" data-tab="ps5">PS5 Events</a></li>
+            <li><a href="#pro-section" class="ps-nav-link" data-tab="pro">PS5 Pro Events</a></li>
+            <li><a href="#compliance" class="ps-nav-link">Compliance</a></li>
+            <li><a href="#faq" class="ps-nav-link">FAQ</a></li>
+            <li>
+              <button type="button" class="ps-btn-secondary" onclick="openVerifyModal()"
+                style="height:34px; padding:0 12px; font-size:12px; white-space:nowrap;">
+                <i data-lucide="shield-check" style="width:14px; height:14px; color:var(--ps-blue);"></i>
+                <span>Get Verified Ticket &amp; Prize</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button type="button" id="ps-menu-toggle" class="ps-menu-btn" aria-expanded="false"
+          aria-controls="ps-mobile-nav" aria-label="Open navigation menu">
+          <i data-lucide="menu" style="width:20px; height:20px;"></i>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Mobile Dropdown Navigation -->
+    <div id="ps-mobile-nav" class="ps-mobile-nav">
+      <a href="#hero" onclick="setCategoryView('all')">Home</a>
+      <a href="#ps5-section" onclick="setCategoryView('ps5')">PlayStation 5 Events</a>
+      <a href="#pro-section" onclick="setCategoryView('pro')">PlayStation 5 Pro Events</a>
+      <a href="#compliance">Legal Compliance</a>
+      <a href="#faq">Frequently Asked Questions</a>
+      <a href="javascript:void(0)" onclick="openVerifyModal()">Get Verified Ticket &amp; Prize</a>
+    </div>
+  </header>
+
+  <!-- ==================== SIMPLE & CLEAN HERO ==================== -->
+  <section class="ps-hero" id="hero">
+    <div class="ps-container">
+
+      <div class="ps-hero-tag" style="display:inline-flex; align-items:center; gap:8px;">
+        <span class="ps-live-badge">
+          <span class="ps-live-dot"></span>
+          <span>LIVE EVENT STATUS</span>
+        </span>
+      </div>
+
+      <h1 class="ps-hero-title">
+        PlayStation Prize Events
+      </h1>
+
+      <p class="ps-hero-desc">
+        Explore structured PlayStation 5 and PlayStation 5 Pro console events powered by server-side capacity
+        validation, persistent database ledgers, and tamper-evident audit trails.
+      </p>
+
+      <!-- Category Filter Tabs -->
+      <div class="ps-hero-tabs">
+        <button type="button" class="ps-tab-btn active" data-tab="all">
+          <span>All 12 Events</span>
+        </button>
+        <button type="button" class="ps-tab-btn" data-tab="ps5">
+          <span>PS5 Events (6)</span>
+        </button>
+        <button type="button" class="ps-tab-btn" data-tab="pro">
+          <span>PS5 Pro Events (6)</span>
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== CATEGORY 1: PLAYSTATION 5 ==================== -->
+  <section class="ps-section" id="ps5-section">
+    <div class="ps-container">
+
+      <div class="ps-section-header">
+        <span class="ps-section-eyebrow">Category 1</span>
+        <h2 class="ps-section-title">PlayStation 5 Events</h2>
+        <p class="ps-section-sub">Explore PlayStation events, track event progress and check the countdown to the daily
+          result.</p>
+      </div>
+
+      <!-- Horizontal Rectangular Event Cards (Injected from Backend) -->
+      <div class="ps-rect-grid" id="ps5-grid">
+        <div style="padding:24px; text-align:center; color:var(--text-muted); font-size:14px;">
+          Connecting to database server...
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== CATEGORY 2: PLAYSTATION 5 PRO ==================== -->
+  <section class="ps-section alt" id="pro-section">
+    <div class="ps-container">
+
+      <div class="ps-section-header">
+        <span class="ps-section-eyebrow">Category 2 — High Performance</span>
+        <h2 class="ps-section-title">PlayStation 5 Pro Events</h2>
+        <p class="ps-section-sub">Enhanced 2TB Ray Tracing and PSSR AI-upscaled console events with capacity controls.
+        </p>
+      </div>
+
+      <!-- Horizontal Rectangular Event Cards (Injected from Backend) -->
+      <div class="ps-rect-grid" id="pro-grid">
+        <div style="padding:24px; text-align:center; color:var(--text-muted); font-size:14px;">
+          Connecting to database server...
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== RULES & ELIGIBILITY ==================== -->
+  <section class="ps-section" id="rules">
+    <div class="ps-container">
+
+      <div class="ps-section-header">
+        <span class="ps-section-eyebrow">Transparency & Rules</span>
+        <h2 class="ps-section-title">Eligibility & Allocation Rules</h2>
+        <p class="ps-section-sub">Server-governed terms ensuring fairness, capacity locks, and verified courier
+          deliveries.</p>
+      </div>
+
+      <div class="ps-rules-grid">
+
+        <div class="ps-rule-card">
+          <div class="ps-rule-num">1</div>
+          <h3 class="ps-rule-title">Eligibility & Identification</h3>
+          <p class="ps-rule-desc">Open exclusively to resident Indian citizens with valid government-issued photo ID
+            (Aadhaar or PAN card).</p>
+        </div>
+
+        <div class="ps-rule-card">
+          <div class="ps-rule-num">2</div>
+          <h3 class="ps-rule-title">Multiple Ticket Participation</h3>
+          <p class="ps-rule-desc">Users may order multiple tickets per event up to remaining capacity. Every ticket
+            receives an individual cryptographically signed serial identifier.</p>
+        </div>
+
+        <div class="ps-rule-card">
+          <div class="ps-rule-num">3</div>
+          <h3 class="ps-rule-title">Strict Capacity Limits</h3>
+          <p class="ps-rule-desc">Each event tier enforces a hard server-side capacity lock (200, 1,000, 3,000, or 6,000
+            entries). Atomic database locks prevent overselling.</p>
+        </div>
+
+        <div class="ps-rule-card">
+          <div class="ps-rule-num">4</div>
+          <h3 class="ps-rule-title">Doorstep Insured Delivery</h3>
+          <p class="ps-rule-desc">Consoles are brand-new, factory-sealed Indian retail units covered by the official
+            1-Year Sony India warranty, shipped via tracked courier.</p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== LEGAL COMPLIANCE & PAYMENT GATE ==================== -->
+  <section class="ps-section alt" id="compliance">
+    <div class="ps-container">
+
+      <div class="ps-section-header">
+        <span class="ps-section-eyebrow">Regulatory Framework</span>
+        <h2 class="ps-section-title">Legal Compliance & Payment Gateway Policy</h2>
+        <p class="ps-section-sub">Transparent regulatory disclosure regarding prize draws, lotteries, and payment
+          aggregator policies in India.</p>
+      </div>
+
+      <div class="ps-compliance-banner">
+        <strong>STATUTORY DISCLOSURE & PAYMENT GATEWAY STATUS:</strong>
+        Under the Public Gambling Act, state gaming enactments, the Consumer Protection Act, and payment aggregator
+        (PayU/RBI) compliance frameworks, real-money participation in chance-based prize draws requires specific
+        regulatory clearance and approved merchant underwriting.
+        <br><br>
+        <strong>Current Operating State:</strong> Live payment initiation for prize events is strictly gated. The
+        backend API, persistent database ledgers, capacity locks, and audit mechanisms are fully active. Registered
+        orders are persisted in our database under review status without debiting real funds from users until statutory
+        approvals are fulfilled.
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== SIMPLE FAQ ==================== -->
+  <section class="ps-section" id="faq">
+    <div class="ps-container">
+
+      <div class="ps-section-header" style="text-align: center;">
+        <span class="ps-section-eyebrow">Help & FAQ</span>
+        <h2 class="ps-section-title">Frequently Asked Questions</h2>
+      </div>
+
+      <div class="ps-faq-list">
+
+        <!-- 1. What are PlayStation Events? -->
+        <div class="ps-faq-item active">
+          <button type="button" class="ps-faq-question" aria-expanded="true">
+            <span>1. What are PlayStation Events?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            PlayStation Events are organized entry-based events featuring PlayStation consoles and related prizes. Each
+            event displays its entry price, available capacity and scheduled result time.
+          </div>
+        </div>
+
+        <!-- 2. Who can participate in these events? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>2. Who can participate in these events?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            Participation is subject to the eligibility requirements specified in the event rules, including age,
+            residency and other applicable restrictions. Review our full <a href="/terms.html"
+              style="color:var(--ps-blue); font-weight:600;">Terms &amp; Conditions</a> for details.
+          </div>
+        </div>
+
+        <!-- 3. Can I purchase multiple tickets for an event? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>3. Can I purchase multiple tickets for an event?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            Multiple entries may be permitted for an event, subject to the available capacity and the applicable event
+            rules.
+          </div>
+        </div>
+
+        <!-- 4. How much does each ticket cost? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>4. How much does each ticket cost?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            Each event has its own entry price. The price is displayed on the event card and participation screen before
+            you proceed.
+          </div>
+        </div>
+
+        <!-- 5. When will the result be announced? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>5. When will the result be announced?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            The result is scheduled to be announced at 12:00 AM IST, according to the event's displayed schedule.
+          </div>
+        </div>
+
+        <!-- 6. How is the winner selected? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>6. How is the winner selected?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            The organizer intends to use Random.org for the random-selection process, subject to the published event
+            rules and applicable requirements. Learn more on our <a href="/winner-selection.html"
+              style="color:var(--ps-blue); font-weight:600;">Winner Selection &amp; Result Announcement</a> page.
+          </div>
+        </div>
+
+        <!-- 7. Where can I watch the winner-selection video? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>7. Where can I watch the winner-selection video?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            The selection-process video is intended to be published on the organizer's official Instagram account. The
+            official Instagram link will be provided on the website.
+          </div>
+        </div>
+
+        <!-- 8. Will the selection process be recorded? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>8. Will the selection process be recorded?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            The organizer intends to record the selection process and publish the corresponding video on its official
+            Instagram account. The published video should reflect the actual selection process.
+          </div>
+        </div>
+
+        <!-- 9. How will the winner be contacted? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>9. How will the winner be contacted?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            The selected participant will be contacted using the contact details provided during participation, subject
+            to successful verification and the applicable event rules.
+          </div>
+        </div>
+
+        <!-- 10. What happens if I win? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>10. What happens if I win?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            The selected participant may be required to complete identity and eligibility verification before prize
+            confirmation and delivery arrangements are finalized.
+          </div>
+        </div>
+
+        <!-- 11. Can I get a refund after purchasing a ticket? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>11. Can I get a refund after purchasing a ticket?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            Tickets are generally non-refundable if the event proceeds as scheduled, subject to applicable laws and
+            consumer rights. Refunds will be handled in accordance with the published <a href="/refund-policy.html"
+              style="color:var(--ps-blue); font-weight:600;">Refund &amp; Cancellation Policy</a>.
+          </div>
+        </div>
+
+        <!-- 12. What happens if an event is cancelled? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>12. What happens if an event is cancelled?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            If an event is officially cancelled by the organizer, eligible participants will be informed about the
+            refund process in accordance with the published <a href="/refund-policy.html"
+              style="color:var(--ps-blue); font-weight:600;">Refund &amp; Cancellation Policy</a>.
+          </div>
+        </div>
+
+        <!-- 13. Is prize delivery available throughout India? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>13. Is prize delivery available throughout India?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            Prize delivery is subject to the event's eligibility requirements, geographical restrictions and delivery
+            arrangements specified in the event rules.
+          </div>
+        </div>
+
+        <!-- 14. What if my payment fails or remains pending? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>14. What if my payment fails or remains pending?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            If your payment is unsuccessful, pending or appears to have been deducted without a confirmed entry, contact
+            support at <a href="mailto:paid32041@gmail.com"
+              style="color:var(--ps-blue); font-weight:600;">paid32041@gmail.com</a> for assistance and transaction
+            review. See our <a href="/payment-policy.html" style="color:var(--ps-blue); font-weight:600;">Payment
+              Policy</a> for more details.
+          </div>
+        </div>
+
+        <!-- 15. Where can I read the complete rules? -->
+        <div class="ps-faq-item">
+          <button type="button" class="ps-faq-question" aria-expanded="false">
+            <span>15. Where can I read the complete rules?</span>
+            <i data-lucide="chevron-down" style="width:16px; height:16px;"></i>
+          </button>
+          <div class="ps-faq-answer">
+            Please review the <a href="/terms.html" style="color:var(--ps-blue); font-weight:600;">Terms &amp;
+              Conditions</a>, <a href="/payment-policy.html" style="color:var(--ps-blue); font-weight:600;">Payment
+              Policy</a>, <a href="/refund-policy.html" style="color:var(--ps-blue); font-weight:600;">Refund &amp;
+              Cancellation Policy</a> and <a href="/winner-selection.html"
+              style="color:var(--ps-blue); font-weight:600;">Winner Selection &amp; Result Announcement</a> pages before
+            participating.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ==================== SIMPLE FOOTER ==================== -->
+  <footer class="ps-footer">
+    <div class="ps-container">
+
+      <div class="ps-footer-content">
+        <div>
+          <strong style="color:var(--text-main); font-size:15px;">PlayStation Prize Events</strong>
+          <p style="font-size:13px; color:var(--text-muted); margin-top:2px;">Production Architecture & Verified Audit
+            Ledgers.</p>
+        </div>
+
+        <ul class="ps-footer-links">
+          <li><a href="/PS">Home</a></li>
+          <li><a href="/PS#ps5-section">PS5 Events</a></li>
+          <li><a href="/PS#pro-section">PS5 Pro Events</a></li>
+          <li><a href="/PS/terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="/PS/payment-policy.html">Payment Policy</a></li>
+          <li><a href="/PS/refund-policy.html">Refund Policy</a></li>
+          <li><a href="/PS/winner-selection.html">Winner Selection</a></li>
+        </ul>
+      </div>
+
+      <!-- Compact Disclaimer -->
+      <div class="ps-footer-disclaimer">
+        <p>
+          <strong>DISCLAIMER:</strong> 'PlayStation', 'PS5', 'DualSense', and 'PSSR' are registered trademarks of Sony
+          Interactive Entertainment Inc.
+          This independent platform is not affiliated with or endorsed by Sony Interactive Entertainment Inc. Product
+          references are used solely for descriptive identification.
+        </p>
+        <p style="margin-top:4px;">
+          © 2026 Sanskruti Service. All rights reserved.
+        </p>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- ==================== EVENT DETAILS & ORDER MODAL ==================== -->
+  <div id="ps-detail-modal" class="ps-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="ps-modal-card">
+
+      <!-- Modal Header -->
+      <div class="ps-modal-header">
+        <div>
+          <span id="modal-event-num" class="ps-badge-id" style="margin-right:6px;">Event 1</span>
+          <span id="modal-category" style="font-size:12px; font-weight:600; color:var(--ps-blue);">PlayStation 5</span>
+        </div>
+        <button type="button" class="ps-modal-close" onclick="closeDetailModal()" aria-label="Close details">
+          <i data-lucide="x" style="width:16px; height:16px;"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="ps-modal-body">
+
+        <div class="ps-modal-info">
+          <h3 id="modal-title">Event Title</h3>
+          <p id="modal-desc" style="font-size:13px; color:var(--text-muted); margin-top:4px;">Short description</p>
+        </div>
+
+        <!-- Total Participating Progress Strip -->
+        <div class="ps-card-col-progress">
+          <div class="ps-progress-header">
+            <span class="ps-col-label">TOTAL PARTICIPATING</span>
+            <span class="ps-progress-count" id="modal-progress-count">
+              <strong>0</strong> / 6,000 (0%)
+            </span>
+          </div>
+          <div class="ps-progress-bar">
+            <div class="ps-progress-fill" id="modal-progress-fill" style="width: 0%;"></div>
+          </div>
+          <div class="ps-progress-footer">
+            <span class="ps-badge-verified">
+              <i data-lucide="shield-check" style="width:12px; height:12px;"></i>
+              <span>Service Verified</span>
+            </span>
+            <span class="ps-remaining-tag" id="modal-cap-status">Available</span>
+          </div>
+        </div>
+
+        <!-- Countdown Banner -->
+        <div class="ps-countdown-box"
+          style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px;">
+          <div style="display:flex; align-items:center; gap:6px;">
+            <i data-lucide="clock" style="width:16px; height:16px; color:var(--ps-blue);"></i>
+            <span style="font-size:12px; font-weight:700; color:var(--ps-blue); text-transform:uppercase;">TIME
+              LEFT</span>
+          </div>
+          <div class="ps-countdown-val ps-timer-display" id="modal-timer-display" style="font-size:15px;">--h --m --s
+          </div>
+        </div>
+
+        <!-- Single Price & Capacity Strip -->
+        <div class="ps-modal-pricing-box">
+          <div class="ps-modal-strip-row">
+            <span style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Price per
+              Ticket</span>
+            <strong id="modal-price"
+              style="font-family:var(--font-num); font-size:20px; color:var(--ps-blue);">₹10</strong>
+          </div>
+          <div class="ps-modal-strip-row" style="padding-top:6px; border-top:1px solid var(--border-light);">
+            <span style="font-size:12px; color:var(--text-muted); text-transform:uppercase; font-weight:600;">Maximum
+              Event Capacity</span>
+            <strong id="modal-cap" style="font-size:13px; color:var(--text-main);">6,000 Entries</strong>
+          </div>
+        </div>
+
+        <!-- MULTIPLE TICKETS QUANTITY SELECTOR -->
+        <div class="ps-qty-wrap">
+          <div class="ps-qty-label-box">
+            <span class="ps-qty-label">Select Ticket Quantity</span>
+            <span class="ps-qty-sub">Buy multiple tickets to increase entries</span>
+          </div>
+          <div class="ps-qty-controls">
+            <button type="button" class="ps-qty-btn" onclick="changeModalQuantity(-1)"
+              aria-label="Decrease tickets">−</button>
+            <input type="number" id="modal-qty-input" class="ps-qty-input" value="1" min="1"
+              oninput="updateModalTotal()" />
+            <button type="button" class="ps-qty-btn" onclick="changeModalQuantity(1)"
+              aria-label="Increase tickets">+</button>
+          </div>
+        </div>
+
+        <!-- Total Price Display Strip -->
+        <div class="ps-total-amount-box">
+          <span class="ps-total-label">Total Amount:</span>
+          <div class="ps-total-val" id="modal-total-display">₹10</div>
+        </div>
+
+        <!-- Specifications -->
+        <div>
+          <h4
+            style="font-size:13px; font-weight:700; color:var(--text-main); margin-bottom:8px; text-transform:uppercase;">
+            Hardware Specifications
+          </h4>
+          <ul id="modal-specs" class="ps-modal-specs-list">
+            <!-- Injected by JS -->
+          </ul>
+        </div>
+
+        <!-- Rules -->
+        <div>
+          <h4
+            style="font-size:13px; font-weight:700; color:var(--text-main); margin-bottom:8px; text-transform:uppercase;">
+            Key Eligibility Rules
+          </h4>
+          <ul id="modal-rules" class="ps-modal-rules-list">
+            <!-- Injected by JS -->
+          </ul>
+        </div>
+
+        <!-- Action Button: Opens Pre-Payment Participant Information Popup -->
+        <button type="button" id="modal-proceed-btn" class="ps-btn-primary" onclick="openPrepaymentModal()">
+          <span>Proceed to Participate</span>
+          <i data-lucide="arrow-right" style="width:16px; height:16px;"></i>
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== PRE-PAYMENT PARTICIPANT INFORMATION POPUP ==================== -->
+  <div id="ps-prepayment-modal" class="ps-modal-backdrop" role="dialog" aria-modal="true"
+    aria-labelledby="prepay-modal-title">
+    <div class="ps-modal-card">
+
+      <!-- Modal Header -->
+      <div class="ps-modal-header">
+        <div>
+          <h3 id="prepay-modal-title"
+            style="font-size:16px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+            <i data-lucide="user-check" style="width:18px; height:18px; color:var(--ps-blue);"></i>
+            <span>Participant Information</span>
+          </h3>
+          <span style="font-size:11.5px; color:var(--text-muted);">Step 1 of 2 — Verification Details</span>
+        </div>
+        <button type="button" class="ps-modal-close" onclick="closePrepaymentModal()"
+          aria-label="Close participant form">
+          <i data-lucide="x" style="width:16px; height:16px;"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="ps-modal-body">
+
+        <!-- Purchase Summary Section -->
+        <div class="ps-summary-card">
+          <div class="ps-summary-row">
+            <span class="ps-summary-label">Selected Event</span>
+            <span class="ps-summary-val" id="prepay-summary-title">PlayStation 5 Event</span>
+          </div>
+          <div class="ps-summary-row">
+            <span class="ps-summary-label">Ticket Price</span>
+            <span class="ps-summary-val" id="prepay-summary-unit-price">₹10 / ticket</span>
+          </div>
+          <div class="ps-summary-row">
+            <span class="ps-summary-label">Selected Quantity</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button type="button" class="ps-qty-btn" onclick="changePrepaymentQuantity(-1)"
+                style="width:24px; height:24px; font-size:12px;" aria-label="Decrease tickets">−</button>
+              <strong id="prepay-summary-qty" style="font-size:13px; min-width:20px; text-align:center;">1</strong>
+              <button type="button" class="ps-qty-btn" onclick="changePrepaymentQuantity(1)"
+                style="width:24px; height:24px; font-size:12px;" aria-label="Increase tickets">+</button>
+            </div>
+          </div>
+          <div class="ps-summary-row ps-summary-total-row">
+            <span class="ps-summary-label" style="font-weight:700; color:var(--text-main);">Total Amount:</span>
+            <span class="ps-summary-total-val" id="prepay-summary-total">₹10</span>
+          </div>
+        </div>
+
+        <!-- Participant Information Form Fields -->
+        <form id="prepay-form" onsubmit="event.preventDefault(); handleContinueToPayment();" novalidate>
+
+          <div class="ps-form-group">
+            <label for="prepay-name" class="ps-form-label">Full Name (As per Govt Documents) <span style="color:#ef4444;">*</span></label>
+            <input 
+              type="text" 
+              id="prepay-name" 
+              class="ps-input" 
+              placeholder="e.g. Rahul Sharma" 
+              required 
+              maxlength="60"
+              autocomplete="name"
+              oninput="clearFieldError('prepay-name')"
+            />
+            <div id="error-prepay-name" class="ps-field-error">Please enter your full name as per government documents (minimum 2 characters).</div>
+          </div>
+
+          <div class="ps-form-group">
+            <label for="prepay-phone" class="ps-form-label">Mobile Number <span style="color:#ef4444;">*</span></label>
+            <input type="tel" id="prepay-phone" class="ps-input" placeholder="10-digit mobile number (e.g. 9876543210)"
+              required maxlength="10" autocomplete="tel" oninput="clearFieldError('prepay-phone')" />
+            <div id="error-prepay-phone" class="ps-field-error">Please provide a valid 10-digit Indian mobile number
+              starting with 6, 7, 8, or 9.</div>
+          </div>
+
+          <div class="ps-form-group">
+            <label for="prepay-email" class="ps-form-label">Email Address <span style="color:#ef4444;">*</span></label>
+            <input type="email" id="prepay-email" class="ps-input" placeholder="e.g. rahul@example.com" required
+              maxlength="80" autocomplete="email" oninput="clearFieldError('prepay-email')" />
+            <div id="error-prepay-email" class="ps-field-error">Please provide a valid email address.</div>
+          </div>
+
+          <!-- FORM NOTICE — EXACT FORMAL COPY REQUIRED -->
+          <div class="ps-formal-notice-box">
+            <div class="ps-formal-notice-header">
+              <i data-lucide="info" style="width:14px; height:14px; color:var(--ps-blue);"></i>
+              <strong>Important Notice</strong>
+            </div>
+            <p>
+              This event is exclusively open to Indian residents, and prize delivery is available only within India.
+            </p>
+            <p style="margin-top:8px;">
+              Please ensure that you provide accurate and valid contact information, including your full name, mobile
+              number and email address. If you are selected as a winner, we may use these details to contact you and
+              coordinate prize verification and delivery.
+            </p>
+          </div>
+
+          <!-- Placeholder State Card (Displayed upon valid form submission) -->
+          <div id="prepay-placeholder-box" class="ps-placeholder-status-box" style="display:none;">
+            <div class="ps-placeholder-title">
+              <i data-lucide="clock" style="width:18px; height:18px;"></i>
+              <span>Payment integration will be available soon.</span>
+            </div>
+            <p class="ps-placeholder-desc" id="prepay-placeholder-desc">
+              Your participant information has been verified and prepared. Live payment gateway processing will be
+              enabled in the final deployment phase.
+            </p>
+            <div id="prepay-placeholder-details"
+              style="margin-top:8px; font-size:12px; color:#166534; line-height:1.6; background:#ffffff; border:1px solid #bbf7d0; border-radius:4px; padding:8px 10px;">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+
+          <!-- Primary Button: Continue to Payment -->
+          <button type="submit" id="btn-continue-payment" class="ps-btn-primary">
+            <span>Continue to Payment</span>
+            <i data-lucide="arrow-right" style="width:16px; height:16px;"></i>
+          </button>
+
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+
+  </div>
+
+  </div>
+  </div>
+
+  <!-- ==================== ORDER CONFIRMATION MODAL ==================== -->
+  <div id="ps-order-success-modal" class="ps-modal-backdrop" role="dialog" aria-modal="true">
+    <div class="ps-modal-card">
+      <div class="ps-modal-header">
+        <h3 style="font-size:15px; font-weight:700; color:#15803d; display:flex; align-items:center; gap:6px;">
+          <i data-lucide="check-circle" style="width:18px; height:18px;"></i>
+          <span id="order-success-header-title">Payment Verified &amp; Ticket Confirmed</span>
+        </h3>
+        <button type="button" class="ps-modal-close" onclick="closeOrderSuccessModal()">
+          <i data-lucide="x" style="width:16px; height:16px;"></i>
+        </button>
+      </div>
+      <div class="ps-modal-body" id="order-success-content">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== PAYMENT STATUS ALERT MODAL ==================== -->
+  <div id="ps-payment-status-modal" class="ps-modal-backdrop" role="dialog" aria-modal="true">
+    <div class="ps-modal-card">
+      <div class="ps-modal-header">
+        <h3 id="payment-status-modal-title" style="font-size:15px; font-weight:700; display:flex; align-items:center; gap:6px;">
+          <!-- Injected by JS -->
+        </h3>
+        <button type="button" class="ps-modal-close" onclick="closePaymentStatusModal()">
+          <i data-lucide="x" style="width:16px; height:16px;"></i>
+        </button>
+      </div>
+      <div class="ps-modal-body" id="payment-status-modal-body">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VERIFY ORDER / TICKET MODAL ==================== -->
+  <div id="ps-verify-modal" class="ps-modal-backdrop" role="dialog" aria-modal="true">
+    <div class="ps-modal-card">
+      <div class="ps-modal-header">
+        <h3 style="font-size:15px; font-weight:700; color:var(--text-main); display:flex; align-items:center; gap:6px;">
+          <i data-lucide="shield-check" style="width:18px; height:18px; color:var(--ps-blue);"></i>
+          <span>Get Verified Ticket &amp; Prize</span>
+        </h3>
+        <button type="button" class="ps-modal-close" onclick="closeVerifyModal()">
+          <i data-lucide="x" style="width:16px; height:16px;"></i>
+        </button>
+      </div>
+      <div class="ps-modal-body">
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:12px;">
+          Enter your Order ID to query the server's persistent ledger and verify cryptographic integrity.
+        </p>
+
+        <div class="ps-form-group">
+          <label for="verify-order-id" class="ps-form-label">Order ID</label>
+          <input type="text" id="verify-order-id" class="ps-input" placeholder="e.g. ORD-PS-..." maxlength="50">
+        </div>
+
+        <button type="button" class="ps-btn-primary" onclick="lookupOrderVerification()" id="verify-submit-btn">
+          <span>Verify Record</span>
+          <i data-lucide="search" style="width:16px; height:16px;"></i>
+        </button>
+
+        <div id="verify-result-box" style="margin-top:14px; display:none;">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Application Logic Script -->
+  <script src="/PS/ps-app.js"></script>
+</body>
+
+</html>

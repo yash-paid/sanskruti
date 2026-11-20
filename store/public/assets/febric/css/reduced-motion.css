@@ -1,0 +1,30 @@
+/**
+ * Reduced Motion Accessibility Styles
+ *
+ * This file contains CSS overrides for users who have enabled "prefers-reduced-motion"
+ * in their operating system settings. This is a critical accessibility feature for
+ * users with vestibular disorders, motion sensitivity, or other conditions that
+ * can be triggered by animations and motion effects.
+ *
+ * IMPORTANT: The !important declarations are REQUIRED here because:
+ * 1. Accessibility overrides must take precedence over decorative animations
+ * 2. The universal selector (*) needs to override existing CSS with varying specificity
+ * 3. Users with motion sensitivity rely on these overrides working reliably
+ * 4. Theme components may have animations defined with different specificity levels
+ *
+ * These overrides ensure that all animations, transitions, and motion effects
+ * are either disabled or reduced to their minimum duration for affected users.
+ */
+
+/* -- Animations, scrolling effects, transitions are reduced -- */
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+      animation-delay: -1ms !important;
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      background-attachment: initial !important;
+      scroll-behavior: auto !important;
+      transition-delay: 0s !important;
+      transition-duration: 0s !important;
+    }
+  }
