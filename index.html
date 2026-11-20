@@ -661,18 +661,12 @@
         <form id="prepay-form" onsubmit="event.preventDefault(); handleContinueToPayment();" novalidate>
 
           <div class="ps-form-group">
-            <label for="prepay-name" class="ps-form-label">Full Name (As per Govt Documents) <span style="color:#ef4444;">*</span></label>
-            <input 
-              type="text" 
-              id="prepay-name" 
-              class="ps-input" 
-              placeholder="e.g. Rahul Sharma" 
-              required 
-              maxlength="60"
-              autocomplete="name"
-              oninput="clearFieldError('prepay-name')"
-            />
-            <div id="error-prepay-name" class="ps-field-error">Please enter your full name as per government documents (minimum 2 characters).</div>
+            <label for="prepay-name" class="ps-form-label">Full Name (As per Govt Documents) <span
+                style="color:#ef4444;">*</span></label>
+            <input type="text" id="prepay-name" class="ps-input" placeholder="e.g. Rahul Sharma" required maxlength="60"
+              autocomplete="name" oninput="clearFieldError('prepay-name')" />
+            <div id="error-prepay-name" class="ps-field-error">Please enter your full name as per government documents
+              (minimum 2 characters).</div>
           </div>
 
           <div class="ps-form-group">

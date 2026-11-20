@@ -38,7 +38,7 @@ function runAtomic(fn) {
     return await fn();
   });
   // Keep queue alive even if a previous operation threw an error
-  dbMutexQueue = resultPromise.catch(() => {});
+  dbMutexQueue = resultPromise.catch(() => { });
   return resultPromise;
 }
 
@@ -64,7 +64,7 @@ function loadStore() {
       memoryStore.events = { ...localEvents, ...(memoryStore.events || {}) };
       return memoryStore;
     }
-  } catch (_) {}
+  } catch (_) { }
 
   // Fallback to repository LOCAL_STORE_FILE
   try {
@@ -72,7 +72,7 @@ function loadStore() {
       memoryStore = JSON.parse(fs.readFileSync(LOCAL_STORE_FILE, 'utf-8'));
       return memoryStore;
     }
-  } catch (_) {}
+  } catch (_) { }
 
   // Default initial store if neither exists
   memoryStore = {
@@ -95,12 +95,12 @@ function saveStore(store) {
   // Write to TMP_STORE_FILE
   try {
     fs.writeFileSync(TMP_STORE_FILE, serialized, 'utf-8');
-  } catch (_) {}
+  } catch (_) { }
 
   // Write to LOCAL_STORE_FILE if writable
   try {
     fs.writeFileSync(LOCAL_STORE_FILE, serialized, 'utf-8');
-  } catch (_) {}
+  } catch (_) { }
 }
 
 /**

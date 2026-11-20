@@ -137,7 +137,7 @@ exports.handler = async (event, context) => {
           rawStatus: status,
           updatedAt: new Date().toISOString()
         });
-      } catch (e) {}
+      } catch (e) { }
     }
 
     const tamperedUrl = getRedirectUrl({
@@ -207,7 +207,7 @@ exports.handler = async (event, context) => {
             failureReason: 'Server verification returned non-success status',
             updatedAt: new Date().toISOString()
           });
-        } catch (e) {}
+        } catch (e) { }
       }
       const failUrl = getRedirectUrl({
         targetCategory: category,
@@ -260,7 +260,7 @@ exports.handler = async (event, context) => {
             if (phoneMap[cleanP]?.uid) {
               verifiedUid = phoneMap[cleanP].uid;
             }
-          } catch (_) {}
+          } catch (_) { }
         }
         if (!verifiedUid) {
           verifiedUid = `phone_${String(phone).replace(/[^0-9]/g, '').slice(-10) || 'user'}`;
@@ -269,43 +269,43 @@ exports.handler = async (event, context) => {
         if (verifiedUid && (targetPackage || targetVip)) {
           orderData = targetVip
             ? {
-                txnid,
-                uid: verifiedUid,
-                orderType: 'vip',
-                planId: targetVip.planId,
-                packageName: targetVip.title,
-                planName: targetVip.planName,
-                durationDays: targetVip.durationDays,
-                dailyBonusCoins: targetVip.dailyBonusCoins,
-                expectedAmount: Number(targetVip.price),
-                expectedCoins: 0,
-                status: 'pending',
-                fulfilled: false,
-                createdAt: new Date().toISOString(),
-                customerName: firstname || 'CONNECT VIP User',
-                customerPhone: phone || '',
-                customerEmail: email || '',
-                category: 'connect_vip',
-              }
+              txnid,
+              uid: verifiedUid,
+              orderType: 'vip',
+              planId: targetVip.planId,
+              packageName: targetVip.title,
+              planName: targetVip.planName,
+              durationDays: targetVip.durationDays,
+              dailyBonusCoins: targetVip.dailyBonusCoins,
+              expectedAmount: Number(targetVip.price),
+              expectedCoins: 0,
+              status: 'pending',
+              fulfilled: false,
+              createdAt: new Date().toISOString(),
+              customerName: firstname || 'CONNECT VIP User',
+              customerPhone: phone || '',
+              customerEmail: email || '',
+              category: 'connect_vip',
+            }
             : {
-                txnid,
-                uid: verifiedUid,
-                orderType: 'coins',
-                packageId: targetPackage.id,
-                packageName: targetPackage.title,
-                expectedAmount: Number(targetPackage.price),
-                expectedCoins: Number(targetPackage.coins),
-                status: 'pending',
-                fulfilled: false,
-                createdAt: new Date().toISOString(),
-                customerName: firstname || 'CONNECT User',
-                customerPhone: phone || '',
-                customerEmail: email || '',
-                category: 'connect',
-              };
+              txnid,
+              uid: verifiedUid,
+              orderType: 'coins',
+              packageId: targetPackage.id,
+              packageName: targetPackage.title,
+              expectedAmount: Number(targetPackage.price),
+              expectedCoins: Number(targetPackage.coins),
+              status: 'pending',
+              fulfilled: false,
+              createdAt: new Date().toISOString(),
+              customerName: firstname || 'CONNECT User',
+              customerPhone: phone || '',
+              customerEmail: email || '',
+              category: 'connect',
+            };
           try {
             await orderDocRef.set(orderData);
-          } catch (e) {}
+          } catch (e) { }
         }
       }
 
@@ -657,9 +657,9 @@ exports.handler = async (event, context) => {
   } else {
     // Payment failure or cancellation
     const isCancelled = normalizedStatus === 'cancel' ||
-                        normalizedStatus === 'cancelled' ||
-                        String(params.unmappedstatus || '').toLowerCase().includes('cancel') ||
-                        String(error_Message || '').toLowerCase().includes('cancel');
+      normalizedStatus === 'cancelled' ||
+      String(params.unmappedstatus || '').toLowerCase().includes('cancel') ||
+      String(error_Message || '').toLowerCase().includes('cancel');
 
     const failureStatus = isCancelled ? 'cancelled' : 'failed';
     const errorMsg = error_Message || (isCancelled ? 'Payment was cancelled by user.' : 'Payment was declined or unsuccessful.');
@@ -683,7 +683,7 @@ exports.handler = async (event, context) => {
           mihpayid: mihpayid || '',
           updatedAt: new Date().toISOString()
         });
-      } catch (e) {}
+      } catch (e) { }
     }
 
     redirectUrl = getRedirectUrl({
