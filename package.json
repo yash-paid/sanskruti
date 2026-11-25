@@ -4,6 +4,7 @@
   "description": "Sanskruti eBooks - PayU India Hosted Checkout Integration",
   "main": "js.js",
   "scripts": {
+    "build": "npm --prefix ishika run build",
     "test": "node test-payu-local.js"
   },
   "keywords": [
@@ -14,6 +15,7 @@
   "author": "Sanskruti eBooks",
   "license": "ISC",
   "devDependencies": {
+    "@netlify/plugin-nextjs": "^5.16.9",
     "netlify-cli": "^27.16.2"
   },
   "allowScripts": {
