@@ -41,7 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 # Legacy synced platforms (copied automatically during build)
-/public/service-meet
+/public/service-meet/*
+!/public/service-meet/index.html
+!/public/service-meet/payment-status.html
 /public/meeting
 /public/wa-vc
 /public/ps

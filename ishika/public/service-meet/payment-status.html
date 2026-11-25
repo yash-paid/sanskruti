@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-FT1LGN73Q2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-FT1LGN73Q2');
+  </script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Payment & Service Status | Sanskruti Services</title>
+  <meta name="description" content="View your PayU transaction confirmation, payment verification status, and service booking activation for Sanskruti Services." />
+  <meta name="robots" content="noindex, follow" />
+  <meta name="theme-color" content="#090a0f" />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff2a74' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><path d='M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z'/></svg>" />
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="/service-meet/style.css" />
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .status-page-wrapper {
+      min-height: calc(100vh - 160px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.25rem;
+      position: relative;
+    }
+
+    .status-card-box {
+      background: rgba(18, 20, 32, 0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      max-width: 640px;
+      width: 100%;
+      padding: 2.75rem 2.25rem;
+      box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.85);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      animation: fadeInStatus 0.4s ease-out;
+    }
+
+    @keyframes fadeInStatus {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Ambient glow elements */
+    .status-card-box::before {
+      content: '';
+      position: absolute;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .status-success::before {
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.28) 0%, transparent 70%);
+    }
+
+    .status-failed::before {
+      background: radial-gradient(circle, rgba(255, 42, 116, 0.28) 0%, transparent 70%);
+    }
+
+    .status-cancelled::before {
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.28) 0%, transparent 70%);
+    }
+
+    .status-pending::before {
+      background: radial-gradient(circle, rgba(59, 130, 246, 0.28) 0%, transparent 70%);
+    }
+
+    .status-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .status-icon-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .status-success .status-icon-circle {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.4));
+      border: 2px solid #10b981;
+      color: #34d399;
+    }
+
+    .status-failed .status-icon-circle {
+      background: linear-gradient(135deg, rgba(255, 42, 116, 0.2), rgba(225, 29, 72, 0.4));
+      border: 2px solid var(--accent-pink);
+      color: #ff6b9d;
+    }
+
+    .status-cancelled .status-icon-circle {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.4));
+      border: 2px solid var(--accent-gold);
+      color: #fbbf24;
+    }
+
+    .status-pending .status-icon-circle {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.4));
+      border: 2px solid #3b82f6;
+      color: #60a5fa;
+    }
+
+    .status-badge-pill {
+      display: inline-block;
+      padding: 0.35rem 1rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .status-success .status-badge-pill {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    .status-failed .status-badge-pill {
+      background: rgba(255, 42, 116, 0.15);
+      border: 1px solid rgba(255, 42, 116, 0.4);
+      color: #ff6b9d;
+    }
+
+    .status-cancelled .status-badge-pill {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: #fbbf24;
+    }
+
+    .status-pending .status-badge-pill {
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.4);
+      color: #60a5fa;
+    }
+
+    .status-heading {
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.6rem;
+      line-height: 1.25;
+    }
+
+    .status-desc {
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      max-width: 520px;
+      margin: 0 auto 1.75rem;
+      line-height: 1.6;
+    }
+
+    .order-info-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1.25rem 1.4rem;
+      margin-bottom: 1.75rem;
+      text-align: left;
+    }
+
+    .info-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.92rem;
+    }
+
+    .info-line:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .info-key {
+      color: var(--text-muted);
+    }
+
+    .info-val {
+      color: #fff;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .package-verified-card {
+      background: linear-gradient(135deg, rgba(255, 42, 116, 0.08) 0%, rgba(18, 20, 32, 0.8) 100%);
+      border: 1px solid rgba(255, 42, 116, 0.35);
+      border-radius: 14px;
+      padding: 1.15rem 1.3rem;
+      margin-bottom: 1.75rem;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .btn-action-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      margin-top: 1.25rem;
+    }
+
+    .btn-primary-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, var(--accent-pink) 0%, #e11d48 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.85rem 1.6rem;
+      border-radius: 12px;
+      text-decoration: none;
+      box-shadow: 0 8px 24px var(--accent-pink-glow);
+      transition: all 0.25s ease;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px var(--accent-pink-glow);
+    }
+
+    .btn-whatsapp-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.85rem 1.6rem;
+      border-radius: 12px;
+      text-decoration: none;
+      box-shadow: 0 8px 24px rgba(37, 211, 102, 0.35);
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .btn-whatsapp-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(37, 211, 102, 0.5);
+    }
+
+    .btn-secondary-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.75rem 1.4rem;
+      border-radius: 12px;
+      text-decoration: none;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary-action:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    /* VIP Video Call Upgrade Modal Overlay */
+    .vc-upgrade-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(4, 3, 10, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 999999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      animation: vcFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes vcFadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .vc-upgrade-card {
+      background: linear-gradient(180deg, rgba(26, 14, 38, 0.98) 0%, rgba(13, 8, 20, 0.99) 100%);
+      border: 1px solid rgba(255, 42, 116, 0.4);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85), 0 0 35px rgba(255, 42, 116, 0.3);
+      border-radius: 24px;
+      max-width: 480px;
+      width: 100%;
+      padding: 2rem 1.6rem;
+      text-align: center;
+      position: relative;
+      max-height: 94vh;
+      overflow-y: auto;
+    }
+
+    .vc-close-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+    .vc-close-btn:hover {
+      background: rgba(239, 68, 68, 0.4);
+      transform: rotate(90deg);
+    }
+
+    .vc-upgrade-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(255, 42, 116, 0.2), rgba(138, 43, 226, 0.2));
+      border: 1px solid rgba(255, 42, 116, 0.5);
+      color: #ff85b3;
+      font-size: 0.76rem;
+      font-weight: 800;
+      padding: 5px 14px;
+      border-radius: 50px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 0.9rem;
+    }
+
+    .vc-avatar-wrap {
+      position: relative;
+      width: 84px;
+      height: 84px;
+      margin: 0 auto 0.9rem;
+    }
+    .vc-avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2.5px solid #ff2a74;
+      box-shadow: 0 0 20px rgba(255, 42, 116, 0.5);
+    }
+    .vc-online-badge {
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #10b981;
+      color: #fff;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 10px;
+      white-space: nowrap;
+      letter-spacing: 0.4px;
+    }
+
+    .vc-upgrade-title {
+      color: #fff;
+      font-size: 1.35rem;
+      font-weight: 800;
+      margin-bottom: 0.45rem;
+      line-height: 1.25;
+    }
+    .vc-upgrade-desc {
+      color: #f1f5f9;
+      font-size: 0.92rem;
+      line-height: 1.5;
+      margin-bottom: 1.15rem;
+      background: rgba(255, 42, 116, 0.1);
+      border: 1px dashed rgba(255, 42, 116, 0.35);
+      padding: 0.85rem 1rem;
+      border-radius: 14px;
+      text-align: left;
+    }
+
+    .vc-plan-box {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1rem 1.1rem;
+      text-align: left;
+      margin-bottom: 1rem;
+    }
+    .vc-plan-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+    .vc-plan-tag {
+      color: #a78bfa;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .vc-plan-heading {
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .vc-plan-pricing {
+      text-align: right;
+    }
+    .vc-plan-amt {
+      color: #ffd700;
+      font-size: 1.6rem;
+      font-weight: 900;
+      line-height: 1;
+    }
+    .vc-plan-sub {
+      color: #94a3b8;
+      font-size: 0.7rem;
+      margin-top: 2px;
+    }
+
+    .vc-features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      font-size: 0.84rem;
+      color: #e2e8f0;
+    }
+    .vc-feat-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .vc-feat-item strong {
+      color: #ff70a6;
+    }
+
+    .vc-cust-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-bottom: 1rem;
+      text-align: left;
+    }
+    .vc-input {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      color: #fff;
+      font-size: 0.88rem;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .vc-input:focus {
+      border-color: #ff2a74;
+    }
+
+    .vc-pay-btn {
+      width: 100%;
+      padding: 0.95rem;
+      background: linear-gradient(135deg, #ff2a74 0%, #d946ef 50%, #8a2be2 100%);
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(255, 42, 116, 0.45);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .vc-pay-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 42, 116, 0.6);
+    }
+    .vc-pay-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .vc-skip-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 0.85rem;
+      padding: 0.4rem;
+      transition: color 0.2s;
+      width: 100%;
+      text-decoration: underline;
+    }
+    .vc-skip-btn:hover {
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <a href="/service/" style="display: flex; align-items: center; gap: 0.6rem; text-decoration: none; color: inherit;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round"
+          style="color: var(--accent-pink); filter: drop-shadow(0 0 5px var(--accent-pink));">
+          <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" />
+        </svg>
+        <span class="logo-text">Sanskruti <span class="logo-tag">SERVICES</span></span>
+      </a>
+    </div>
+
+    <div class="header-right">
+      <a href="/service/" class="header-action-btn primary-btn">
+        <span>← All Services</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Status Card -->
+  <main class="status-page-wrapper">
+    <div id="serviceStatusCard" class="status-card-box status-pending">
+      <div class="status-inner">
+        <div id="serviceStatusIcon" class="status-icon-circle">⏳</div>
+        <div id="serviceStatusBadge" class="status-badge-pill">Verifying Transaction...</div>
+        <h1 id="serviceStatusHeading" class="status-heading">Processing Payment</h1>
+        <p id="serviceStatusDesc" class="status-desc">
+          Connecting with the payment gateway to verify your service booking.
+        </p>
+
+        <!-- Order Information Box -->
+        <div id="serviceOrderBox" class="order-info-box" style="display: none;">
+          <div class="info-line">
+            <span class="info-key">Order ID:</span>
+            <span class="info-val" id="valTxnid">-</span>
+          </div>
+          <div class="info-line" id="rowMihpayid" style="display: none;">
+            <span class="info-key">PayU Reference:</span>
+            <span class="info-val" id="valMihpayid">-</span>
+          </div>
+          <div class="info-line" id="rowAmount" style="display: none;">
+            <span class="info-key">Amount:</span>
+            <span class="info-val" id="valAmount" style="color: var(--accent-gold); font-size: 1.05rem;">-</span>
+          </div>
+          <div class="info-line" id="rowCustomer" style="display: none;">
+            <span class="info-key">Customer Phone:</span>
+            <span class="info-val" id="valCustomer">-</span>
+          </div>
+        </div>
+
+        <!-- Verified Package Detail -->
+        <div id="serviceVerifiedPackage" class="package-verified-card" style="display: none;">
+          <div>
+            <div style="color: #fff; font-weight: 700; font-size: 1.05rem;" id="valPackageTitle">💎 Service Package</div>
+            <div style="color: #34d399; font-size: 0.82rem; margin-top: 0.25rem;">
+              ✓ Cryptographically Verified by PayU India
+            </div>
+          </div>
+          <div style="color: var(--accent-gold); font-weight: 800; font-size: 1.15rem;" id="valPackagePrice">
+            -
+          </div>
+        </div>
+
+        <!-- Dynamic Action Buttons -->
+        <div class="btn-action-container" id="serviceActionButtons">
+          <a href="/service/" class="btn-secondary-action">← Return to Services</a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- VIP Video Call Upgrade Modal -->
+  <div id="vcUpgradeModal" class="vc-upgrade-overlay" style="display: none;" onclick="closeVcUpgradeModal()">
+    <div class="vc-upgrade-card" onclick="event.stopPropagation()">
+      <button class="vc-close-btn" onclick="closeVcUpgradeModal()" title="Close">✕</button>
+
+      <div class="vc-upgrade-pill">
+        <span>🔥</span> SPECIAL VIP UPGRADE OFFER
+      </div>
+
+      <div class="vc-avatar-wrap">
+        <img src="/service-meet/Screenshot_20250518-223430.WhatsAppBusiness.png" alt="Sanskruti" class="vc-avatar-img">
+        <span class="vc-online-badge">● LIVE AVAILABLE</span>
+      </div>
+
+      <h2 class="vc-upgrade-title" id="vcUpgradeTitle">Full View & Audio VIP Upgrade</h2>
+      <div class="vc-upgrade-desc" id="vcUpgradeDesc">
+        Agar aapko mera Face, Boobies, Pussy dekhna hai aur clear aawaz sunna hai toh extra pay karna hoga, sath hi extra time milega! 💋
+      </div>
+
+      <!-- Plan Summary Card -->
+      <div class="vc-plan-box">
+        <div class="vc-plan-row">
+          <div>
+            <div class="vc-plan-tag" id="vcPlanTag">Video Call Plan</div>
+            <div class="vc-plan-heading" id="vcPlanHeading">VIP Upgrade</div>
+          </div>
+          <div class="vc-plan-pricing">
+            <div class="vc-plan-amt" id="vcPlanAmt">₹50</div>
+            <div class="vc-plan-sub">One-Time Fee</div>
+          </div>
+        </div>
+        <div class="vc-features-list">
+          <div class="vc-feat-item">✓ <strong>Face Show:</strong> Complete Face + 2-Way Live Audio</div>
+          <div class="vc-feat-item">✓ <strong>Body Show:</strong> Full Boobies & Pussy Show Live</div>
+          <div class="vc-feat-item">✓ <strong>Extra Duration:</strong> <span id="vcExtraTimeText">+10 Min Extra Time</span></div>
+          <div class="vc-feat-item">✓ <strong>100% Private:</strong> Safe & Encrypted 1-on-1 Call</div>
+        </div>
+      </div>
+
+      <!-- Quick Details Form -->
+      <div class="vc-cust-form">
+        <input type="text" id="vcCustName" value="Guest" placeholder="Your Name" class="vc-input">
+        <input type="tel" id="vcCustPhone" maxlength="10" value="8820182713" placeholder="10-digit WhatsApp Phone" oninput="this.value=this.value.replace(/[^0-9]/g,'')" class="vc-input">
+        <input type="email" id="vcCustEmail" value="paid32041@gmail.com" placeholder="Email" class="vc-input">
+        <div id="vcCustError" style="display: none; color: #ef4444; font-size: 11px; margin-top: 4px; font-weight: 600;"></div>
+      </div>
+
+      <!-- Pay Button -->
+      <button id="vcUpgradePayBtn" class="vc-pay-btn" onclick="initiateVcUpgradePayment()">
+        ⚡ Pay via PayU & Unlock VIP Call 📹
+      </button>
+
+      
+    </div>
+  </div>
+
+  <footer style="padding: 2.5rem 1rem; text-align: center; color: #64748b; font-size: 0.88rem; border-top: 1px solid rgba(255,255,255,0.06);">
+    <p>© 2026 Sanskruti Services. 100% Genuine & Verified Virtual Experience.</p>
+  </footer>
+
+  <script>
+    let currentUpgradePlan = null;
+
+    function setupVcUpgrade(planType) {
+      const config = {
+        '10': {
+          price: 50,
+          extraTime: '+10 Min Extra Time',
+          itemId: 'service-vc-upgrade-50',
+          title: '10 Min Video Call Plan',
+          heading: 'VIP Full View Upgrade (+10 Min Extra)',
+          desc: 'Agar aapko mera <strong>Face, Boobies, Pussy</strong> dekhna hai aur clear aawaz sunna hai toh <strong>extra ₹50</strong> pay karna hoga, sath hi aapko <strong>+10 Minute extra time</strong> bhi milega! 💋',
+          btnText: '⚡ Pay ₹50 via PayU & Unlock Full VIP Call 📹'
+        },
+        '30': {
+          price: 100,
+          extraTime: '+20 Min Extra Time',
+          itemId: 'service-vc-upgrade-100',
+          title: '30 Min Video Call Plan',
+          heading: 'VIP Full View Upgrade (+20 Min Extra)',
+          desc: 'Agar aapko mera <strong>Face, Boobies, Pussy</strong> dekhna hai aur clear aawaz sunna hai toh <strong>extra ₹100</strong> pay karna hoga, sath hi aapko <strong>+20 Minute extra time</strong> bhi milega! 💋',
+          btnText: '⚡ Pay ₹100 via PayU & Unlock Full VIP Call 📹'
+        },
+        '60': {
+          price: 150,
+          extraTime: '+30 Min Extra Time',
+          itemId: 'service-vc-upgrade-150',
+          title: '60 Min Video Call Plan',
+          heading: 'VIP Full View Upgrade (+30 Min Extra)',
+          desc: 'Agar aapko mera <strong>Face, Boobies, Pussy</strong> dekhna hai aur clear aawaz sunna hai toh <strong>extra ₹150</strong> pay karna hoga, sath hi aapko <strong>+30 Minute extra time</strong> bhi milega! 💋',
+          btnText: '⚡ Pay ₹150 via PayU & Unlock Full VIP Call 📹'
+        }
+      };
+
+      const plan = config[planType];
+      if (!plan) return;
+      currentUpgradePlan = plan;
+
+      const descEl = document.getElementById('vcUpgradeDesc');
+      const tagEl = document.getElementById('vcPlanTag');
+      const headEl = document.getElementById('vcPlanHeading');
+      const amtEl = document.getElementById('vcPlanAmt');
+      const extraEl = document.getElementById('vcExtraTimeText');
+      const btnEl = document.getElementById('vcUpgradePayBtn');
+
+      if (descEl) descEl.innerHTML = plan.desc;
+      if (tagEl) tagEl.textContent = plan.title;
+      if (headEl) headEl.textContent = plan.heading;
+      if (amtEl) amtEl.textContent = '₹' + plan.price;
+      if (extraEl) extraEl.textContent = plan.extraTime;
+      if (btnEl) btnEl.innerHTML = plan.btnText;
+
+      const modal = document.getElementById('vcUpgradeModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeVcUpgradeModal() {
+      const modal = document.getElementById('vcUpgradeModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    async function initiateVcUpgradePayment() {
+      if (!currentUpgradePlan) return;
+      const nameInput = document.getElementById('vcCustName');
+      const phoneInput = document.getElementById('vcCustPhone');
+      const emailInput = document.getElementById('vcCustEmail');
+      const errDiv = document.getElementById('vcCustError');
+      const btn = document.getElementById('vcUpgradePayBtn');
+
+      const name = (nameInput && nameInput.value.trim()) || 'Guest';
+      const phone = (phoneInput && phoneInput.value.trim().replace(/[^0-9]/g, '')) || '8820182713';
+      const email = (emailInput && emailInput.value.trim()) || 'paid32041@gmail.com';
+
+      if (!phone || phone.length !== 10) {
+        if (errDiv) {
+          errDiv.textContent = 'Please enter a valid 10-digit WhatsApp number.';
+          errDiv.style.display = 'block';
+        }
+        return;
+      }
+
+      try {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Connecting to PayU Gateway...';
+        if (errDiv) errDiv.style.display = 'none';
+
+        const res = await fetch('/api/payu-initiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            itemType: 'service',
+            itemId: currentUpgradePlan.itemId,
+            name: name,
+            phone: phone,
+            email: email
+          })
+        });
+
+        const data = await res.json();
+        if (!data.success || !data.actionUrl) {
+          throw new Error(data.error || 'Failed to initiate secure PayU checkout.');
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = data.actionUrl;
+        form.style.display = 'none';
+
+        for (const [k, v] of Object.entries(data.params || {})) {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = k;
+          input.value = v;
+          form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+      } catch (err) {
+        console.error('VC Upgrade Payment Error:', err);
+        btn.disabled = false;
+        btn.innerHTML = currentUpgradePlan.btnText;
+        if (errDiv) {
+          errDiv.textContent = err.message || 'Payment initiation failed. Please try again.';
+          errDiv.style.display = 'block';
+        }
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const statusParam = (urlParams.get('status') || '').toLowerCase();
+      const txnid = urlParams.get('txnid') || '';
+      const token = urlParams.get('token') || '';
+      const amount = urlParams.get('amount') || '';
+      const mihpayid = urlParams.get('mihpayid') || '';
+      const errorMsg = urlParams.get('msg') || urlParams.get('error') || '';
+
+      const card = document.getElementById('serviceStatusCard');
+      const icon = document.getElementById('serviceStatusIcon');
+      const badge = document.getElementById('serviceStatusBadge');
+      const heading = document.getElementById('serviceStatusHeading');
+      const desc = document.getElementById('serviceStatusDesc');
+      const orderBox = document.getElementById('serviceOrderBox');
+      const valTxnid = document.getElementById('valTxnid');
+      const valMihpayid = document.getElementById('valMihpayid');
+      const rowMihpayid = document.getElementById('rowMihpayid');
+      const valAmount = document.getElementById('valAmount');
+      const rowAmount = document.getElementById('rowAmount');
+      const valCustomer = document.getElementById('valCustomer');
+      const rowCustomer = document.getElementById('rowCustomer');
+      const verifiedPackage = document.getElementById('serviceVerifiedPackage');
+      const valPackageTitle = document.getElementById('valPackageTitle');
+      const valPackagePrice = document.getElementById('valPackagePrice');
+      const actionButtons = document.getElementById('serviceActionButtons');
+
+      if (txnid) {
+        orderBox.style.display = 'block';
+        valTxnid.textContent = txnid;
+      }
+      if (mihpayid) {
+        rowMihpayid.style.display = 'flex';
+        valMihpayid.textContent = mihpayid;
+      }
+      if (amount) {
+        rowAmount.style.display = 'flex';
+        valAmount.textContent = '₹' + amount;
+      }
+
+      // ========================================================
+      // 1. PAYMENT SUCCESSFUL (PayU India Verified)
+      // ========================================================
+      if (statusParam === 'success') {
+        // Render verified success receipt immediately
+        card.className = 'status-card-box status-success';
+        icon.textContent = '✓';
+        badge.textContent = 'Verified by PayU India';
+        heading.textContent = 'Payment Successful! 🎉';
+        desc.textContent = 'Your Sanskruti Service payment has been verified. You can access and download your exclusive photos & videos immediately below, or connect on WhatsApp.';
+
+        const initialWaText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for Order #${txnid || 'N/A'}${amount ? ' (₹' + amount + ')' : ''}. PayU Ref: ${mihpayid || 'N/A'}. Please confirm and activate my service.`);
+        // Smart folder mapping for media services
+        const FOLDER_MAP = {
+          'service-pic-5': '/service/5%20photos/',
+          'service-pic-10': '/service/10%20photos/',
+          'service-combo-1': '/service/5%20photos%20plus%203%20videos/',
+          'service-vid-5': '/service/5%20videos/'
+        };
+
+        // Fallback by amount
+        let mediaFolderUrl = '/service/5%20photos/';
+        if (amount === '100') mediaFolderUrl = '/service/10%20photos/';
+        else if (amount === '120') mediaFolderUrl = '/service/5%20photos%20plus%203%20videos/';
+        else if (amount === '150') mediaFolderUrl = '/service/5%20videos/';
+        else if (amount === '1' || amount === '60') mediaFolderUrl = '/service/5%20photos/';
+
+        actionButtons.innerHTML = `
+          <a id="btnMediaAccess" href="${mediaFolderUrl}" class="btn-whatsapp-action" style="background: linear-gradient(135deg, #ff2a74, #8a2be2); box-shadow: 0 4px 18px rgba(255, 42, 116, 0.45); margin-bottom: 0.6rem;">
+            📥 View & Download Your Photos / Videos Now →
+          </a>
+          <a href="https://wa.me/918820182713?text=${initialWaText}" target="_blank" class="btn-whatsapp-action">
+            💬 Activate / Chat on WhatsApp
+          </a>
+          <a href="/service/" class="btn-secondary-action">
+            ← Return to Services Home
+          </a>
+        `;
+
+        // Check if this payment is an upgrade payment or a video call plan
+        const isUpgradePayment = (amount === '50' || amount === '100' || amount === '150');
+
+        if (isUpgradePayment) {
+          heading.textContent = 'VIP Upgrade Unlocked! 🎉';
+          desc.textContent = 'Aapka Video Call VIP Upgrade (Full Face, Body Show, Audio & Extra Time) verify ho gaya hai! Neeche WhatsApp par connect karke VIP call start karein.';
+          const btnMedia = document.getElementById('btnMediaAccess');
+          if (btnMedia) btnMedia.style.display = 'none';
+
+          const upgradeWaText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for the Video Call VIP Upgrade (₹${amount})! Order #${txnid || 'N/A'}. PayU Ref: ${mihpayid || 'N/A'}. Please start my Full Face, Body & Audio VIP Video Call.`);
+          const waBtn = actionButtons.querySelector('a[href*="wa.me"]');
+          if (waBtn) {
+            waBtn.href = `https://wa.me/918820182713?text=${upgradeWaText}`;
+          }
+        } else {
+          let vcType = null;
+          if (amount === '199') vcType = '10';
+          else if (amount === '300') vcType = '30';
+          else if (amount === '400') vcType = '60';
+
+          if (vcType) {
+            const btnMedia = document.getElementById('btnMediaAccess');
+            if (btnMedia) btnMedia.style.display = 'none';
+            desc.textContent = 'Aapka Video Call payment verify ho gaya hai! Apna VIP upgrade offer check karein ya WhatsApp par connect karein.';
+            setTimeout(() => {
+              setupVcUpgrade(vcType);
+            }, 600);
+          }
+        }
+
+        // Asynchronously enrich with cryptographic server verification details if available
+        if (token && txnid) {
+          try {
+            const verifyRes = await fetch(`/api/payu-verify?txnid=${encodeURIComponent(txnid)}&token=${encodeURIComponent(token)}`);
+            if (verifyRes.ok) {
+              const verifyData = await verifyRes.json();
+              if (verifyData.success && verifyData.order) {
+                if (verifyData.order.customerPhone) {
+                  rowCustomer.style.display = 'flex';
+                  valCustomer.textContent = verifyData.order.customerPhone;
+                  const pInput = document.getElementById('vcCustPhone');
+                  if (pInput) pInput.value = verifyData.order.customerPhone;
+                }
+                if (verifyData.order.customerName) {
+                  const nInput = document.getElementById('vcCustName');
+                  if (nInput) nInput.value = verifyData.order.customerName;
+                }
+                if (verifyData.order.customerEmail) {
+                  const eInput = document.getElementById('vcCustEmail');
+                  if (eInput) eInput.value = verifyData.order.customerEmail;
+                }
+
+                if (verifyData.order.items && verifyData.order.items.length > 0) {
+                  verifiedPackage.style.display = 'flex';
+                  const boughtItem = verifyData.order.items[0];
+                  valPackageTitle.textContent = '💎 ' + boughtItem.title;
+                  valPackagePrice.textContent = '₹' + boughtItem.price;
+
+                  // Update direct folder link if item is in FOLDER_MAP
+                  if (FOLDER_MAP[boughtItem.id]) {
+                    const mediaBtn = document.getElementById('btnMediaAccess');
+                    if (mediaBtn) {
+                      mediaBtn.href = FOLDER_MAP[boughtItem.id];
+                      mediaBtn.style.display = 'inline-flex';
+                    }
+                  } else if (boughtItem.id && !boughtItem.id.includes('pic') && !boughtItem.id.includes('combo') && !boughtItem.id.includes('vid')) {
+                    // Call or chat service - WhatsApp is primary
+                    const mediaBtn = document.getElementById('btnMediaAccess');
+                    if (mediaBtn) mediaBtn.style.display = 'none';
+                  }
+
+                  // Check if bought item is an upgrade or a video call
+                  if (boughtItem.id === 'service-vc-upgrade-50' || boughtItem.id === 'service-vc-upgrade-100' || boughtItem.id === 'service-vc-upgrade-150') {
+                    closeVcUpgradeModal();
+                    heading.textContent = 'VIP Upgrade Unlocked! 🎉';
+                    desc.textContent = 'Aapka Video Call VIP Upgrade (Full Face, Body Show, Audio & Extra Time) verify ho gaya hai! Neeche WhatsApp par connect karke VIP call start karein.';
+                  } else if (boughtItem.id === 'service-vc-10') {
+                    setupVcUpgrade('10');
+                  } else if (boughtItem.id === 'service-vc-30') {
+                    setupVcUpgrade('30');
+                  } else if (boughtItem.id === 'service-vc-60') {
+                    setupVcUpgrade('60');
+                  }
+                }
+
+                const itemTitle = (verifyData.order.items && verifyData.order.items[0] && verifyData.order.items[0].title) || '';
+                const verifiedWaText = encodeURIComponent(`Hello Sanskruti, I have successfully paid for Order #${txnid} (${itemTitle ? itemTitle + ' - ' : ''}₹${amount || (verifyData.order.items && verifyData.order.items[0].price) || ''}). PayU Ref: ${mihpayid || 'N/A'}. Verification Token: ${token}. Please confirm my service delivery.`);
+
+                const waBtn = actionButtons.querySelector('a[href*="wa.me"]');
+                if (waBtn) {
+                  waBtn.href = `https://wa.me/918820182713?text=${verifiedWaText}`;
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('Background server verification check:', e);
+          }
+        }
+
+      // ========================================================
+      // 2. PAYMENT CANCELLED (User Cancelled on PayU Gateway)
+      // ========================================================
+      } else if (statusParam === 'cancelled' || statusParam === 'cancel') {
+        card.className = 'status-card-box status-cancelled';
+        icon.textContent = '⚠️';
+        badge.textContent = 'Payment Cancelled';
+        heading.textContent = 'Transaction Cancelled';
+        desc.textContent = errorMsg || 'You cancelled the payment transaction on the PayU gateway. No money was deducted from your bank account or UPI app.';
+
+        actionButtons.innerHTML = `
+          <a href="/service/#services" class="btn-primary-action">
+            ↻ Choose Package & Try Again
+          </a>
+          <a href="https://wa.me/918820182713?text=${encodeURIComponent('Hello Sanskruti, I cancelled payment for order ' + txnid + '. I have a question before paying.')}" target="_blank" class="btn-whatsapp-action">
+            💬 Have Questions? Ask on WhatsApp
+          </a>
+          <a href="/service/" class="btn-secondary-action">
+            ← Return to Services
+          </a>
+        `;
+
+      // ========================================================
+      // 3. PAYMENT FAILED (Bank Declined or Payment Failed)
+      // ========================================================
+      } else if (statusParam === 'failed' || statusParam === 'failure') {
+        card.className = 'status-card-box status-failed';
+        icon.textContent = '✕';
+        badge.textContent = 'Payment Failed';
+        heading.textContent = 'Payment Unsuccessful';
+        desc.textContent = errorMsg || 'The transaction could not be processed by the bank or gateway. No amount was debited from your account. Please retry using UPI or card.';
+
+        actionButtons.innerHTML = `
+          <a href="/service/#services" class="btn-primary-action">
+            ↻ Retry Booking / Choose Package
+          </a>
+          <a href="https://wa.me/918820182713?text=${encodeURIComponent('Hello Sanskruti, my payment failed for Order ' + txnid + '. Error: ' + errorMsg)}" target="_blank" class="btn-whatsapp-action">
+            💬 Payment Help via WhatsApp
+          </a>
+          <a href="/service/" class="btn-secondary-action">
+            ← Return to Services
+          </a>
+        `;
+
+      // ========================================================
+      // 4. PAYMENT PENDING
+      // ========================================================
+      } else if (statusParam === 'pending') {
+        card.className = 'status-card-box status-pending';
+        icon.textContent = '⏳';
+        badge.textContent = 'Payment Pending';
+        heading.textContent = 'Payment Awaiting Confirmation';
+        desc.textContent = 'Your payment is currently being confirmed by your bank or UPI network. Once confirmed, your service voucher will activate automatically.';
+
+        actionButtons.innerHTML = `
+          <button onclick="window.location.reload()" class="btn-primary-action">🔄 Refresh Status</button>
+          <a href="https://wa.me/918820182713?text=${encodeURIComponent('Hello Sanskruti, my payment is pending for Order ' + txnid)}" target="_blank" class="btn-whatsapp-action">
+            💬 Inquire on WhatsApp
+          </a>
+          <a href="/service/" class="btn-secondary-action">
+            ← Return to Services
+          </a>
+        `;
+
+      // ========================================================
+      // 5. SECURITY / TAMPERING ALERT
+      // ========================================================
+      } else {
+        card.className = 'status-card-box status-failed';
+        icon.textContent = '🛡️';
+        badge.textContent = 'Security Notice';
+        heading.textContent = 'Verification Alert';
+        desc.textContent = errorMsg || 'The transaction signature could not be validated. If money was debited from your account, it will automatically refund within 3-5 business days.';
+
+        actionButtons.innerHTML = `
+          <a href="/service/" class="btn-secondary-action">← Return to Services</a>
+          <a href="https://wa.me/918820182713" target="_blank" class="btn-whatsapp-action">💬 WhatsApp Support</a>
+        `;
+      }
+    });
+  </script>
+</body>
+
+</html>
