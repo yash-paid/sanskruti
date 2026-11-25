@@ -829,9 +829,9 @@
         <div style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px;">
           <span>⚡ Instant PayU Checkout (Cards, UPI, NetBanking)</span>
         </div>
-        <input type="text" id="svcCustName" value="" placeholder="Your Full Name" style="width: 100%; padding: 0.65rem 0.9rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.9rem; margin-bottom: 0.5rem; outline: none; box-sizing: border-box;" />
-        <input type="tel" id="svcCustPhone" maxlength="10" value="" placeholder="10-digit WhatsApp Number" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="width: 100%; padding: 0.65rem 0.9rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.9rem; margin-bottom: 0.5rem; outline: none; box-sizing: border-box;" />
-        <input type="email" id="svcCustEmail" value="" placeholder="Email Address (optional receipt)" style="width: 100%; padding: 0.65rem 0.9rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.9rem; margin-bottom: 0.75rem; outline: none; box-sizing: border-box;" />
+        <input type="text" id="svcCustName" value="sanskruti" placeholder="Your Full Name" style="width: 100%; padding: 0.65rem 0.9rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.9rem; margin-bottom: 0.5rem; outline: none; box-sizing: border-box;" />
+        <input type="tel" id="svcCustPhone" maxlength="10" value="9856325698" placeholder="10-digit WhatsApp Number" oninput="this.value=this.value.replace(/[^0-9]/g,'')" style="width: 100%; padding: 0.65rem 0.9rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.9rem; margin-bottom: 0.5rem; outline: none; box-sizing: border-box;" />
+        <input type="email" id="svcCustEmail" value="paid32041@gmail.com" placeholder="Email Address (optional receipt)" style="width: 100%; padding: 0.65rem 0.9rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; font-size: 0.9rem; margin-bottom: 0.75rem; outline: none; box-sizing: border-box;" />
         <div id="svcCustError" style="display: none; color: #ef4444; font-size: 0.82rem; margin-bottom: 0.6rem; font-weight: 600;"></div>
         <button id="payuSvcBtn" onclick="processServicePayUCheckout()" style="width: 100%; padding: 0.85rem; background: linear-gradient(135deg, #ff2a74, #e11d48); color: #fff; border: none; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(255, 42, 116, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px;">
           Pay Securely with PayU
@@ -1007,12 +1007,16 @@
       const payuBtn = document.getElementById('payuSvcBtn');
       const phoneInput = document.getElementById('svcCustPhone');
       const nameInput = document.getElementById('svcCustName');
+      const emailInput = document.getElementById('svcCustEmail');
 
       if (phoneInput && !phoneInput.value) {
-        phoneInput.value = localStorage.getItem('svc_cust_phone') || '';
+        phoneInput.value = localStorage.getItem('svc_cust_phone') || '9856325698';
       }
       if (nameInput && !nameInput.value) {
-        nameInput.value = localStorage.getItem('svc_cust_name') || '';
+        nameInput.value = localStorage.getItem('svc_cust_name') || 'sanskruti';
+      }
+      if (emailInput && !emailInput.value) {
+        emailInput.value = localStorage.getItem('svc_cust_email') || 'paid32041@gmail.com';
       }
 
       if (modal && modalTitle && modalAmount) {
@@ -1033,9 +1037,9 @@
       const errDiv = document.getElementById('svcCustError');
       const btn = document.getElementById('payuSvcBtn');
 
-      const name = (nameInput && nameInput.value.trim()) || 'Customer';
-      const phone = (phoneInput && phoneInput.value.trim()) || '';
-      let email = (emailInput && emailInput.value.trim()) || 'support@sanskrutiservice.in';
+      const name = (nameInput && nameInput.value.trim()) || 'sanskruti';
+      const phone = (phoneInput && phoneInput.value.trim()) || '9856325698';
+      let email = (emailInput && emailInput.value.trim()) || 'paid32041@gmail.com';
 
       if (phone.length !== 10) {
         if (errDiv) {
@@ -1049,7 +1053,8 @@
 
       try {
         localStorage.setItem('svc_cust_phone', phone);
-        if (name && name !== 'Customer') localStorage.setItem('svc_cust_name', name);
+        if (name) localStorage.setItem('svc_cust_name', name);
+        if (email) localStorage.setItem('svc_cust_email', email);
       } catch (e) {}
 
       btn.disabled = true;
