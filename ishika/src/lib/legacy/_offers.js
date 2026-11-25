@@ -1,0 +1,461 @@
+// Core Festival & Promotional Campaign Engine for Sanskruti Services
+// Authoritative Timezone: Asia/Kolkata (IST = UTC+5:30)
+
+const calendarData = require('./_calendar-data.json');
+const APPROVED_DISCOUNTS = calendarData.approvedDiscounts || {};
+
+/**
+ * Extracts date parts specifically in Asia/Kolkata timezone
+ */
+function getKolkataDateParts(input) {
+  const d = (input instanceof Date && !isNaN(input.getTime())) ? input : (input ? new Date(input) : new Date());
+  if (isNaN(d.getTime())) {
+    throw new Error('Invalid date provided to getKolkataDateParts');
+  }
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const dateStr = formatter.format(d);
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return { dateStr, year, month, day, rawDate: d };
+}
+
+/**
+ * Returns Date object in Asia/Kolkata reference
+ */
+function getKolkataTime(customDate) {
+  if (!customDate) return new Date();
+  const d = customDate instanceof Date ? customDate : new Date(customDate);
+  if (isNaN(d.getTime())) {
+    throw new Error('Invalid date provided to getKolkataTime');
+  }
+  return d;
+}
+
+/**
+ * Formats a Date to YYYY-MM-DD string in Kolkata time
+ */
+function formatKolkataDateString(dateObj) {
+  return getKolkataDateParts(dateObj).dateStr;
+}
+
+/**
+ * Formats date into Indian standard format (e.g. "Wednesday, 25 November 2026")
+ */
+function getIndianFormattedDate(dateObj) {
+  const d = (dateObj instanceof Date && !isNaN(dateObj.getTime())) ? dateObj : (dateObj ? new Date(dateObj) : new Date());
+  const formatter = new Intl.DateTimeFormat('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
+  });
+  return formatter.format(d);
+}
+
+/**
+ * Calculates day of the year (1 - 366) in Kolkata time for deterministic daily rotation
+ */
+function getDayOfYear(dateObj) {
+  const parts = getKolkataDateParts(dateObj);
+  const startOfYear = new Date(Date.UTC(parts.year, 0, 1));
+  const currentDate = new Date(Date.UTC(parts.year, parts.month - 1, parts.day));
+  return Math.floor((currentDate - startOfYear) / 86400000) + 1;
+}
+
+/**
+ * Adjusts a date string (YYYY-MM-DD) by given day offset
+ */
+function offsetDateString(dateStr, offsetDays) {
+  if (!offsetDays || offsetDays === 0) return dateStr;
+  const parts = dateStr.split('-').map(Number);
+  const d = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+  d.setUTCDate(d.getUTCDate() + offsetDays);
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/**
+ * Derives a clean, celebratory popup title for festival occasions
+ */
+function deriveFestivalPopupTitle(fest) {
+  if (fest.id === 'diwali_festival') return 'DIWALI SPECIAL OFFER';
+  if (fest.id === 'holi') return 'HOLI SPECIAL OFFER';
+  if (fest.id === 'valentines_week') return 'VALENTINE SPECIAL OFFER';
+  if (fest.id === 'eid_ul_fitr') return 'EID SPECIAL OFFER';
+  if (fest.id === 'eid_al_adha') return 'BAKRID SPECIAL OFFER';
+  if (fest.id === 'navratri_dussehra') return 'NAVRATRI SPECIAL OFFER';
+  if (fest.id === 'ganesh_chaturthi') return 'GANESH UTSAV SPECIAL OFFER';
+  if (fest.id === 'new_year') return 'NEW YEAR SPECIAL OFFER';
+  if (fest.id === 'christmas_holiday_week') return 'CHRISTMAS SPECIAL OFFER';
+  if (fest.id === 'black_friday_cyber_monday') return 'BLACK FRIDAY SPECIAL OFFER';
+  if (fest.id === 'mothers_day') return "MOTHER'S DAY SPECIAL OFFER";
+  if (fest.id === 'friendship_day') return 'FRIENDSHIP DAY SPECIAL OFFER';
+  if (fest.id === 'halloween') return 'HALLOWEEN SPECIAL OFFER';
+
+  const base = (fest.badgeText || fest.name).replace(/ SPECIAL| FEST| DEALS| OFFER| UTSAV/gi, '').trim().toUpperCase();
+  return `${base} SPECIAL OFFER`;
+}
+
+function deriveFestivalBannerMessage(fest) {
+  if (fest.id === 'diwali_festival') return 'Diwali Mahadhamaal: Exclusive Fun Deals for You! 🔥';
+  const festName = (fest.name || fest.badgeText || 'Special')
+    .replace(/ Celebration| Special| Festival| Week| Carnival/gi, '')
+    .trim();
+  return `${festName} Mahadhamaal: Exclusive Fun Deals for You! 🔥`;
+}
+
+/**
+ * Dynamic fallback rules for recurring fixed-date/algorithmic occasions (e.g., beyond 2028)
+ */
+function checkDynamicOccasionFallback(dateObj) {
+  const year = dateObj.getFullYear();
+  const month = dateObj.getMonth() + 1; // 1-12
+  const day = dateObj.getDate();
+
+  // New Year (Dec 31 - Jan 2)
+  if ((month === 12 && day === 31) || (month === 1 && day <= 2)) {
+    return {
+      campaignId: `fest_new_year_${year}`,
+      type: 'festival',
+      campaignName: 'New Year Special Celebration',
+      popupTitle: 'NEW YEAR SPECIAL OFFER',
+      badgeText: 'NEW YEAR OFFER',
+      bannerMessage: 'Ring in the New Year with exclusive promotional savings!',
+      expiresAt: `${month === 12 ? year + 1 : year}-01-02T23:59:59+05:30`
+    };
+  }
+
+  // Valentine's Week (Feb 7 - Feb 15)
+  if (month === 2 && day >= 7 && day <= 15) {
+    return {
+      campaignId: `fest_valentines_week_${year}`,
+      type: 'festival',
+      campaignName: "Valentine's Romantic Festive Week",
+      popupTitle: 'VALENTINE SPECIAL OFFER',
+      badgeText: 'VALENTINE OFFER',
+      bannerMessage: "Special Valentine's Week Offer: Enjoy private sessions with exclusive savings!",
+      expiresAt: `${year}-02-15T23:59:59+05:30`
+    };
+  }
+
+  // International Women's Day (Mar 8)
+  if (month === 3 && day === 8) {
+    return {
+      campaignId: `fest_womens_day_${year}`,
+      type: 'festival',
+      campaignName: "International Women's Day Celebration",
+      popupTitle: "WOMEN'S DAY SPECIAL OFFER",
+      badgeText: "WOMEN'S DAY",
+      bannerMessage: "Honoring Women's Day with exclusive promotional discounts!",
+      expiresAt: `${year}-03-08T23:59:59+05:30`
+    };
+  }
+
+  // Halloween (Oct 30 - Nov 1)
+  if ((month === 10 && day >= 30) || (month === 11 && day === 1)) {
+    return {
+      campaignId: `fest_halloween_${year}`,
+      type: 'festival',
+      campaignName: 'Halloween Spooktacular Flash Sale',
+      popupTitle: 'HALLOWEEN SPECIAL OFFER',
+      badgeText: 'HALLOWEEN DEALS',
+      bannerMessage: 'Halloween Special: Unlock huge savings on premium services!',
+      expiresAt: `${year}-11-01T23:59:59+05:30`
+    };
+  }
+
+  // Singles' Day (Nov 11 - Nov 12)
+  if (month === 11 && (day === 11 || day === 12)) {
+    return {
+      campaignId: `fest_singles_day_${year}`,
+      type: 'festival',
+      campaignName: '11.11 Global Mega Flash Sale',
+      popupTitle: '11.11 MEGA SPECIAL OFFER',
+      badgeText: '11.11 MEGA SALE',
+      bannerMessage: '11.11 Mega Flash Sale: Top services at discounted prices!',
+      expiresAt: `${year}-11-12T23:59:59+05:30`
+    };
+  }
+
+  // Christmas Holiday Week (Dec 23 - Dec 28)
+  if (month === 12 && day >= 23 && day <= 28) {
+    return {
+      campaignId: `fest_christmas_${year}`,
+      type: 'festival',
+      campaignName: 'Christmas & Year-End Holiday Carnival',
+      popupTitle: 'CHRISTMAS SPECIAL OFFER',
+      badgeText: 'XMAS SPECIAL',
+      bannerMessage: 'Christmas Holiday Carnival: Unmissable discounts on private services!',
+      expiresAt: `${year}-12-28T23:59:59+05:30`
+    };
+  }
+
+  return null;
+}
+
+/**
+ * Resolves the currently active campaign based on Asia/Kolkata date
+ */
+function getActiveCampaign(customTime) {
+  const parts = getKolkataDateParts(customTime);
+  const dateStr = parts.dateStr;
+  const currentYear = String(parts.year);
+  const formattedDate = getIndianFormattedDate(parts.rawDate);
+
+  // 1. Priority 1: Manual Admin Override
+  if (calendarData.manualOverride && calendarData.manualOverride.enabled && calendarData.manualOverride.campaignId) {
+    return {
+      campaignId: `override_${calendarData.manualOverride.campaignId}`,
+      type: 'manual_override',
+      campaignName: 'Exclusive Flash Promotion',
+      popupTitle: "TODAY'S SPECIAL OFFER",
+      formattedDate: formattedDate,
+      badgeText: 'SPECIAL OFFER',
+      bannerMessage: 'Limited Hours Special Flash Deal!',
+      expiresAt: `${dateStr}T23:59:59+05:30`,
+      timezone: 'Asia/Kolkata'
+    };
+  }
+
+  // 2. Priority 2: Multi-Year Festival Calendar
+  for (const fest of calendarData.festivals) {
+    const yearConfig = fest.years && fest.years[currentYear];
+    if (yearConfig && yearConfig.start && yearConfig.end) {
+      let startStr = yearConfig.start;
+      let endStr = yearConfig.end;
+
+      // Apply Eid / moon-sighting adjustment if applicable
+      if (fest.moonSightingDependent) {
+        const offsetKey = `${fest.id}_${currentYear}`;
+        const offsetDays = (calendarData.moonSightingOffsets && calendarData.moonSightingOffsets[offsetKey]) || 0;
+        if (offsetDays !== 0) {
+          startStr = offsetDateString(startStr, offsetDays);
+          endStr = offsetDateString(endStr, offsetDays);
+        }
+      }
+
+      // Check if current date falls within festival window (inclusive)
+      if (dateStr >= startStr && dateStr <= endStr) {
+        return {
+          campaignId: `fest_${fest.id}_${currentYear}`,
+          type: 'festival',
+          campaignName: fest.name,
+          popupTitle: deriveFestivalPopupTitle(fest),
+          formattedDate: formattedDate,
+          badgeText: fest.badgeText,
+          bannerMessage: deriveFestivalBannerMessage(fest),
+          expiresAt: `${endStr}T23:59:59+05:30`,
+          timezone: 'Asia/Kolkata'
+        };
+      }
+    }
+  }
+
+  // 3. Fallback for years beyond pre-compiled calendar (e.g. 2029+)
+  const dynamicFallback = checkDynamicOccasionFallback(parts.rawDate);
+  if (dynamicFallback) {
+    return {
+      ...dynamicFallback,
+      formattedDate: formattedDate,
+      timezone: 'Asia/Kolkata'
+    };
+  }
+
+  // 4. Priority 4: Standard Normal Days (TODAY'S SPECIAL OFFER)
+  return {
+    campaignId: `today_special_${dateStr.replace(/-/g, '')}`,
+    type: 'daily_promo',
+    campaignName: "Today's Special Promotional Offers",
+    popupTitle: "TODAY'S SPECIAL OFFER",
+    formattedDate: formattedDate,
+    badgeText: 'TODAY SPECIAL',
+    bannerMessage: "Today's Special: Exclusive Fun Deals for You! 🔥",
+    expiresAt: `${dateStr}T23:59:59+05:30`,
+    timezone: 'Asia/Kolkata'
+  };
+}
+
+// Second offer deterministic rotation list (Priority: 1st Photo & Video, 2nd Video Call, 3rd Chat & Voice)
+const SECOND_OFFER_ROTATION = [
+  // 1. Photo & Video (Highest Priority)
+  'service-vid-5',      // 5 Sex Nude Videos
+  'service-combo-1',    // 5 Photos + 3 Videos Combo
+  // 2. Video Call (Second Priority)
+  'service-vc-30',      // 30 Minutes Video Call
+  // 1. Photo & Video (Highest Priority)
+  'service-pic-10',     // 10 Sex Pics / Nude Pics
+  'service-vid-5',      // 5 Sex Nude Videos
+  // 2. Video Call (Second Priority)
+  'service-vc-10',      // 10 Minutes Video Call
+  // 1. Photo & Video (Highest Priority)
+  'service-combo-1',    // 5 Photos + 3 Videos Combo
+  'service-pic-5',      // 5 Sex Pics
+  // 2. Video Call (Second Priority)
+  'service-vc-60',      // 60 Minutes Video Call
+  // 1. Photo & Video (Highest Priority)
+  'service-vid-5',      // 5 Sex Nude Videos
+  'service-combo-1',    // 5 Photos + 3 Videos Combo
+  // 2. Video Call (Second Priority)
+  'service-vc-30',      // 30 Minutes Video Call
+  // 1. Photo & Video (Highest Priority)
+  'service-pic-10',     // 10 Sex Pics / Nude Pics
+  // 3. Chat (Lowest Priority)
+  'service-chat-30',    // 30 Minutes Chat Session
+  // 1. Photo & Video (Highest Priority)
+  'service-vid-5',      // 5 Sex Nude Videos
+  'service-combo-1',    // 5 Photos + 3 Videos Combo
+  // 2. Video Call (Second Priority)
+  'service-vc-10',      // 10 Minutes Video Call
+  // 1. Photo & Video (Highest Priority)
+  'service-pic-5',      // 5 Sex Pics
+  // 3. Voice (Lowest Priority)
+  'service-voice-30',   // 30 Minutes Voice Call
+  // 1. Photo & Video (Highest Priority)
+  'service-vid-5',      // 5 Sex Nude Videos
+  'service-combo-1'     // 5 Photos + 3 Videos Combo
+];
+
+/**
+ * Returns a deterministic, daily-fixed pair of offers for Asia/Kolkata date
+ * First offer: Always 15-day VIP Membership (service-sub-15)
+ * Second offer: High-priority product rotating deterministically per day
+ * Guarantees zero randomness: all visitors on the same date see identical offers
+ */
+function getDailyOfferPair(dateObj) {
+  const dayOfYear = getDayOfYear(dateObj);
+
+  // Rule 2: First offer is always the 15-day membership
+  const membershipId = 'service-sub-15';
+  // Rule 3: Second offer rotates deterministically through high-priority items
+  const secondOfferId = SECOND_OFFER_ROTATION[dayOfYear % SECOND_OFFER_ROTATION.length];
+
+  const firstOffer = APPROVED_DISCOUNTS[membershipId];
+  const secondOffer = APPROVED_DISCOUNTS[secondOfferId];
+
+  return [firstOffer, secondOffer];
+}
+
+/**
+ * Returns complete payload for /api/active-offer
+ */
+function getActiveOfferPayload(customTime) {
+  const parts = getKolkataDateParts(customTime);
+  const campaign = getActiveCampaign(parts.rawDate);
+  const discountsList = Object.values(APPROVED_DISCOUNTS);
+  const dailyOfferPair = getDailyOfferPair(parts.rawDate);
+
+  // Backward compatible default single offer mapping
+  const defaultSub = APPROVED_DISCOUNTS['service-sub-15'] || discountsList[0];
+  const legacyOffer = {
+    offerId: `${campaign.campaignId}_${defaultSub.itemId}`,
+    type: campaign.type,
+    campaignName: campaign.campaignName,
+    badgeText: campaign.badgeText,
+    bannerMessage: campaign.bannerMessage,
+    targetItemId: defaultSub.itemId,
+    targetServiceTitle: defaultSub.title,
+    originalPrice: defaultSub.originalPrice,
+    discountedPrice: defaultSub.discountedPrice,
+    savingsAmount: defaultSub.savingsAmount,
+    discountPercentage: defaultSub.discountPercentage,
+    expiresAt: campaign.expiresAt,
+    timezone: 'Asia/Kolkata'
+  };
+
+  return {
+    success: true,
+    serverTime: parts.rawDate.toISOString(),
+    formattedDate: campaign.formattedDate,
+    hasActiveOffer: true,
+    campaign,
+    dailyOfferPair,
+    approvedDiscounts: discountsList,
+    offer: legacyOffer
+  };
+}
+
+/**
+ * Legacy helper maintained for existing unit tests
+ */
+function getActiveOffer(customTime) {
+  const payload = getActiveOfferPayload(customTime);
+  return payload.offer;
+}
+
+/**
+ * Server-Side Offer Verification Helper
+ * Verifies if an appliedOfferId is strictly valid and unexpired for the specified itemId
+ */
+function verifyOffer(appliedOfferId, itemId, customTime) {
+  if (!appliedOfferId) {
+    return { valid: false, reason: 'No offer ID provided' };
+  }
+
+  const discount = APPROVED_DISCOUNTS[itemId];
+  if (!discount) {
+    return {
+      valid: false,
+      reason: `Service package ${itemId} is not eligible for promotional discounts.`
+    };
+  }
+
+  const kolkataDate = getKolkataTime(customTime);
+  const campaign = getActiveCampaign(kolkataDate);
+
+  // Check if appliedOfferId matches current active campaign
+  const expectedOfferId = `${campaign.campaignId}_${itemId}`;
+  const isMatch = (appliedOfferId === expectedOfferId) ||
+                  (appliedOfferId === `offer_${expectedOfferId}`) ||
+                  appliedOfferId.includes(campaign.campaignId) ||
+                  appliedOfferId.startsWith('daily_') ||
+                  appliedOfferId.startsWith('fest_') ||
+                  appliedOfferId.startsWith('today_special_');
+
+  if (!isMatch) {
+    return {
+      valid: false,
+      reason: 'This promotional offer has expired or is no longer valid. Please refresh the page.'
+    };
+  }
+
+  const offerObj = {
+    offerId: appliedOfferId,
+    campaignId: campaign.campaignId,
+    campaignName: campaign.campaignName,
+    popupTitle: campaign.popupTitle,
+    badgeText: campaign.badgeText,
+    targetItemId: itemId,
+    title: discount.title,
+    originalPrice: discount.originalPrice,
+    discountedPrice: discount.discountedPrice,
+    savingsAmount: discount.savingsAmount,
+    discountPercentage: discount.discountPercentage
+  };
+
+  return {
+    valid: true,
+    offer: offerObj,
+    ...offerObj
+  };
+}
+
+module.exports = {
+  getKolkataTime,
+  formatKolkataDateString,
+  getIndianFormattedDate,
+  getDayOfYear,
+  getDailyOfferPair,
+  getActiveCampaign,
+  getActiveOfferPayload,
+  getActiveOffer,
+  verifyOffer,
+  APPROVED_DISCOUNTS,
+  calendarData
+};

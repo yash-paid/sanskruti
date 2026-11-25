@@ -1,0 +1,1046 @@
+{
+  "version": "1.0.0",
+  "timezone": "Asia/Kolkata",
+  "metadata": {
+    "description": "Authoritative festival, regional, and marketing campaign calendar for Sanskruti Services",
+    "excludedCategories": [
+      "national_holidays",
+      "public_gazetted_political",
+      "labour_days"
+    ],
+    "verifiedSources": [
+      "Rashtriya Panchang",
+      "GoI Gazetted List",
+      "Official Moon Sighting Committees"
+    ]
+  },
+  "moonSightingOffsets": {
+    "eid_ul_fitr_2025": 0,
+    "eid_al_adha_2025": 0,
+    "eid_ul_fitr_2026": 0,
+    "eid_al_adha_2026": 0,
+    "eid_ul_fitr_2027": 0,
+    "eid_al_adha_2027": 0,
+    "eid_ul_fitr_2028": 0,
+    "eid_al_adha_2028": 0
+  },
+  "manualOverride": {
+    "enabled": false,
+    "campaignId": null,
+    "reason": ""
+  },
+  "targetPackages": {
+    "vc30": {
+      "itemId": "service-vc-30",
+      "title": "30 Minutes Video Call",
+      "originalPrice": 300,
+      "discountedPrice": 220,
+      "discountPercentage": 27
+    },
+    "sub7": {
+      "itemId": "service-sub-7",
+      "title": "7 Days Video Call VIP Subscription",
+      "originalPrice": 750,
+      "discountedPrice": 350,
+      "discountPercentage": 53
+    }
+  },
+  "dailyPromotions": [
+    {
+      "id": "promo_flash_vc30",
+      "campaignName": "Today's Flash Special Offer",
+      "badgeText": "FLASH DEAL",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Limited Hours Flash Deal: Get 27% OFF on 30-Min Video Call!"
+    },
+    {
+      "id": "promo_vip_sub7",
+      "campaignName": "Exclusive VIP Membership Pass",
+      "badgeText": "53% OFF PASS",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Super Saver Offer: 7 Days VIP Access at just ₹350 (Flat 53% OFF)!"
+    },
+    {
+      "id": "promo_midweek_vc30",
+      "campaignName": "Midweek Special Connection Deal",
+      "badgeText": "SPECIAL OFFER",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Enjoy Special Discount: 30-Minute Video Call now for ₹220 only!"
+    },
+    {
+      "id": "promo_loyalty_sub7",
+      "campaignName": "Premium Member Super Deal",
+      "badgeText": "MEMBER SPECIAL",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Instant VIP Upgrade: Full 7-Day Access at ₹350 instead of ₹750!"
+    }
+  ],
+  "festivals": [
+    {
+      "id": "new_year",
+      "name": "New Year Special Celebration",
+      "badgeText": "NEW YEAR OFFER",
+      "category": "international",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Ring in the New Year with 7 Days VIP Access at just ₹350!",
+      "years": {
+        "2025": {
+          "start": "2024-12-31",
+          "end": "2025-01-02"
+        },
+        "2026": {
+          "start": "2025-12-31",
+          "end": "2026-01-02"
+        },
+        "2027": {
+          "start": "2026-12-31",
+          "end": "2027-01-02"
+        },
+        "2028": {
+          "start": "2027-12-31",
+          "end": "2028-01-02"
+        }
+      }
+    },
+    {
+      "id": "lohri",
+      "name": "Lohri Festive Celebration",
+      "badgeText": "LOHRI SPECIAL",
+      "category": "regional",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Celebrate the warmth of Lohri with 27% OFF on 30-Min Video Call!",
+      "years": {
+        "2025": {
+          "start": "2025-01-13",
+          "end": "2025-01-13"
+        },
+        "2026": {
+          "start": "2026-01-13",
+          "end": "2026-01-13"
+        },
+        "2027": {
+          "start": "2027-01-13",
+          "end": "2027-01-13"
+        },
+        "2028": {
+          "start": "2028-01-13",
+          "end": "2028-01-13"
+        }
+      }
+    },
+    {
+      "id": "makar_sankranti",
+      "name": "Makar Sankranti & Pongal Fest",
+      "badgeText": "SANKRANTI SPECIAL",
+      "category": "pan_india",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Festive Greetings! Enjoy 30-Min Video Call at just ₹220 (Save ₹80)!",
+      "years": {
+        "2025": {
+          "start": "2025-01-14",
+          "end": "2025-01-15"
+        },
+        "2026": {
+          "start": "2026-01-14",
+          "end": "2026-01-15"
+        },
+        "2027": {
+          "start": "2027-01-14",
+          "end": "2027-01-15"
+        },
+        "2028": {
+          "start": "2028-01-14",
+          "end": "2028-01-15"
+        }
+      }
+    },
+    {
+      "id": "vasant_panchami",
+      "name": "Vasant Panchami Special",
+      "badgeText": "BASANT SPECIAL",
+      "category": "hindu",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Spring Celebrations: 30-Minute Video Call now for ₹220 only!",
+      "years": {
+        "2025": {
+          "start": "2025-02-02",
+          "end": "2025-02-03"
+        },
+        "2026": {
+          "start": "2026-01-23",
+          "end": "2026-01-24"
+        },
+        "2027": {
+          "start": "2027-02-11",
+          "end": "2027-02-12"
+        },
+        "2028": {
+          "start": "2028-01-31",
+          "end": "2028-02-01"
+        }
+      }
+    },
+    {
+      "id": "valentines_week",
+      "name": "Valentine's Romantic Festive Week",
+      "badgeText": "VALENTINE OFFER",
+      "category": "international_marketing",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Special Valentine's Week Offer: Get 30-Min Private Video Call for ₹220!",
+      "years": {
+        "2025": {
+          "start": "2025-02-07",
+          "end": "2025-02-15"
+        },
+        "2026": {
+          "start": "2026-02-07",
+          "end": "2026-02-15"
+        },
+        "2027": {
+          "start": "2027-02-07",
+          "end": "2027-02-15"
+        },
+        "2028": {
+          "start": "2028-02-07",
+          "end": "2028-02-15"
+        }
+      }
+    },
+    {
+      "id": "maha_shivratri",
+      "name": "Maha Shivratri Blessings Offer",
+      "badgeText": "SHIVRATRI SPECIAL",
+      "category": "hindu",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Festive Blessings: 7-Day VIP Access at 53% OFF (Now ₹350)!",
+      "years": {
+        "2025": {
+          "start": "2025-02-26",
+          "end": "2025-02-27"
+        },
+        "2026": {
+          "start": "2026-02-15",
+          "end": "2026-02-16"
+        },
+        "2027": {
+          "start": "2027-03-06",
+          "end": "2027-03-07"
+        },
+        "2028": {
+          "start": "2028-02-23",
+          "end": "2028-02-24"
+        }
+      }
+    },
+    {
+      "id": "womens_day",
+      "name": "International Women's Day Celebration",
+      "badgeText": "WOMEN'S DAY",
+      "category": "international_marketing",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Honoring Women's Day with Flat 53% OFF on 7 Days VIP Access!",
+      "years": {
+        "2025": {
+          "start": "2025-03-08",
+          "end": "2025-03-08"
+        },
+        "2026": {
+          "start": "2026-03-08",
+          "end": "2026-03-08"
+        },
+        "2027": {
+          "start": "2027-03-08",
+          "end": "2027-03-08"
+        },
+        "2028": {
+          "start": "2028-03-08",
+          "end": "2028-03-08"
+        }
+      }
+    },
+    {
+      "id": "holi",
+      "name": "Holi Dhamaka Color Fest",
+      "badgeText": "HOLI DHAMAKA",
+      "category": "pan_india",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Holi Dhamaka Offer: Connect live on 30-Min Video Call for just ₹220!",
+      "years": {
+        "2025": {
+          "start": "2025-03-13",
+          "end": "2025-03-15"
+        },
+        "2026": {
+          "start": "2026-03-03",
+          "end": "2026-03-05"
+        },
+        "2027": {
+          "start": "2027-03-22",
+          "end": "2027-03-24"
+        },
+        "2028": {
+          "start": "2028-03-10",
+          "end": "2028-03-12"
+        }
+      }
+    },
+    {
+      "id": "gudi_padwa_ugadi",
+      "name": "New Year Fest: Gudi Padwa & Ugadi",
+      "badgeText": "FESTIVE SPECIAL",
+      "category": "regional_new_year",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Celebrate Regional New Year with 7-Day VIP Access for ₹350!",
+      "years": {
+        "2025": {
+          "start": "2025-03-30",
+          "end": "2025-03-31"
+        },
+        "2026": {
+          "start": "2026-03-19",
+          "end": "2026-03-20"
+        },
+        "2027": {
+          "start": "2027-04-07",
+          "end": "2027-04-08"
+        },
+        "2028": {
+          "start": "2028-03-27",
+          "end": "2028-03-28"
+        }
+      }
+    },
+    {
+      "id": "eid_ul_fitr",
+      "name": "Eid ul-Fitr Mubarak Offer",
+      "badgeText": "EID MUBARAK",
+      "category": "islamic",
+      "moonSightingDependent": true,
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Eid Mubarak! Enjoy 7 Days Video Call VIP Subscription at ₹350!",
+      "years": {
+        "2025": {
+          "start": "2025-03-31",
+          "end": "2025-04-01"
+        },
+        "2026": {
+          "start": "2026-03-20",
+          "end": "2026-03-22"
+        },
+        "2027": {
+          "start": "2027-03-10",
+          "end": "2027-03-12"
+        },
+        "2028": {
+          "start": "2028-02-27",
+          "end": "2028-02-29"
+        }
+      }
+    },
+    {
+      "id": "easter_weekend",
+      "name": "Easter Weekend Holiday Special",
+      "badgeText": "EASTER SPECIAL",
+      "category": "international",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Easter Weekend Deal: 30-Minute Video Call at flat ₹220 (Save ₹80)!",
+      "years": {
+        "2025": {
+          "start": "2025-04-18",
+          "end": "2025-04-21"
+        },
+        "2026": {
+          "start": "2026-04-03",
+          "end": "2026-04-06"
+        },
+        "2027": {
+          "start": "2027-03-26",
+          "end": "2027-03-29"
+        },
+        "2028": {
+          "start": "2028-04-14",
+          "end": "2028-04-17"
+        }
+      }
+    },
+    {
+      "id": "baisakhi_vishu",
+      "name": "Baisakhi, Vishu & Pohela Boishakh",
+      "badgeText": "HARVEST FEST",
+      "category": "regional_harvest",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Harvest Festivities: Enjoy 30-Minute Video Call for just ₹220!",
+      "years": {
+        "2025": {
+          "start": "2025-04-13",
+          "end": "2025-04-15"
+        },
+        "2026": {
+          "start": "2026-04-13",
+          "end": "2026-04-15"
+        },
+        "2027": {
+          "start": "2027-04-13",
+          "end": "2027-04-15"
+        },
+        "2028": {
+          "start": "2028-04-13",
+          "end": "2028-04-15"
+        }
+      }
+    },
+    {
+      "id": "akshaya_tritiya",
+      "name": "Akshaya Tritiya Prosperity Offer",
+      "badgeText": "SHUBH LABH",
+      "category": "pan_india",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Shubh Labh Offer: 7 Days VIP Access now at flat 53% OFF (₹350)!",
+      "years": {
+        "2025": {
+          "start": "2025-04-29",
+          "end": "2025-04-30"
+        },
+        "2026": {
+          "start": "2026-04-19",
+          "end": "2026-04-20"
+        },
+        "2027": {
+          "start": "2027-05-09",
+          "end": "2027-05-10"
+        },
+        "2028": {
+          "start": "2028-04-27",
+          "end": "2028-04-28"
+        }
+      }
+    },
+    {
+      "id": "mothers_day",
+      "name": "Mother's Day Special Campaign",
+      "badgeText": "MOTHER'S DAY",
+      "category": "international_marketing",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Special Weekend Celebration: 30-Min Video Call for just ₹220!",
+      "years": {
+        "2025": {
+          "start": "2025-05-10",
+          "end": "2025-05-11"
+        },
+        "2026": {
+          "start": "2026-05-09",
+          "end": "2026-05-10"
+        },
+        "2027": {
+          "start": "2027-05-08",
+          "end": "2027-05-09"
+        },
+        "2028": {
+          "start": "2028-05-13",
+          "end": "2028-05-14"
+        }
+      }
+    },
+    {
+      "id": "eid_al_adha",
+      "name": "Eid al-Adha (Bakrid) Mubarak",
+      "badgeText": "BAKRID SPECIAL",
+      "category": "islamic",
+      "moonSightingDependent": true,
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Bakrid Mubarak! Get 7 Days Video Call VIP Subscription for ₹350!",
+      "years": {
+        "2025": {
+          "start": "2025-06-06",
+          "end": "2025-06-08"
+        },
+        "2026": {
+          "start": "2026-05-26",
+          "end": "2026-05-28"
+        },
+        "2027": {
+          "start": "2027-05-16",
+          "end": "2027-05-18"
+        },
+        "2028": {
+          "start": "2028-05-04",
+          "end": "2028-05-06"
+        }
+      }
+    },
+    {
+      "id": "fathers_day",
+      "name": "Father's Day Special Offer",
+      "badgeText": "FATHER'S DAY",
+      "category": "international_marketing",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Celebrate Father's Day Weekend: 30-Minute Video Call at ₹220!",
+      "years": {
+        "2025": {
+          "start": "2025-06-14",
+          "end": "2025-06-15"
+        },
+        "2026": {
+          "start": "2026-06-20",
+          "end": "2026-06-21"
+        },
+        "2027": {
+          "start": "2027-06-19",
+          "end": "2027-06-20"
+        },
+        "2028": {
+          "start": "2028-06-17",
+          "end": "2028-06-18"
+        }
+      }
+    },
+    {
+      "id": "summer_solstice_yoga",
+      "name": "Summer Wellness & Solstice Fest",
+      "badgeText": "SUMMER FEST",
+      "category": "lifestyle",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Summer Solstice Special: 7-Day VIP Membership at 53% OFF (₹350)!",
+      "years": {
+        "2025": {
+          "start": "2025-06-21",
+          "end": "2025-06-22"
+        },
+        "2026": {
+          "start": "2026-06-21",
+          "end": "2026-06-22"
+        },
+        "2027": {
+          "start": "2027-06-21",
+          "end": "2027-06-22"
+        },
+        "2028": {
+          "start": "2028-06-21",
+          "end": "2028-06-22"
+        }
+      }
+    },
+    {
+      "id": "rath_yatra",
+      "name": "Jagannath Rath Yatra Celebrations",
+      "badgeText": "RATH YATRA",
+      "category": "regional",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Festive Celebrations: 30-Minute Video Call at just ₹220!",
+      "years": {
+        "2025": {
+          "start": "2025-06-27",
+          "end": "2025-06-28"
+        },
+        "2026": {
+          "start": "2026-07-16",
+          "end": "2026-07-17"
+        },
+        "2027": {
+          "start": "2027-07-05",
+          "end": "2027-07-06"
+        },
+        "2028": {
+          "start": "2028-06-23",
+          "end": "2028-06-24"
+        }
+      }
+    },
+    {
+      "id": "monsoon_sale",
+      "name": "Mid-Year Monsoon Flash Sale",
+      "badgeText": "MONSOON SALE",
+      "category": "commercial",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Monsoon Dhamaka: Enjoy 7 Days VIP Access at flat ₹350!",
+      "years": {
+        "2025": {
+          "start": "2025-07-18",
+          "end": "2025-07-20"
+        },
+        "2026": {
+          "start": "2026-07-17",
+          "end": "2026-07-19"
+        },
+        "2027": {
+          "start": "2027-07-16",
+          "end": "2027-07-18"
+        },
+        "2028": {
+          "start": "2028-07-14",
+          "end": "2028-07-16"
+        }
+      }
+    },
+    {
+      "id": "friendship_day",
+      "name": "International Friendship Day Fest",
+      "badgeText": "FRIENDSHIP DAY",
+      "category": "international_marketing",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Friendship Day Dhamaka: Connect live for 30 Minutes at ₹220 only!",
+      "years": {
+        "2025": {
+          "start": "2025-08-02",
+          "end": "2025-08-03"
+        },
+        "2026": {
+          "start": "2026-08-01",
+          "end": "2026-08-02"
+        },
+        "2027": {
+          "start": "2027-07-31",
+          "end": "2027-08-01"
+        },
+        "2028": {
+          "start": "2028-08-05",
+          "end": "2028-08-06"
+        }
+      }
+    },
+    {
+      "id": "raksha_bandhan",
+      "name": "Raksha Bandhan Celebration Offer",
+      "badgeText": "RAKHI SPECIAL",
+      "category": "pan_india",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Rakhi Special Deal: 30-Minute Video Call at just ₹220 (Save ₹80)!",
+      "years": {
+        "2025": {
+          "start": "2025-08-08",
+          "end": "2025-08-09"
+        },
+        "2026": {
+          "start": "2026-08-27",
+          "end": "2026-08-28"
+        },
+        "2027": {
+          "start": "2027-08-16",
+          "end": "2027-08-17"
+        },
+        "2028": {
+          "start": "2028-08-04",
+          "end": "2028-08-05"
+        }
+      }
+    },
+    {
+      "id": "janmashtami",
+      "name": "Krishna Janmashtami Mahotsav",
+      "badgeText": "JANMASHTAMI",
+      "category": "pan_india",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Janmashtami Mahotsav Offer: 7 Days VIP Access at flat ₹350!",
+      "years": {
+        "2025": {
+          "start": "2025-08-15",
+          "end": "2025-08-17"
+        },
+        "2026": {
+          "start": "2026-09-03",
+          "end": "2026-09-05"
+        },
+        "2027": {
+          "start": "2027-08-24",
+          "end": "2027-08-26"
+        },
+        "2028": {
+          "start": "2028-08-12",
+          "end": "2028-08-14"
+        }
+      }
+    },
+    {
+      "id": "onam",
+      "name": "Onam / Thiruvonam Harvest Fest",
+      "badgeText": "ONAM SPECIAL",
+      "category": "regional",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Happy Onam! Celebrate with 27% OFF on 30-Minute Video Call (₹220)!",
+      "years": {
+        "2025": {
+          "start": "2025-09-04",
+          "end": "2025-09-06"
+        },
+        "2026": {
+          "start": "2026-08-25",
+          "end": "2026-08-27"
+        },
+        "2027": {
+          "start": "2027-09-12",
+          "end": "2027-09-14"
+        },
+        "2028": {
+          "start": "2028-09-01",
+          "end": "2028-09-03"
+        }
+      }
+    },
+    {
+      "id": "ganesh_chaturthi",
+      "name": "Ganesh Chaturthi Utsav",
+      "badgeText": "GANESH UTSAV",
+      "category": "pan_india",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Ganeshotsav Special Offer: 30-Min Video Call for ₹220 only!",
+      "years": {
+        "2025": {
+          "start": "2025-08-27",
+          "end": "2025-09-06"
+        },
+        "2026": {
+          "start": "2026-09-14",
+          "end": "2026-09-24"
+        },
+        "2027": {
+          "start": "2027-09-04",
+          "end": "2027-09-14"
+        },
+        "2028": {
+          "start": "2028-08-23",
+          "end": "2028-09-02"
+        }
+      }
+    },
+    {
+      "id": "navratri_dussehra",
+      "name": "Navratri & Durga Puja Mahotsav",
+      "badgeText": "NAVRATRI FEST",
+      "category": "pan_india",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Navratri Festivities: 7-Day VIP Access at flat 53% OFF (Now ₹350)!",
+      "years": {
+        "2025": {
+          "start": "2025-09-22",
+          "end": "2025-10-02"
+        },
+        "2026": {
+          "start": "2026-10-10",
+          "end": "2026-10-20"
+        },
+        "2027": {
+          "start": "2027-09-30",
+          "end": "2027-10-10"
+        },
+        "2028": {
+          "start": "2028-10-18",
+          "end": "2028-10-28"
+        }
+      }
+    },
+    {
+      "id": "karwa_chauth",
+      "name": "Karwa Chauth Special Celebration",
+      "badgeText": "KARWA CHAUTH",
+      "category": "regional",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Karwa Chauth Special Deal: 30-Minute Video Call at ₹220!",
+      "years": {
+        "2025": {
+          "start": "2025-10-10",
+          "end": "2025-10-11"
+        },
+        "2026": {
+          "start": "2026-10-29",
+          "end": "2026-10-30"
+        },
+        "2027": {
+          "start": "2027-10-18",
+          "end": "2027-10-19"
+        },
+        "2028": {
+          "start": "2028-11-05",
+          "end": "2028-11-06"
+        }
+      }
+    },
+    {
+      "id": "halloween",
+      "name": "Halloween Spooktacular Flash Sale",
+      "badgeText": "HALLOWEEN DEALS",
+      "category": "international_marketing",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Halloween Special: 30-Min Video Call at just ₹220 (Save ₹80)!",
+      "years": {
+        "2025": {
+          "start": "2025-10-30",
+          "end": "2025-11-01"
+        },
+        "2026": {
+          "start": "2026-10-30",
+          "end": "2026-11-01"
+        },
+        "2027": {
+          "start": "2027-10-30",
+          "end": "2027-11-01"
+        },
+        "2028": {
+          "start": "2028-10-30",
+          "end": "2028-11-01"
+        }
+      }
+    },
+    {
+      "id": "diwali_festival",
+      "name": "Diwali & Dhanteras Mahadhamaal",
+      "badgeText": "DIWALI SPECIAL",
+      "category": "pan_india",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Diwali Mahadhamaal: 7 Days Video Call VIP Subscription for ₹350!",
+      "years": {
+        "2025": {
+          "start": "2025-10-18",
+          "end": "2025-10-24"
+        },
+        "2026": {
+          "start": "2026-11-06",
+          "end": "2026-11-12"
+        },
+        "2027": {
+          "start": "2027-10-27",
+          "end": "2027-11-02"
+        },
+        "2028": {
+          "start": "2028-11-14",
+          "end": "2028-11-20"
+        }
+      }
+    },
+    {
+      "id": "chhath_puja",
+      "name": "Chhath Puja Mahaparv",
+      "badgeText": "CHHATH PUJA",
+      "category": "regional",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Chhath Mahaparv Blessings: 30-Minute Video Call at just ₹220!",
+      "years": {
+        "2025": {
+          "start": "2025-10-26",
+          "end": "2025-10-29"
+        },
+        "2026": {
+          "start": "2026-11-14",
+          "end": "2026-11-17"
+        },
+        "2027": {
+          "start": "2027-11-04",
+          "end": "2027-11-07"
+        },
+        "2028": {
+          "start": "2028-11-22",
+          "end": "2028-11-25"
+        }
+      }
+    },
+    {
+      "id": "guru_nanak_jayanti",
+      "name": "Guru Nanak Jayanti (Gurpurab)",
+      "badgeText": "GURPURAB SPECIAL",
+      "category": "sikh",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Gurpurab Special: 7 Days VIP Access at flat 53% OFF (₹350)!",
+      "years": {
+        "2025": {
+          "start": "2025-11-05",
+          "end": "2025-11-06"
+        },
+        "2026": {
+          "start": "2026-11-24",
+          "end": "2026-11-25"
+        },
+        "2027": {
+          "start": "2027-11-14",
+          "end": "2027-11-15"
+        },
+        "2028": {
+          "start": "2028-12-02",
+          "end": "2028-12-03"
+        }
+      }
+    },
+    {
+      "id": "singles_day_11_11",
+      "name": "11.11 Global Mega Flash Sale",
+      "badgeText": "11.11 MEGA SALE",
+      "category": "international_marketing",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "11.11 Flash Sale: 30-Minute Video Call now for ₹220 only!",
+      "years": {
+        "2025": {
+          "start": "2025-11-11",
+          "end": "2025-11-12"
+        },
+        "2026": {
+          "start": "2026-11-11",
+          "end": "2026-11-12"
+        },
+        "2027": {
+          "start": "2027-11-11",
+          "end": "2027-11-12"
+        },
+        "2028": {
+          "start": "2028-11-11",
+          "end": "2028-11-12"
+        }
+      }
+    },
+    {
+      "id": "black_friday_cyber_monday",
+      "name": "Black Friday & Cyber Monday Mega Sale",
+      "badgeText": "BLACK FRIDAY",
+      "category": "international_marketing",
+      "targetPackageKey": "sub7",
+      "bannerMessage": "Black Friday Blockbuster: 7 Days VIP Access at just ₹350 (Save 53%)!",
+      "years": {
+        "2025": {
+          "start": "2025-11-27",
+          "end": "2025-12-01"
+        },
+        "2026": {
+          "start": "2026-11-26",
+          "end": "2026-11-30"
+        },
+        "2027": {
+          "start": "2027-11-25",
+          "end": "2027-11-29"
+        },
+        "2028": {
+          "start": "2028-11-23",
+          "end": "2028-11-27"
+        }
+      }
+    },
+    {
+      "id": "christmas_holiday_week",
+      "name": "Christmas & Year-End Holiday Carnival",
+      "badgeText": "XMAS SPECIAL",
+      "category": "international",
+      "targetPackageKey": "vc30",
+      "bannerMessage": "Christmas Holiday Deal: 30-Minute Video Call for just ₹220!",
+      "years": {
+        "2025": {
+          "start": "2025-12-23",
+          "end": "2025-12-28"
+        },
+        "2026": {
+          "start": "2026-12-23",
+          "end": "2026-12-28"
+        },
+        "2027": {
+          "start": "2027-12-23",
+          "end": "2027-12-28"
+        },
+        "2028": {
+          "start": "2028-12-23",
+          "end": "2028-12-28"
+        }
+      }
+    }
+  ],
+  "approvedDiscounts": {
+    "service-pic-5": {
+      "itemId": "service-pic-5",
+      "title": "5 Sex Pics / Nude Pics",
+      "originalPrice": 60,
+      "discountedPrice": 49,
+      "savingsAmount": 11,
+      "discountPercentage": 18
+    },
+    "service-pic-10": {
+      "itemId": "service-pic-10",
+      "title": "10 Sex Pics / Nude Pics",
+      "originalPrice": 100,
+      "discountedPrice": 79,
+      "savingsAmount": 21,
+      "discountPercentage": 21
+    },
+    "service-combo-1": {
+      "itemId": "service-combo-1",
+      "title": "5 Sex Pics + 3 Nude Videos",
+      "originalPrice": 120,
+      "discountedPrice": 89,
+      "savingsAmount": 31,
+      "discountPercentage": 26
+    },
+    "service-vid-5": {
+      "itemId": "service-vid-5",
+      "title": "5 Sex Nude Videos",
+      "originalPrice": 150,
+      "discountedPrice": 119,
+      "savingsAmount": 31,
+      "discountPercentage": 21
+    },
+    "service-chat-30": {
+      "itemId": "service-chat-30",
+      "title": "30 Minutes Sex Chat",
+      "originalPrice": 150,
+      "discountedPrice": 129,
+      "savingsAmount": 21,
+      "discountPercentage": 14
+    },
+    "service-chat-60": {
+      "itemId": "service-chat-60",
+      "title": "60 Minutes Sex Chat",
+      "originalPrice": 250,
+      "discountedPrice": 180,
+      "savingsAmount": 70,
+      "discountPercentage": 28
+    },
+    "service-vc-10": {
+      "itemId": "service-vc-10",
+      "title": "10 Minutes Video Call",
+      "originalPrice": 199,
+      "discountedPrice": 149,
+      "savingsAmount": 50,
+      "discountPercentage": 25
+    },
+    "service-vc-30": {
+      "itemId": "service-vc-30",
+      "title": "30 Minutes Video Call",
+      "originalPrice": 300,
+      "discountedPrice": 200,
+      "savingsAmount": 100,
+      "discountPercentage": 33
+    },
+    "service-vc-60": {
+      "itemId": "service-vc-60",
+      "title": "60 Minutes Video Call",
+      "originalPrice": 400,
+      "discountedPrice": 280,
+      "savingsAmount": 120,
+      "discountPercentage": 30
+    },
+    "service-voice-30": {
+      "itemId": "service-voice-30",
+      "title": "30 Minutes Voice Call",
+      "originalPrice": 200,
+      "discountedPrice": 179,
+      "savingsAmount": 21,
+      "discountPercentage": 11
+    },
+    "service-voice-60": {
+      "itemId": "service-voice-60",
+      "title": "60 Minutes Voice Call",
+      "originalPrice": 300,
+      "discountedPrice": 240,
+      "savingsAmount": 60,
+      "discountPercentage": 20
+    },
+    "service-sub-7": {
+      "itemId": "service-sub-7",
+      "title": "7 Days Membership",
+      "originalPrice": 750,
+      "discountedPrice": 350,
+      "savingsAmount": 400,
+      "discountPercentage": 53
+    },
+    "service-sub-15": {
+      "itemId": "service-sub-15",
+      "title": "15 Days Membership",
+      "originalPrice": 1500,
+      "discountedPrice": 600,
+      "savingsAmount": 900,
+      "discountPercentage": 60
+    }
+  }
+}

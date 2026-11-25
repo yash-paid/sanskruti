@@ -1,0 +1,290 @@
+{
+  "users": {
+    "usr_2f_promo_1794575735155": {
+      "uid": "usr_2f_promo_1794575735155",
+      "wallet": {
+        "coins": 0
+      },
+      "ledger": [],
+      "promoProtection": {
+        "failedAttempts": 5,
+        "lastAttemptMs": 1794575735160,
+        "lockedUntilMs": 1794576635160
+      },
+      "updatedAt": "2026-11-13T13:15:35.160Z"
+    },
+    "usr_2f_yash_1794575735161": {
+      "uid": "usr_2f_yash_1794575735161",
+      "wallet": {
+        "coins": 1050,
+        "updatedAt": "2026-11-13T13:15:35.177Z"
+      },
+      "ledger": [
+        {
+          "id": "TXN-PROMO-MWF023D5",
+          "uid": "usr_2f_yash_1794575735161",
+          "type": "promo_code",
+          "title": "Promo Code Redeemed (YASH)",
+          "description": "Promo Code Redeemed (YASH)",
+          "coins": 500,
+          "amount": 500,
+          "isCredit": true,
+          "balanceAfter": 1050,
+          "status": "Completed",
+          "date": "13 Nov 2026, 06:45 pm",
+          "timestamp": "2026-11-13T13:15:35.177Z",
+          "metadata": {
+            "code": "YASH"
+          }
+        },
+        {
+          "id": "TXN-PROMO-MWF023CQ",
+          "uid": "usr_2f_yash_1794575735161",
+          "type": "promo_code",
+          "title": "Promo Code Redeemed (YASH)",
+          "description": "Promo Code Redeemed (YASH)",
+          "coins": 500,
+          "amount": 500,
+          "isCredit": true,
+          "balanceAfter": 550,
+          "status": "Completed",
+          "date": "13 Nov 2026, 06:45 pm",
+          "timestamp": "2026-11-13T13:15:35.175Z",
+          "metadata": {
+            "code": "YASH"
+          }
+        }
+      ],
+      "promoProtection": {
+        "failedAttempts": 0,
+        "lockedUntilMs": null
+      },
+      "updatedAt": "2026-11-13T13:15:35.177Z"
+    },
+    "usr_2f_pack_1794575735178": {
+      "uid": "usr_2f_pack_1794575735178",
+      "wallet": {
+        "coins": 100
+      },
+      "purchasedPacks": [
+        "pack-19"
+      ],
+      "ledger": [],
+      "updatedAt": "2026-11-13T13:15:35.179Z"
+    },
+    "cors_user": {
+      "profile": {
+        "uid": "cors_user",
+        "userId": "CN-RSUSER",
+        "name": "User user",
+        "username": "@user_user",
+        "email": "",
+        "phone": "",
+        "avatar": "/default-avatars/1.png",
+        "dob": "2000-01-01",
+        "isProfileComplete": false,
+        "createdAt": "2026-11-13T13:15:35.180Z",
+        "updatedAt": "2026-11-13T13:15:35.180Z"
+      },
+      "wallet": {
+        "coins": 0,
+        "updatedAt": "2026-11-13T13:15:35.180Z"
+      },
+      "favourites": [],
+      "purchasedPacks": [],
+      "ledger": [],
+      "daily_rewards": {
+        "state": {
+          "currentStreak": 0,
+          "lastClaimDate": null,
+          "cycleCount": 0,
+          "lastAwardedCoins": 0,
+          "updatedAt": "2026-11-13T13:15:35.180Z"
+        },
+        "claims": {}
+      },
+      "vip": {
+        "entitlement": {
+          "planId": null,
+          "planName": null,
+          "status": "none",
+          "active": false,
+          "dailyBonusCoins": 0,
+          "expiryDate": null,
+          "activatedAt": null
+        },
+        "claims": {}
+      },
+      "calls": [],
+      "payments": [],
+      "createdAt": "2026-11-13T13:15:35.180Z",
+      "updatedAt": "2026-11-13T13:15:35.180Z"
+    }
+  },
+  "connect_orders": {},
+  "rate_limits": {
+    "ip_369142bc8e09f7916518": {
+      "attempts": 16,
+      "windowStart": 1794575734279,
+      "blockedUntil": 1794576035154,
+      "ipHash": "369142bc8e09f7916518",
+      "updatedAt": "2026-11-13T13:15:35.154Z"
+    }
+  },
+  "usr_2f_promo_1794575735155": {
+    "uid": "usr_2f_promo_1794575735155",
+    "wallet": {
+      "coins": 0
+    },
+    "ledger": [],
+    "promoProtection": {
+      "failedAttempts": 5,
+      "lastAttemptMs": 1794575735160,
+      "lockedUntilMs": 1794576635160
+    },
+    "updatedAt": "2026-11-13T13:15:35.160Z"
+  },
+  "usr_2f_yash_1794575735161": {
+    "uid": "usr_2f_yash_1794575735161",
+    "wallet": {
+      "coins": 1050,
+      "updatedAt": "2026-11-13T13:15:35.177Z"
+    },
+    "ledger": [
+      {
+        "id": "TXN-PROMO-MWF023D5",
+        "uid": "usr_2f_yash_1794575735161",
+        "type": "promo_code",
+        "title": "Promo Code Redeemed (YASH)",
+        "description": "Promo Code Redeemed (YASH)",
+        "coins": 500,
+        "amount": 500,
+        "isCredit": true,
+        "balanceAfter": 1050,
+        "status": "Completed",
+        "date": "13 Nov 2026, 06:45 pm",
+        "timestamp": "2026-11-13T13:15:35.177Z",
+        "metadata": {
+          "code": "YASH"
+        }
+      },
+      {
+        "id": "TXN-PROMO-MWF023CQ",
+        "uid": "usr_2f_yash_1794575735161",
+        "type": "promo_code",
+        "title": "Promo Code Redeemed (YASH)",
+        "description": "Promo Code Redeemed (YASH)",
+        "coins": 500,
+        "amount": 500,
+        "isCredit": true,
+        "balanceAfter": 550,
+        "status": "Completed",
+        "date": "13 Nov 2026, 06:45 pm",
+        "timestamp": "2026-11-13T13:15:35.175Z",
+        "metadata": {
+          "code": "YASH"
+        }
+      }
+    ],
+    "promoProtection": {
+      "failedAttempts": 0,
+      "lockedUntilMs": null
+    },
+    "updatedAt": "2026-11-13T13:15:35.177Z"
+  },
+  "users/usr_2f_yash_1794575735161/ledger": {
+    "TXN-PROMO-MWF023CQ": {
+      "id": "TXN-PROMO-MWF023CQ",
+      "uid": "usr_2f_yash_1794575735161",
+      "type": "promo_code",
+      "title": "Promo Code Redeemed (YASH)",
+      "description": "Promo Code Redeemed (YASH)",
+      "coins": 500,
+      "amount": 500,
+      "isCredit": true,
+      "balanceAfter": 550,
+      "status": "Completed",
+      "date": "13 Nov 2026, 06:45 pm",
+      "timestamp": "2026-11-13T13:15:35.175Z",
+      "metadata": {
+        "code": "YASH"
+      }
+    },
+    "TXN-PROMO-MWF023D5": {
+      "id": "TXN-PROMO-MWF023D5",
+      "uid": "usr_2f_yash_1794575735161",
+      "type": "promo_code",
+      "title": "Promo Code Redeemed (YASH)",
+      "description": "Promo Code Redeemed (YASH)",
+      "coins": 500,
+      "amount": 500,
+      "isCredit": true,
+      "balanceAfter": 1050,
+      "status": "Completed",
+      "date": "13 Nov 2026, 06:45 pm",
+      "timestamp": "2026-11-13T13:15:35.177Z",
+      "metadata": {
+        "code": "YASH"
+      }
+    }
+  },
+  "usr_2f_pack_1794575735178": {
+    "uid": "usr_2f_pack_1794575735178",
+    "wallet": {
+      "coins": 100
+    },
+    "purchasedPacks": [
+      "pack-19"
+    ],
+    "ledger": [],
+    "updatedAt": "2026-11-13T13:15:35.179Z"
+  },
+  "cors_user": {
+    "profile": {
+      "uid": "cors_user",
+      "userId": "CN-RSUSER",
+      "name": "User user",
+      "username": "@user_user",
+      "email": "",
+      "phone": "",
+      "avatar": "/default-avatars/1.png",
+      "dob": "2000-01-01",
+      "isProfileComplete": false,
+      "createdAt": "2026-11-13T13:15:35.180Z",
+      "updatedAt": "2026-11-13T13:15:35.180Z"
+    },
+    "wallet": {
+      "coins": 0,
+      "updatedAt": "2026-11-13T13:15:35.180Z"
+    },
+    "favourites": [],
+    "purchasedPacks": [],
+    "ledger": [],
+    "daily_rewards": {
+      "state": {
+        "currentStreak": 0,
+        "lastClaimDate": null,
+        "cycleCount": 0,
+        "lastAwardedCoins": 0,
+        "updatedAt": "2026-11-13T13:15:35.180Z"
+      },
+      "claims": {}
+    },
+    "vip": {
+      "entitlement": {
+        "planId": null,
+        "planName": null,
+        "status": "none",
+        "active": false,
+        "dailyBonusCoins": 0,
+        "expiryDate": null,
+        "activatedAt": null
+      },
+      "claims": {}
+    },
+    "calls": [],
+    "payments": [],
+    "createdAt": "2026-11-13T13:15:35.180Z",
+    "updatedAt": "2026-11-13T13:15:35.180Z"
+  }
+}

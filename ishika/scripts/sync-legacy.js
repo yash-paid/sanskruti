@@ -50,16 +50,7 @@ const redirectsContent = `# ====================================================
 /BACKUP_*                                 /404                                      404!
 /backup_*                                 /404                                      404!
 
-# 1. LEGACY NETLIFY FUNCTIONS PROXY (CONNECT & LEGACY APIS)
-/api/connect-*                            /.netlify/functions/:splat                200!
-/api/active-offer                         /.netlify/functions/active-offer          200!
-/api/ps-*                                 /.netlify/functions/:splat                200!
-/api/payu-initiate                        /.netlify/functions/payu-initiate         200!
-/api/payu-response                        /.netlify/functions/payu-response         200!
-/api/payu-verify                          /.netlify/functions/payu-verify           200!
-/api/payu-download                        /.netlify/functions/payu-download         200!
-
-# 2. CONNECT PLATFORM (SPA)
+# 1. CONNECT PLATFORM (SPA)
 /connect/assets/*                         /connect/dist/assets/:splat               200!
 /connect/default-avatars/*                /connect/dist/default-avatars/:splat      200!
 /connect/dist/assets/*                    /connect/dist/assets/:splat               200!
