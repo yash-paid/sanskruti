@@ -1180,7 +1180,7 @@ export default function ProfileScreen({
               <h3 style={{ fontSize: 18, color: '#fff', fontWeight: 800 }}>CONNECT App</h3>
               <p style={{ color: '#ff2a8d', fontSize: 13, marginTop: 4 }}>Live Video &amp; Voice Connection</p>
               <p style={{ color: '#9f8aa8', fontSize: 12, marginTop: 12 }}>Version 2.4.0 (Build 2026.11)</p>
-              <p style={{ color: '#c9b4d5', fontSize: 12, marginTop: 8 }}>Domain: connect.sanskrutiservice.in</p>
+              <p style={{ color: '#c9b4d5', fontSize: 12, marginTop: 8 }}>Domain: sanskrutiservice.in/connect</p>
             </div>
             <button className="txn-close-btn" onClick={() => setShowAboutModal(false)}>
               Got it

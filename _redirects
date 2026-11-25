@@ -64,12 +64,12 @@
 /contact-us.html                          /contact-us.html                          200
 
 # ==============================================================================
-# SUBDOMAIN: connect.sanskrutiservice.in -> CONNECT Production App
+# SUBDOMAIN: connect.sanskrutiservice.in -> REDIRECT TO sanskrutiservice.in/connect
 # ==============================================================================
-https://connect.sanskrutiservice.in/assets/*          /connect/dist/assets/:splat          200!
-https://connect.sanskrutiservice.in/default-avatars/*  /connect/dist/default-avatars/:splat  200!
-https://connect.sanskrutiservice.in/*                 /connect/dist/index.html             200!
-https://connect.sanskrutiservice.in                   /connect/dist/index.html             200!
+https://connect.sanskrutiservice.in/assets/*          https://sanskrutiservice.in/connect/assets/:splat   301!
+https://connect.sanskrutiservice.in/default-avatars/* https://sanskrutiservice.in/connect/default-avatars/:splat 301!
+https://connect.sanskrutiservice.in/*                 https://sanskrutiservice.in/connect/:splat          301!
+https://connect.sanskrutiservice.in                   https://sanskrutiservice.in/connect/                301!
 
 # ==============================================================================
 # CONNECT Path on main domain: sanskrutiservice.in/connect
