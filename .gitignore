@@ -37,9 +37,13 @@ connect/assets/videos-backup/
 
 # Migration backups and temporary scratch
 BACKUP_BEFORE_PS_ROOT_MIGRATION_2026/
+BACKUP_SANSKRUTISERVICE_LIVE_20261125/
 scratch/
 .vscode/
 sanskruti_ps_store.json
+ishika/.next/
+ishika/node_modules/
+*.exe
 
 # Local Netlify folder
 .netlify
