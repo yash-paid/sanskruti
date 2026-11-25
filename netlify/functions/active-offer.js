@@ -29,15 +29,16 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const kolkataNow = getKolkataTime();
-    const payload = getActiveOfferPayload(kolkataNow);
+    const payload = getActiveOfferPayload();
 
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'public, max-age=60, s-maxage=300' // Short 1-min client cache, 5-min CDN cache
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       },
       body: JSON.stringify(payload)
     };

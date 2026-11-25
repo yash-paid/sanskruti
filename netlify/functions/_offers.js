@@ -5,33 +5,48 @@ const calendarData = require('./_calendar-data.json');
 const APPROVED_DISCOUNTS = calendarData.approvedDiscounts || {};
 
 /**
- * Returns Date object shifted to Asia/Kolkata timezone
+ * Extracts date parts specifically in Asia/Kolkata timezone
+ */
+function getKolkataDateParts(input) {
+  const d = (input instanceof Date && !isNaN(input.getTime())) ? input : (input ? new Date(input) : new Date());
+  if (isNaN(d.getTime())) {
+    throw new Error('Invalid date provided to getKolkataDateParts');
+  }
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const dateStr = formatter.format(d);
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return { dateStr, year, month, day, rawDate: d };
+}
+
+/**
+ * Returns Date object in Asia/Kolkata reference
  */
 function getKolkataTime(customDate) {
-  const baseDate = customDate ? new Date(customDate) : new Date();
-  if (isNaN(baseDate.getTime())) {
+  if (!customDate) return new Date();
+  const d = customDate instanceof Date ? customDate : new Date(customDate);
+  if (isNaN(d.getTime())) {
     throw new Error('Invalid date provided to getKolkataTime');
   }
-  // Convert UTC time to Asia/Kolkata (+05:30)
-  const utcMs = baseDate.getTime() + (baseDate.getTimezoneOffset() * 60000);
-  const kolkataOffsetMs = 5.5 * 3600000;
-  return new Date(utcMs + kolkataOffsetMs);
+  return d;
 }
 
 /**
  * Formats a Date to YYYY-MM-DD string in Kolkata time
  */
 function formatKolkataDateString(dateObj) {
-  const year = dateObj.getFullYear();
-  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const day = String(dateObj.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return getKolkataDateParts(dateObj).dateStr;
 }
 
 /**
- * Formats date into Indian standard format (e.g. "Sunday, 8 November 2026")
+ * Formats date into Indian standard format (e.g. "Wednesday, 25 November 2026")
  */
 function getIndianFormattedDate(dateObj) {
+  const d = (dateObj instanceof Date && !isNaN(dateObj.getTime())) ? dateObj : (dateObj ? new Date(dateObj) : new Date());
   const formatter = new Intl.DateTimeFormat('en-IN', {
     timeZone: 'Asia/Kolkata',
     weekday: 'long',
@@ -39,16 +54,17 @@ function getIndianFormattedDate(dateObj) {
     month: 'long',
     year: 'numeric'
   });
-  return formatter.format(dateObj);
+  return formatter.format(d);
 }
 
 /**
  * Calculates day of the year (1 - 366) in Kolkata time for deterministic daily rotation
  */
 function getDayOfYear(dateObj) {
-  const startOfYear = new Date(dateObj.getFullYear(), 0, 1);
-  const diffMs = dateObj - startOfYear;
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24)) + 1;
+  const parts = getKolkataDateParts(dateObj);
+  const startOfYear = new Date(Date.UTC(parts.year, 0, 1));
+  const currentDate = new Date(Date.UTC(parts.year, parts.month - 1, parts.day));
+  return Math.floor((currentDate - startOfYear) / 86400000) + 1;
 }
 
 /**
@@ -188,10 +204,10 @@ function checkDynamicOccasionFallback(dateObj) {
  * Resolves the currently active campaign based on Asia/Kolkata date
  */
 function getActiveCampaign(customTime) {
-  const kolkataDate = getKolkataTime(customTime);
-  const dateStr = formatKolkataDateString(kolkataDate);
-  const currentYear = String(kolkataDate.getFullYear());
-  const formattedDate = getIndianFormattedDate(kolkataDate);
+  const parts = getKolkataDateParts(customTime);
+  const dateStr = parts.dateStr;
+  const currentYear = String(parts.year);
+  const formattedDate = getIndianFormattedDate(parts.rawDate);
 
   // 1. Priority 1: Manual Admin Override
   if (calendarData.manualOverride && calendarData.manualOverride.enabled && calendarData.manualOverride.campaignId) {
@@ -243,7 +259,7 @@ function getActiveCampaign(customTime) {
   }
 
   // 3. Fallback for years beyond pre-compiled calendar (e.g. 2029+)
-  const dynamicFallback = checkDynamicOccasionFallback(kolkataDate);
+  const dynamicFallback = checkDynamicOccasionFallback(parts.rawDate);
   if (dynamicFallback) {
     return {
       ...dynamicFallback,
@@ -313,8 +329,7 @@ const SECOND_OFFER_ROTATION = [
  * Guarantees zero randomness: all visitors on the same date see identical offers
  */
 function getDailyOfferPair(dateObj) {
-  const kolkataDate = getKolkataTime(dateObj);
-  const dayOfYear = getDayOfYear(kolkataDate);
+  const dayOfYear = getDayOfYear(dateObj);
 
   // Rule 2: First offer is always the 15-day membership
   const membershipId = 'service-sub-15';
@@ -331,10 +346,10 @@ function getDailyOfferPair(dateObj) {
  * Returns complete payload for /api/active-offer
  */
 function getActiveOfferPayload(customTime) {
-  const kolkataDate = getKolkataTime(customTime);
-  const campaign = getActiveCampaign(kolkataDate);
+  const parts = getKolkataDateParts(customTime);
+  const campaign = getActiveCampaign(parts.rawDate);
   const discountsList = Object.values(APPROVED_DISCOUNTS);
-  const dailyOfferPair = getDailyOfferPair(kolkataDate);
+  const dailyOfferPair = getDailyOfferPair(parts.rawDate);
 
   // Backward compatible default single offer mapping
   const defaultSub = APPROVED_DISCOUNTS['service-sub-15'] || discountsList[0];
@@ -356,7 +371,7 @@ function getActiveOfferPayload(customTime) {
 
   return {
     success: true,
-    serverTime: kolkataDate.toISOString(),
+    serverTime: parts.rawDate.toISOString(),
     formattedDate: campaign.formattedDate,
     hasActiveOffer: true,
     campaign,
