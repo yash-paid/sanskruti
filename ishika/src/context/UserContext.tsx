@@ -53,7 +53,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem('ishika_membership_purchased');
         setUser(prev => (prev ? { ...prev, membershipTier: 'Free' } : { ...DEMO_USER, membershipTier: 'Free' }));
       }
-    } catch {}
+    } catch { }
   }, []);
 
   const isLoggedIn = user !== null;
@@ -67,7 +67,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try {
       localStorage.removeItem('ishika_user_profile');
       localStorage.removeItem('ishika_user_tier');
-    } catch {}
+    } catch { }
   }, []);
 
   const updateProfile = useCallback((updates: Partial<UserProfile>) => {
@@ -78,21 +78,21 @@ export function UserProvider({ children }: { children: ReactNode }) {
         if (updates.membershipTier) {
           localStorage.setItem('ishika_user_tier', updates.membershipTier);
         }
-      } catch {}
+      } catch { }
       return updated;
     });
   }, []);
 
   const setMembershipTier = useCallback((tier: string) => {
     setUser(prev => {
-      const updated = prev 
-        ? { ...prev, membershipTier: tier } 
+      const updated = prev
+        ? { ...prev, membershipTier: tier }
         : { ...DEMO_USER, membershipTier: tier };
       try {
         localStorage.setItem('ishika_user_profile', JSON.stringify(updated));
         localStorage.setItem('ishika_user_tier', tier);
         localStorage.setItem('ishika_membership_purchased', 'true');
-      } catch {}
+      } catch { }
       return updated;
     });
   }, []);
