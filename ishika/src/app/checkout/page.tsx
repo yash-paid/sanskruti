@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { formatPrice } from '@/lib/utils';
+import { submitPayUPayment } from '@/lib/payu-client';
 import { useCart } from '@/context/CartContext';
 import { useUser } from '@/context/UserContext';
 import type { Order } from '@/types';
@@ -59,8 +60,12 @@ export default function CheckoutPage() {
   const { user } = useUser();
 
   const [stage, setStage] = useState<CheckoutStage>('shipping');
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'netbanking' | 'cod'>('upi');
+  const [paymentMethod, setPaymentMethod] = useState<'payu' | 'upi' | 'card' | 'netbanking' | 'cod'>('payu');
   const [upiId, setUpiId] = useState('ishq@okhdfcbank');
+
+  // PayU Gateway Loading & Error State
+  const [isPayULoading, setIsPayULoading] = useState<boolean>(false);
+  const [payUError, setPayUError] = useState<string | null>(null);
 
   // Customer Shipping Information
   const [formData, setFormData] = useState({
@@ -82,6 +87,59 @@ export default function CheckoutPage() {
   const [placedOrderItems, setPlacedOrderItems] = useState(items);
   const [placedOrderTotal, setPlacedOrderTotal] = useState(total);
 
+  // Handle incoming PayU callback params on mount
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const searchParams = new URLSearchParams(window.location.search);
+    const payment = searchParams.get('payment');
+    if (payment === 'success') {
+      const txnid = searchParams.get('txnid') || 'IW-PAYU-' + Date.now();
+      const amt = Number(searchParams.get('amount')) || total;
+      const trackingNum = 'BD-' + Math.floor(10000000 + Math.random() * 90000000) + '-IN';
+      setConfirmedOrderId(txnid);
+      setConfirmedTrackingId(trackingNum);
+      setPlacedOrderTotal(amt);
+
+      const newOrder: Order = {
+        id: txnid,
+        date: new Date().toISOString().split('T')[0],
+        status: 'processing',
+        total: amt,
+        items: items.length > 0 ? items.map(item => ({
+          productName: item.product.name,
+          quantity: item.quantity,
+          price: item.product.price,
+          size: item.selectedSize,
+          color: item.selectedColor,
+          image: item.product.images[0] || '/logo.png',
+        })) : [{
+          productName: "Ishika's World Official Merchandise",
+          quantity: 1,
+          price: amt,
+          image: '/logo.png',
+        }],
+        shippingAddress: `${formData.name}, ${formData.address}, ${formData.city}, ${formData.state} - ${formData.zip} (Phone: +91 ${formData.phone})`,
+        paymentMethod: 'PayU India Hosted Gateway (Paid)',
+        trackingNumber: trackingNum,
+        carrier: 'BlueDart Express',
+        estimatedDelivery: '2-3 Business Days',
+      };
+
+      try {
+        const existing = localStorage.getItem('ishika_user_orders');
+        const currentList = existing ? JSON.parse(existing) : [];
+        localStorage.setItem('ishika_user_orders', JSON.stringify([newOrder, ...currentList]));
+      } catch {}
+
+      clearCart();
+      setStage('success');
+    } else if (payment === 'failed') {
+      const reason = searchParams.get('reason') || 'Transaction was declined by issuing bank or cancelled on PayU.';
+      setCustomFailureReason(reason);
+      setStage('failed');
+    }
+  }, []);
+
   // Form validations
   const isNameValid = formData.name.trim().length >= 2;
   const isPhoneValid = /^\d{10}$/.test(formData.phone.replace(/\D/g, ''));
@@ -95,6 +153,45 @@ export default function CheckoutPage() {
     e.preventDefault();
     if (!isShippingValid) return;
     setStage('payment');
+  };
+
+  // PayU Official Gateway Checkout
+  const handlePayUCheckout = async () => {
+    if (!isShippingValid) {
+      setStage('shipping');
+      return;
+    }
+    setIsPayULoading(true);
+    setPayUError(null);
+
+    try {
+      const productSummary = items.map(i => i.product.name).join(', ').substring(0, 70);
+      const res = await fetch('/api/payu/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'merch',
+          planId: 'merch_cart',
+          amount: total,
+          name: formData.name.trim(),
+          phone: formData.phone.trim(),
+          email: formData.email.trim(),
+          productTitle: productSummary || "Ishika's World Merch",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to initiate PayU payment.');
+      }
+
+      // Submit hidden form to PayU Hosted Checkout!
+      submitPayUPayment(data.actionUrl, data.params);
+    } catch (err: any) {
+      console.error('[PAYU MERCH CHECKOUT ERROR]', err);
+      setPayUError(err.message || 'Payment initiation failed. Please try again.');
+      setIsPayULoading(false);
+    }
   };
 
   // Execute payment transaction
@@ -430,7 +527,21 @@ export default function CheckoutPage() {
                 <span>Select Payment Method</span>
               </h2>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod('payu')}
+                  className={`p-3 rounded-2xl text-xs font-bold border transition-all flex flex-col items-center gap-2 relative ${
+                    paymentMethod === 'payu'
+                      ? 'bg-rose/15 border-rose text-rose-light shadow-md'
+                      : 'bg-[#121220] border-border/50 text-muted hover:text-foreground'
+                  }`}
+                >
+                  <span className="absolute -top-2 px-1.5 py-0.2 rounded bg-gold text-black text-[9px] font-black uppercase">Official</span>
+                  <Lock className="w-5 h-5 text-rose-light" />
+                  <span>PayU Gateway</span>
+                </button>
+
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('upi')}
@@ -441,7 +552,7 @@ export default function CheckoutPage() {
                   }`}
                 >
                   <Smartphone className="w-5 h-5 text-emerald-400" />
-                  <span>Instant UPI</span>
+                  <span>Direct UPI</span>
                 </button>
 
                 <button
@@ -483,6 +594,58 @@ export default function CheckoutPage() {
                   <span>Pay on Delivery</span>
                 </button>
               </div>
+
+              {/* PayU Hosted Gateway Details & Action */}
+              {paymentMethod === 'payu' && (
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-[#181224] to-[#121220] border border-rose/40 space-y-3.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-foreground flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                      <span>PayU India Official Hosted Gateway</span>
+                    </span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">
+                      RBI Licensed &amp; Safe
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted leading-relaxed">
+                    Redirects to PayU India official encrypted gateway page. Supports Google Pay, PhonePe, Paytm, BHIM, all Visa / Mastercard / RuPay credit &amp; debit cards, and 50+ NetBanking options.
+                  </p>
+
+                  <Button
+                    type="button"
+                    variant="primary"
+                    onClick={handlePayUCheckout}
+                    disabled={isPayULoading}
+                    className="w-full py-3.5 text-xs sm:text-sm font-black flex items-center justify-center gap-2 bg-gradient-to-r from-rose via-rose-light to-gold text-white shadow-xl shadow-rose/30 hover:opacity-95"
+                  >
+                    {isPayULoading ? (
+                      <>
+                        <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                        <span>Connecting to PayU India...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="w-4 h-4 text-white" />
+                        <span>Proceed to PayU Official Gateway ({formatPrice(total)})</span>
+                        <ChevronRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </Button>
+
+                  {payUError && (
+                    <div className="p-2.5 rounded-xl bg-rose/15 border border-rose/40 text-[11px] text-rose flex items-center gap-1.5">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{payUError}</span>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center justify-center gap-2 pt-1 text-[10px] text-muted">
+                    <span className="px-2 py-0.5 rounded bg-white/5">UPI (GPay / PhonePe / Paytm)</span>
+                    <span className="px-2 py-0.5 rounded bg-white/5">Cards (Visa / Master / RuPay)</span>
+                    <span className="px-2 py-0.5 rounded bg-white/5">50+ Banks NetBanking</span>
+                  </div>
+                </div>
+              )}
 
               {/* Method Details Form */}
               {paymentMethod === 'upi' && (

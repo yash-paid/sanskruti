@@ -30,6 +30,7 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { useUser } from '@/context/UserContext';
+import { submitPayUPayment } from '@/lib/payu-client';
 import type { MembershipPlan } from '@/types';
 
 interface MembershipPurchaseModalProps {
@@ -84,14 +85,48 @@ export function MembershipPurchaseModal({
   const [customFailureReason, setCustomFailureReason] = useState<string>(REJECTION_REASONS[0].description);
   const [transactionRef, setTransactionRef] = useState<string>('');
 
+  // PayU Gateway Integration State
+  const [isPayULoading, setIsPayULoading] = useState<boolean>(false);
+  const [payUError, setPayUError] = useState<string | null>(null);
+
+  // Check URL callback parameters on mount (PayU return)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get('payment');
+    if (payment === 'success') {
+      const txnid = params.get('txnid') || 'TXN-' + Math.floor(10000000 + Math.random() * 90000000);
+      setTransactionRef(txnid);
+      setMembershipTier('VIP');
+      updateProfile({ membershipTier: 'VIP' });
+      setStage('success');
+    } else if (payment === 'failed') {
+      const reason = params.get('reason') || 'Transaction was declined by issuing bank or cancelled on PayU.';
+      setCustomFailureReason(reason);
+      setTransactionRef(params.get('txnid') || 'TXN-' + Math.floor(10000000 + Math.random() * 90000000));
+      setStage('failed');
+    }
+  }, [setMembershipTier, updateProfile]);
+
   // Pre-fill user data when modal opens
   useEffect(() => {
     if (isOpen) {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('payment') === 'success') {
+          setStage('success');
+          return;
+        } else if (params.get('payment') === 'failed') {
+          setStage('failed');
+          return;
+        }
+      }
       setStage('details');
       setName(user?.name || 'Ananya Verma');
       setEmail(user?.email || 'ananya@example.com');
       setPhone('9876543210');
       setTransactionRef('TXN-' + Math.floor(10000000 + Math.random() * 90000000));
+      setPayUError(null);
     }
   }, [isOpen, user]);
 
@@ -110,6 +145,41 @@ export function MembershipPurchaseModal({
     e.preventDefault();
     if (!isDetailsComplete) return;
     setStage('payment');
+  };
+
+  // PayU Hosted Gateway Checkout
+  const handlePayUCheckout = async () => {
+    if (!plan) return;
+    setIsPayULoading(true);
+    setPayUError(null);
+
+    try {
+      const response = await fetch('/api/payu/initiate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'membership',
+          planId: plan.id,
+          amount: displayPrice,
+          name: name.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+          productTitle: `ISHIKA WORLD ${plan.name} Membership`,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to initiate PayU payment.');
+      }
+
+      // Submit hidden form to PayU Hosted Checkout!
+      submitPayUPayment(data.actionUrl, data.params);
+    } catch (err: any) {
+      console.error('[PAYU MEMBERSHIP CHECKOUT ERROR]', err);
+      setPayUError(err.message || 'Payment gateway connection error. Please try again.');
+      setIsPayULoading(false);
+    }
   };
 
   // Execution: simulate payment outcome
@@ -420,6 +490,45 @@ export function MembershipPurchaseModal({
                 </div>
               </div>
             )}
+
+            {/* PayU Official Hosted Gateway Action */}
+            <div className="space-y-2 pt-1">
+              <Button
+                type="button"
+                variant="primary"
+                onClick={handlePayUCheckout}
+                disabled={isPayULoading}
+                className="w-full py-3.5 text-xs sm:text-sm font-black flex items-center justify-center gap-2 bg-gradient-to-r from-rose via-rose-light to-gold text-white shadow-xl shadow-rose/30 hover:opacity-95 transition-all"
+              >
+                {isPayULoading ? (
+                  <>
+                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    <span>Connecting to PayU India...</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4 text-white" />
+                    <span>Pay ₹{displayPrice} with PayU Gateway</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </Button>
+
+              <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] text-muted">
+                <span className="font-bold text-foreground">PayU India Official</span>
+                <span>•</span>
+                <span>UPI (GPay, PhonePe, Paytm, BHIM)</span>
+                <span>•</span>
+                <span>Cards &amp; NetBanking</span>
+              </div>
+
+              {payUError && (
+                <div className="p-2.5 rounded-xl bg-rose/15 border border-rose/40 text-[11px] text-rose flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{payUError}</span>
+                </div>
+              )}
+            </div>
 
             {/* Test Simulation Controls: Success vs Reject with Reason */}
             <div className="p-3.5 rounded-2xl bg-[#121220] border border-border/60 space-y-3">

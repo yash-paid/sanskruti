@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Crown, Check, Sparkles, HelpCircle, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -16,6 +16,18 @@ export default function MembershipPage() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [selectedPlanForPurchase, setSelectedPlanForPurchase] = useState<MembershipPlan | null>(null);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+
+  // Automatically open modal when returning from PayU Hosted Gateway callback
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get('payment');
+    if (payment === 'success' || payment === 'failed') {
+      const defaultVipPlan = MOCK_PLANS.find(p => p.highlighted) || MOCK_PLANS[1] || MOCK_PLANS[0];
+      setSelectedPlanForPurchase(defaultVipPlan);
+      setIsPurchaseModalOpen(true);
+    }
+  }, []);
 
   const toggleFaq = (index: number) => {
     setExpandedFaq(expandedFaq === index ? null : index);
