@@ -188,27 +188,31 @@ export default function CommunityPage() {
   return (
     <div 
       ref={mainWrapperRef}
+      style={isFullscreen ? undefined : {
+        top: '4rem',
+        bottom: 'calc(4.5rem + env(safe-area-inset-bottom, 0px))',
+      }}
       className={`w-full ${
         isFullscreen 
           ? 'fixed inset-0 z-[60] bg-[#08080c] p-2 sm:p-4 h-full' 
-          : 'fixed top-16 bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] left-0 right-0 z-30 p-2 sm:p-3 bg-[#050507] md:static md:top-auto md:bottom-auto md:h-[calc(100vh-5.5rem)] md:max-w-7xl md:mx-auto md:px-4 md:py-3'
+          : 'fixed left-0 right-0 z-30 p-2 sm:p-3 bg-[#050507] md:static md:top-auto md:bottom-auto md:h-[calc(100vh-5.5rem)] md:max-w-7xl md:mx-auto md:px-4 md:py-3'
       } flex flex-col overflow-hidden transition-all duration-300`}
     >
       {/* ===================== 1. DIRECT 2-ROOM TABS (NEVER OVERLAPS) ===================== */}
-      <div className="grid grid-cols-2 gap-2 p-1.5 bg-[#0f0f17] rounded-2xl border border-border/60 mb-2.5 shrink-0 shadow-lg">
+      <div className="grid grid-cols-2 gap-2 p-1.5 bg-[#0f0f17] rounded-2xl border border-border/60 mb-2 shrink-0 shadow-lg">
         {/* Tab 1: Free Public Room */}
         <button
           type="button"
           onClick={() => setSelectedRoomId('r-free')}
-          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+          className={`py-2 px-2.5 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap overflow-hidden ${
             selectedRoomId === 'r-free'
               ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-md shadow-emerald-500/10'
               : 'text-secondary hover:text-foreground hover:bg-white/5 border border-transparent'
           }`}
         >
-          <span className="text-base">💚</span>
+          <span className="text-sm sm:text-base shrink-0">💚</span>
           <span className="truncate">Free Fan Lounge</span>
-          <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+          <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black shrink-0 ${
             selectedRoomId === 'r-free' ? 'bg-emerald-500/30 text-emerald-300' : 'bg-white/10 text-muted'
           }`}>
             38.4K
@@ -219,52 +223,52 @@ export default function CommunityPage() {
         <button
           type="button"
           onClick={() => setSelectedRoomId('r-exclusive')}
-          className={`py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+          className={`py-2 px-2.5 sm:px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 whitespace-nowrap overflow-hidden ${
             selectedRoomId === 'r-exclusive'
               ? 'bg-gold/20 text-gold-light border border-gold/50 shadow-md shadow-gold/10'
               : 'text-secondary hover:text-foreground hover:bg-white/5 border border-transparent'
           }`}
         >
-          <Crown className="w-4 h-4 text-gold shrink-0" />
+          <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold shrink-0" />
           <span className="truncate">VIP Creator Terrace</span>
           {!isVipUser && <Lock className="w-3 h-3 text-gold shrink-0 animate-pulse" />}
         </button>
       </div>
 
       {/* ===================== 2. STATUS & CONTROLS SUB-HEADER (BULLETPROOF NO-OVERLAP) ===================== */}
-      <div className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-[#0c0c14] border border-border/50 mb-2 shrink-0 overflow-hidden">
+      <div className="flex items-center justify-between gap-1.5 sm:gap-2 px-3 py-2 rounded-xl bg-[#0c0c14] border border-border/50 mb-2 shrink-0 overflow-hidden">
         {/* Left: Clean Room Title & Badge */}
         <div className="flex items-center gap-1.5 min-w-0 flex-1">
           <span className="font-extrabold text-foreground text-xs sm:text-sm truncate">
             {selectedRoomId === 'r-exclusive' ? 'VIP Creator Terrace' : 'Free Fan Lounge'}
           </span>
           {selectedRoomId === 'r-exclusive' ? (
-            <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-gold/20 text-gold-light border border-gold/40 shrink-0">
+            <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-gold/20 text-gold-light border border-gold/40 shrink-0 whitespace-nowrap">
               EXCLUSIVE
             </span>
           ) : (
-            <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shrink-0">
+            <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shrink-0 whitespace-nowrap">
               PUBLIC
             </span>
           )}
         </div>
 
         {/* Right: Live Counter + Rules + Fullscreen (Shrink-proof & Zero Overlap) */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 whitespace-nowrap">
           {/* Live Online Users Counter */}
           <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span>{onlineCount.toLocaleString()}</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+            <span className="shrink-0">{onlineCount.toLocaleString()}</span>
           </div>
 
           {/* Rules Modal Button */}
           <button
             type="button"
             onClick={() => setIsRulesModalOpen(true)}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose/15 hover:bg-rose/25 border border-rose/30 text-rose-light text-[10px] font-bold transition-colors shrink-0"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-rose/15 hover:bg-rose/25 border border-rose/30 text-rose-light text-[10px] font-bold transition-colors shrink-0 whitespace-nowrap"
             title="View Rules"
           >
-            <ShieldAlert className="w-3 h-3 text-rose" />
+            <ShieldAlert className="w-3 h-3 text-rose shrink-0" />
             <span className="hidden sm:inline">Rules</span>
           </button>
 
@@ -275,7 +279,7 @@ export default function CommunityPage() {
             className="p-1 rounded-lg bg-surface hover:bg-elevated border border-border/50 text-secondary hover:text-foreground transition-colors shrink-0"
             title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen Chat'}
           >
-            {isFullscreen ? <Minimize2 className="w-3.5 h-3.5 text-gold" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            {isFullscreen ? <Minimize2 className="w-3.5 h-3.5 text-gold shrink-0" /> : <Maximize2 className="w-3.5 h-3.5 shrink-0" />}
           </button>
         </div>
       </div>

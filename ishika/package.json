@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "sync-legacy": "node scripts/sync-legacy.js",
+    "build": "node scripts/sync-legacy.js && next build",
     "start": "next start",
     "lint": "eslint"
   },

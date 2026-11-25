@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Legacy synced platforms (copied automatically during build)
+/public/service-meet
+/public/meeting
+/public/wa-vc
+/public/ps
+/public/connect
+/public/_redirects
+
