@@ -35,13 +35,18 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try {
       const isPurchased = localStorage.getItem('ishika_membership_purchased') === 'true';
       if (isPurchased) {
-        const savedTier = localStorage.getItem('ishika_user_tier') || 'VIP';
-        const savedProfile = localStorage.getItem('ishika_user_profile');
-        if (savedProfile) {
-          const parsed = JSON.parse(savedProfile);
-          setUser({ ...parsed, membershipTier: savedTier });
+        const savedTier = localStorage.getItem('ishika_user_tier') || 'Free';
+        if (savedTier === 'VIP' || savedTier === 'Elite' || savedTier === 'Explorer') {
+          const savedProfile = localStorage.getItem('ishika_user_profile');
+          if (savedProfile) {
+            const parsed = JSON.parse(savedProfile);
+            setUser({ ...parsed, membershipTier: savedTier });
+          } else {
+            setUser(prev => (prev ? { ...prev, membershipTier: savedTier } : { ...DEMO_USER, membershipTier: savedTier }));
+          }
         } else {
-          setUser(prev => (prev ? { ...prev, membershipTier: savedTier } : { ...DEMO_USER, membershipTier: savedTier }));
+          localStorage.removeItem('ishika_membership_purchased');
+          setUser(prev => (prev ? { ...prev, membershipTier: 'Free' } : { ...DEMO_USER, membershipTier: 'Free' }));
         }
       } else {
         // Strictly Free by default until membership is explicitly purchased!

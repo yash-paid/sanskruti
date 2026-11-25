@@ -40,12 +40,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const parsedAmount = Number(amount);
+    let parsedAmount = Number(amount);
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid order amount.' },
         { status: 400 }
       );
+    }
+
+    // Backend guarantee: Elite membership is strictly ₹1
+    if (planId === 'elite' || planId === 'elite_circle' || String(productTitle).toLowerCase().includes('elite')) {
+      parsedAmount = 1;
     }
 
     // 2. PayU Configuration

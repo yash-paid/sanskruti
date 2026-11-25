@@ -53,6 +53,8 @@ export default function CommunityPage() {
   const [onlineCount, setOnlineCount] = useState(2842);
 
   const vipPlan = useMemo(() => MOCK_PLANS.find((p) => p.id === 'vip') || MOCK_PLANS[1], []);
+  const elitePlan = useMemo(() => MOCK_PLANS.find((p) => p.id === 'elite') || MOCK_PLANS[2], []);
+  const [selectedPlanForUnlock, setSelectedPlanForUnlock] = useState(elitePlan);
 
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const mainWrapperRef = useRef<HTMLDivElement>(null);
@@ -73,13 +75,20 @@ export default function CommunityPage() {
     return messages.filter((m) => (m.roomId ? m.roomId === selectedRoomId : selectedRoomId === 'r-free'));
   }, [messages, selectedRoomId]);
 
-  // Open rules modal automatically on first visit if not accepted
+  // Open rules modal automatically on first visit if not accepted; switch to exclusive if returning from successful payment
   useEffect(() => {
     const rulesAccepted = sessionStorage.getItem('ishika_chat_rules_accepted');
     if (!rulesAccepted) {
       setIsRulesModalOpen(true);
     } else {
       setHasAcceptedRules(true);
+    }
+
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('payment') === 'success') {
+        setSelectedRoomId('r-exclusive');
+      }
     }
   }, []);
 
@@ -231,7 +240,12 @@ export default function CommunityPage() {
         >
           <Crown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gold shrink-0" />
           <span className="truncate">VIP Creator Terrace</span>
-          {!isVipUser && <Lock className="w-3 h-3 text-gold shrink-0 animate-pulse" />}
+          {!isVipUser && (
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-rose/20 text-rose-light border border-rose/30 flex items-center gap-1 shrink-0 font-bold">
+              <Lock className="w-2.5 h-2.5 text-rose-light shrink-0" />
+              <span>LOCKED</span>
+            </span>
+          )}
         </button>
       </div>
 
@@ -336,11 +350,27 @@ export default function CommunityPage() {
                 type="button"
                 variant="gold"
                 size="sm"
-                onClick={() => setIsPurchaseModalOpen(true)}
-                className="font-black shadow-lg shadow-gold/25 text-xs py-2.5 px-6 flex items-center gap-1.5"
+                onClick={() => {
+                  setSelectedPlanForUnlock(elitePlan);
+                  setIsPurchaseModalOpen(true);
+                }}
+                className="font-black shadow-lg shadow-gold/25 text-xs py-2.5 px-5 flex items-center gap-1.5"
               >
                 <Crown className="w-4 h-4 text-background fill-background" />
-                <span>Unlock VIP Creator Terrace</span>
+                <span>Unlock Elite Access (₹1 Only)</span>
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedPlanForUnlock(vipPlan);
+                  setIsPurchaseModalOpen(true);
+                }}
+                className="font-bold text-xs py-2.5 px-4 flex items-center gap-1.5 border-white/20 hover:border-gold/50 text-foreground"
+              >
+                <span>VIP Army Pass (₹599)</span>
               </Button>
             </div>
           </div>
@@ -569,7 +599,7 @@ export default function CommunityPage() {
       <MembershipPurchaseModal
         isOpen={isPurchaseModalOpen}
         onClose={() => setIsPurchaseModalOpen(false)}
-        plan={vipPlan}
+        plan={selectedPlanForUnlock}
         billingCycle="monthly"
       />
     </div>

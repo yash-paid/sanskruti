@@ -79,7 +79,7 @@ export default function MembershipPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
         {MOCK_PLANS.map((plan) => {
           const isCurrentTier = user?.membershipTier === plan.name;
-          const displayPrice = billingCycle === 'yearly' ? Math.round(plan.price * 10) : plan.price;
+          const displayPrice = plan.id === 'elite' ? 1 : (billingCycle === 'yearly' ? Math.round(plan.price * 10) : plan.price);
           const periodText = billingCycle === 'yearly' ? 'yr' : 'mo';
 
           return (

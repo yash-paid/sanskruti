@@ -297,7 +297,7 @@ export const MOCK_PLANS: MembershipPlan[] = [
   {
     id: 'elite',
     name: 'Elite Circle',
-    price: 1499,
+    price: 1,
     period: 'month',
     description: 'The most intimate tier: personal voice shoutouts, name in upcoming episode credits, and free merch.',
     features: [

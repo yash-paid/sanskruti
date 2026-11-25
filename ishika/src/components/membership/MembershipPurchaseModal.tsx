@@ -97,9 +97,10 @@ export function MembershipPurchaseModal({
     const payment = params.get('payment');
     if (payment === 'success') {
       const txnid = params.get('txnid') || 'TXN-' + Math.floor(10000000 + Math.random() * 90000000);
+      const purchasedTier = params.get('tier') || (params.get('plan') === 'elite' ? 'Elite' : 'VIP');
       setTransactionRef(txnid);
-      setMembershipTier('VIP');
-      updateProfile({ membershipTier: 'VIP' });
+      setMembershipTier(purchasedTier);
+      updateProfile({ membershipTier: purchasedTier });
       setStage('success');
     } else if (payment === 'failed') {
       const reason = params.get('reason') || 'Transaction was declined by issuing bank or cancelled on PayU.';
@@ -133,6 +134,7 @@ export function MembershipPurchaseModal({
 
   const displayPrice = useMemo(() => {
     if (!plan) return 0;
+    if (plan.id === 'elite') return 1;
     return billingCycle === 'yearly' ? Math.round(plan.price * 10) : plan.price;
   }, [plan, billingCycle]);
 

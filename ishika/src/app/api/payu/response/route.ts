@@ -63,7 +63,8 @@ export async function POST(req: NextRequest) {
       if (udf1 === 'merch') {
         redirectUrl = `${config.siteUrl}/checkout?payment=success&txnid=${encodeURIComponent(txnid)}&amount=${encodeURIComponent(amount)}&orderId=${encodeURIComponent(udf2 || txnid)}`;
       } else {
-        redirectUrl = `${config.siteUrl}/membership?payment=success&txnid=${encodeURIComponent(txnid)}&tier=VIP&plan=${encodeURIComponent(udf2 || 'vip')}`;
+        const purchasedTier = (udf2 === 'elite' || udf2 === 'elite_circle') ? 'Elite' : (udf2 === 'explorer' ? 'Explorer' : 'VIP');
+        redirectUrl = `${config.siteUrl}/membership?payment=success&txnid=${encodeURIComponent(txnid)}&tier=${encodeURIComponent(purchasedTier)}&plan=${encodeURIComponent(udf2 || 'elite')}`;
       }
     } else {
       const failureReason = errorMessage || (!isHashValid ? 'Payment verification failed (Security Hash Mismatch).' : 'Transaction was declined or cancelled.');
