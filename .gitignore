@@ -51,8 +51,6 @@ sanskruti_ps_store.json
 
 # Raw / redundant video folders excluded
 connect/upload-videos-here/
-service-meet/ 
-wa-vc/
 connect/dist/assets/videos/
 
 # General video files
