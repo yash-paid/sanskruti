@@ -84,6 +84,7 @@ export function MembershipPurchaseModal({
   const [selectedReasonId, setSelectedReasonId] = useState<string>(REJECTION_REASONS[0].id);
   const [customFailureReason, setCustomFailureReason] = useState<string>(REJECTION_REASONS[0].description);
   const [transactionRef, setTransactionRef] = useState<string>('');
+  const [showTestSandbox, setShowTestSandbox] = useState<boolean>(false);
 
   // PayU Gateway Integration State
   const [isPayULoading, setIsPayULoading] = useState<boolean>(false);
@@ -141,10 +142,10 @@ export function MembershipPurchaseModal({
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
   const isDetailsComplete = isNameValid && isPhoneValid && isEmailValid;
 
-  const handleProceedToPayment = (e: React.FormEvent) => {
+  const handleProceedToPayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isDetailsComplete) return;
-    setStage('payment');
+    if (!isDetailsComplete || isPayULoading) return;
+    await handlePayUCheckout();
   };
 
   // PayU Hosted Gateway Checkout
@@ -345,17 +346,95 @@ export function MembershipPurchaseModal({
               <span>Instant activation right after payment. Safe &amp; 100% encrypted.</span>
             </div>
 
-            {/* Proceed to Pay Button */}
-            <div className="pt-2">
+            {/* Proceed to Pay Button - Immediate Redirect to PayU */}
+            <div className="pt-2 space-y-2">
               <Button
                 type="submit"
                 variant={plan.highlighted ? 'primary' : 'gold'}
-                disabled={!isDetailsComplete}
-                className="w-full py-3 text-xs sm:text-sm font-black flex items-center justify-center gap-2 shadow-lg shadow-rose/25"
+                disabled={!isDetailsComplete || isPayULoading}
+                className="w-full py-3.5 text-xs sm:text-sm font-black flex items-center justify-center gap-2 shadow-xl shadow-rose/25 bg-gradient-to-r from-rose via-rose-light to-gold text-white hover:opacity-95 transition-all"
               >
-                <span>Proceed to Pay ₹{displayPrice}</span>
-                <ArrowRight className="w-4 h-4" />
+                {isPayULoading ? (
+                  <>
+                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    <span>Redirecting to PayU India...</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    <span>Proceed to Pay ₹{displayPrice} (PayU)</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
               </Button>
+
+              <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] text-muted">
+                <span className="font-bold text-foreground">Official PayU Gateway</span>
+                <span>•</span>
+                <span>UPI (GPay / PhonePe / Paytm)</span>
+                <span>•</span>
+                <span>Cards &amp; NetBanking</span>
+              </div>
+
+              {payUError && (
+                <div className="p-2.5 rounded-xl bg-rose/15 border border-rose/40 text-[11px] text-rose flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{payUError}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Optional Simulation Controls for testing reject & success without real payment */}
+            <div className="pt-2 border-t border-border/30">
+              <button
+                type="button"
+                onClick={() => setShowTestSandbox(!showTestSandbox)}
+                className="w-full text-center text-[10px] text-muted hover:text-gold flex items-center justify-center gap-1.5 py-1 transition-colors"
+              >
+                <Sparkles className="w-3 h-3 text-gold" />
+                <span>{showTestSandbox ? 'Hide Test Simulation' : 'Test Mode: Simulate Payment Success / Reject'}</span>
+              </button>
+
+              {showTestSandbox && (
+                <div className="mt-2 p-3 rounded-2xl bg-[#121220] border border-border/60 space-y-2.5 text-xs animate-fadeIn">
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-muted block">Simulate bank failure reason:</span>
+                    <select
+                      value={selectedReasonId}
+                      onChange={(e) => setSelectedReasonId(e.target.value)}
+                      className="w-full px-2 py-1.5 rounded-xl bg-[#181828] border border-border/60 text-foreground text-xs focus:outline-none"
+                    >
+                      {REJECTION_REASONS.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          ❌ {r.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <Button
+                      type="button"
+                      variant="primary"
+                      onClick={() => executePayment(true)}
+                      className="py-2 text-[11px] font-bold flex items-center justify-center gap-1 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white"
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Simulate Success</span>
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => executePayment(false)}
+                      className="py-2 text-[11px] font-bold flex items-center justify-center gap-1 border-rose/50 text-rose-light hover:bg-rose/15"
+                    >
+                      <ShieldAlert className="w-3.5 h-3.5 text-rose" />
+                      <span>Simulate Reject</span>
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </form>
         )}

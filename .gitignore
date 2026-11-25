@@ -43,6 +43,7 @@ scratch/
 sanskruti_ps_store.json
 ishika/.next/
 ishika/node_modules/
+.next/
 *.exe
 
 # Local Netlify folder

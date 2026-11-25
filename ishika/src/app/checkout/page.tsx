@@ -149,10 +149,10 @@ export default function CheckoutPage() {
   const isZipValid = formData.zip.trim().length >= 4;
   const isShippingValid = isNameValid && isPhoneValid && isEmailValid && isAddressValid && isCityValid && isZipValid;
 
-  const handleProceedToPayment = (e: React.FormEvent) => {
+  const handleProceedToPayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isShippingValid) return;
-    setStage('payment');
+    if (!isShippingValid || isPayULoading) return;
+    await handlePayUCheckout();
   };
 
   // PayU Official Gateway Checkout
@@ -479,12 +479,47 @@ export default function CheckoutPage() {
                 type="submit"
                 size="lg"
                 variant="primary"
-                disabled={!isShippingValid}
-                className="w-full py-3 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-rose/25"
+                disabled={!isShippingValid || isPayULoading}
+                className="w-full py-3.5 font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xl shadow-rose/25 bg-gradient-to-r from-rose via-rose-light to-gold text-white hover:opacity-95"
               >
-                <span>Proceed to Payment</span>
-                <ChevronRight className="w-4 h-4" />
+                {isPayULoading ? (
+                  <>
+                    <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    <span>Connecting to PayU India...</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4" />
+                    <span>Proceed to Pay {formatPrice(total)} (PayU)</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </>
+                )}
               </Button>
+
+              <div className="flex flex-wrap items-center justify-center gap-2 text-[10px] text-muted pt-1">
+                <span className="font-bold text-foreground">PayU Gateway</span>
+                <span>•</span>
+                <span>UPI (GPay / PhonePe / Paytm)</span>
+                <span>•</span>
+                <span>Cards &amp; NetBanking</span>
+              </div>
+
+              {payUError && (
+                <div className="p-2.5 rounded-xl bg-rose/15 border border-rose/40 text-[11px] text-rose flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{payUError}</span>
+                </div>
+              )}
+
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => setStage('payment')}
+                  className="text-[11px] text-muted hover:text-rose-light underline"
+                >
+                  Or choose Cash on Delivery / Demo Test Mode
+                </button>
+              </div>
 
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-muted pt-1">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
