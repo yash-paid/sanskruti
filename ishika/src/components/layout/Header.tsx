@@ -17,7 +17,6 @@ import {
   HelpCircle,
   Sparkles,
   ChevronRight,
-  Radio,
   Smartphone,
   Download
 } from 'lucide-react';
@@ -235,21 +234,6 @@ export function Header() {
                           <p className="text-[10px] text-muted">Delivery issues &amp; FAQs</p>
                         </div>
                       </Link>
-
-                      <a
-                        href="/connect"
-                        onClick={() => setMoreMenuOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2 rounded-xl text-secondary hover:text-foreground hover:bg-white/5 transition-colors group border-t border-border/30 pt-2"
-                      >
-                        <Radio className="w-4 h-4 text-rose shrink-0 group-hover:scale-110 transition-transform animate-pulse" />
-                        <div className="flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-xs font-semibold text-foreground">Connect Live</p>
-                            <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-rose/20 text-rose font-bold">1-on-1</span>
-                          </div>
-                          <p className="text-[10px] text-muted">Live video &amp; voice calls</p>
-                        </div>
-                      </a>
                     </div>
                   </motion.div>
                 )}
@@ -309,21 +293,6 @@ export function Header() {
                   TRACK
                 </span>
               </Link>
-
-              {/* Connect Live Shortcut */}
-              <a
-                href="/connect"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-between p-3 rounded-xl bg-rose/10 border border-rose/30 text-rose-light font-bold text-xs"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Radio className="w-4 h-4 text-rose animate-pulse" />
-                  <span>Connect Live (Video &amp; Voice)</span>
-                </div>
-                <span className="text-[9px] px-2 py-0.5 rounded-full bg-rose text-white font-black">
-                  LIVE
-                </span>
-              </a>
 
               {NAV_LINKS.map(link => (
                 <Link
