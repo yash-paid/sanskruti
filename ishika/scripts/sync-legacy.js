@@ -31,6 +31,13 @@ const syncList = [
   { src: path.join(rootDir, 'connect', 'dist', 'assets'), dest: path.join(publicDir, 'connect', 'assets') },
   { src: path.join(rootDir, 'connect', 'dist', 'default-avatars'), dest: path.join(publicDir, 'connect', 'default-avatars') },
   { src: path.join(rootDir, 'connect', 'dist', 'default-avatars'), dest: path.join(publicDir, 'default-avatars') },
+  // Explicitly sync media assets directly from connect/public (which are tracked in git)
+  { src: path.join(rootDir, 'connect', 'public', 'assets', 'videos'), dest: path.join(publicDir, 'connect', 'assets', 'videos') },
+  { src: path.join(rootDir, 'connect', 'public', 'assets', 'videos'), dest: path.join(publicDir, 'assets', 'videos') },
+  { src: path.join(rootDir, 'connect', 'public', 'assets', 'profiles'), dest: path.join(publicDir, 'connect', 'assets', 'profiles') },
+  { src: path.join(rootDir, 'connect', 'public', 'assets', 'profiles'), dest: path.join(publicDir, 'assets', 'profiles') },
+  { src: path.join(rootDir, 'connect', 'public', 'default-avatars'), dest: path.join(publicDir, 'connect', 'default-avatars') },
+  { src: path.join(rootDir, 'connect', 'public', 'default-avatars'), dest: path.join(publicDir, 'default-avatars') },
 ];
 
 for (const item of syncList) {

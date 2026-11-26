@@ -17,12 +17,15 @@ export const VIDEO_CDN_BASE = 'https://sanskrutiservice.in/connect/assets/videos
  * @returns {string} - Direct HTTPS streaming URL
  */
 export const getVideoUrl = (pathOrFilename) => {
-  if (!pathOrFilename) return `${VIDEO_CDN_BASE}/1.mp4`;
+  if (!pathOrFilename) return isNativePlatform() ? `${VIDEO_CDN_BASE}/1.mp4` : '/connect/assets/videos/1.mp4';
   if (pathOrFilename.startsWith('http://') || pathOrFilename.startsWith('https://')) {
     return pathOrFilename;
   }
   const filename = pathOrFilename.split('/').pop() || '1.mp4';
-  return `${VIDEO_CDN_BASE}/${filename}`;
+  if (isNativePlatform()) {
+    return `${VIDEO_CDN_BASE}/${filename}`;
+  }
+  return `/connect/assets/videos/${filename}`;
 };
 
 /**
