@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ISHIKA'S WORLDT",
-    "slug": "ishikas-worldt-app",
+    "name": "Ishika's World",
+    "slug": "ishikas-world",
     "version": "1.0.0",
     "orientation": "default",
     "icon": "./assets/icon.png",

@@ -17,7 +17,9 @@ import {
   HelpCircle,
   Sparkles,
   ChevronRight,
-  Radio
+  Radio,
+  Smartphone,
+  Download
 } from 'lucide-react';
 import { NAV_LINKS, BRAND } from '@/lib/constants';
 import { useCart } from '@/context/CartContext';
@@ -136,7 +138,31 @@ export function Header() {
                     className="absolute right-0 mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-gold/40 bg-[#0c0c14] shadow-2xl p-2 z-[70] divide-y divide-border/40"
                   >
                     {/* Primary Highlight: View My Orders */}
-                    <div className="p-1 pb-2">
+                    <div className="p-1 pb-2 space-y-1.5">
+                      {/* Download Android App Button */}
+                      <a
+                        href="/Ishikas-World.apk"
+                        download="Ishikas-World.apk"
+                        onClick={() => setMoreMenuOpen(false)}
+                        className="flex items-center justify-between p-3 rounded-xl bg-gradient-to-r from-emerald-500/15 to-emerald-600/10 hover:from-emerald-500/25 hover:to-emerald-600/20 border border-emerald-500/40 text-foreground transition-all group shadow-sm"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                            <Smartphone className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold text-foreground">Download the App</span>
+                              <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500 text-black font-extrabold">
+                                APK
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-emerald-300/80 font-medium">Ishika&apos;s World Android App</p>
+                          </div>
+                        </div>
+                        <Download className="w-4 h-4 text-emerald-400 group-hover:translate-y-0.5 transition-transform" />
+                      </a>
+
                       <Link
                         href="/orders"
                         onClick={() => setMoreMenuOpen(false)}
@@ -252,6 +278,23 @@ export function Header() {
             className="md:hidden border-t border-border/50 overflow-hidden bg-background/95 backdrop-blur-xl"
           >
             <nav className="px-4 py-4 space-y-2">
+              {/* Download Android App Button (Mobile) */}
+              <a
+                href="/Ishikas-World.apk"
+                download="Ishikas-World.apk"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 font-bold text-xs"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Smartphone className="w-4 h-4 text-emerald-400" />
+                  <span>Download the App (Android APK)</span>
+                </div>
+                <div className="flex items-center gap-1 bg-emerald-500 text-black px-2 py-0.5 rounded-full font-black text-[9px]">
+                  <Download className="w-3 h-3" />
+                  <span>GET</span>
+                </div>
+              </a>
+
               {/* Highlighted Mobile Shortcut: View My Orders */}
               <Link
                 href="/orders"

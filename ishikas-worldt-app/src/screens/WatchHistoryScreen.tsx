@@ -9,17 +9,20 @@ import {
 } from 'react-native';
 import { ChevronLeft, Play, Trash2, History } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../theme/colors';
 import { useApp } from '../context/AppContext';
 
 export const WatchHistoryScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(insets.top, 14);
   const { watchHistory, clearWatchHistory } = useApp();
 
   return (
     <View style={styles.container}>
       {/* Top Header */}
-      <View style={styles.topHeader}>
+      <View style={[styles.topHeader, { paddingTop: topPadding, height: 52 + topPadding }]}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => navigation.goBack()}

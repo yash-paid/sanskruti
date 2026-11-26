@@ -13,16 +13,27 @@ import { VideoLibraryScreen } from '../screens/VideoLibraryScreen';
 import { MembershipScreen } from '../screens/MembershipScreen';
 import { StoreScreen } from '../screens/StoreScreen';
 import { CommunityScreen } from '../screens/CommunityScreen';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
 
 export const BottomTabNavigator: React.FC = () => {
+  const insets = useSafeAreaInsets();
+  const bottomPadding = Math.max(insets.bottom, 12);
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            height: 56 + bottomPadding,
+            paddingBottom: bottomPadding,
+            paddingTop: 6,
+          },
+        ],
         tabBarActiveTintColor: COLORS.rose.primary,
         tabBarInactiveTintColor: COLORS.text.muted,
         tabBarLabelStyle: styles.tabBarLabel,

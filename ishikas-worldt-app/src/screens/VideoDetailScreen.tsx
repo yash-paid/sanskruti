@@ -21,6 +21,7 @@ import {
   ChevronLeft,
 } from 'lucide-react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Video } from '../types';
 import { COLORS } from '../theme/colors';
 import { MOCK_VIDEOS } from '../data/mockData';
@@ -30,6 +31,8 @@ import { useApp } from '../context/AppContext';
 export const VideoDetailScreen: React.FC = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(insets.top, 14);
   const { video } = route.params as { video: Video };
   const { isVideoSaved, toggleSaveVideo, isVipUnlocked } = useApp();
 
@@ -41,7 +44,7 @@ export const VideoDetailScreen: React.FC = () => {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Listen to "${video.title}" on ISHIKA'S WORLDT app!`,
+        message: `Listen to "${video.title}" on Ishika's World app!`,
       });
     } catch (e) {}
   };
@@ -49,7 +52,7 @@ export const VideoDetailScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       {/* Top Header Bar */}
-      <View style={styles.topHeader}>
+      <View style={[styles.topHeader, { paddingTop: topPadding, height: 52 + topPadding }]}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => navigation.goBack()}

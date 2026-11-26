@@ -18,10 +18,13 @@ import {
   Info,
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS, BRAND } from '../theme/colors';
 
 export const SettingsScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(insets.top, 14);
 
   const [autoplayNext, setAutoplayNext] = useState<boolean>(true);
   const [highQualityAudio, setHighQualityAudio] = useState<boolean>(true);
@@ -31,7 +34,7 @@ export const SettingsScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       {/* Top Header */}
-      <View style={styles.topHeader}>
+      <View style={[styles.topHeader, { paddingTop: topPadding, height: 52 + topPadding }]}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => navigation.goBack()}

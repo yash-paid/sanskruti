@@ -17,11 +17,15 @@ import {
   ArrowRight,
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../theme/colors';
 import { useApp } from '../context/AppContext';
 
 export const CartScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(insets.top, 14);
+  const bottomPadding = Math.max(insets.bottom, 16);
   const { cart, removeFromCart, updateCartQuantity, cartTotal, placeOrder, clearCart } =
     useApp();
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false);
@@ -37,7 +41,7 @@ export const CartScreen: React.FC = () => {
   if (cart.length === 0 && !showSuccessModal) {
     return (
       <View style={styles.container}>
-        <View style={styles.topBar}>
+        <View style={[styles.topBar, { paddingTop: topPadding, height: 52 + topPadding }]}>
           <TouchableOpacity
             style={styles.backBtn}
             onPress={() => navigation.goBack()}
@@ -69,7 +73,7 @@ export const CartScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       {/* Top Bar */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { paddingTop: topPadding, height: 52 + topPadding }]}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => navigation.goBack()}
@@ -174,7 +178,7 @@ export const CartScreen: React.FC = () => {
       </ScrollView>
 
       {/* Floating Checkout Button */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { paddingBottom: bottomPadding }]}>
         <View style={styles.bottomTotalWrap}>
           <Text style={styles.bottomTotalLabel}>Total</Text>
           <Text style={styles.bottomTotalAmount}>

@@ -19,6 +19,7 @@ import {
   RotateCcw,
 } from 'lucide-react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Product, ProductColor } from '../types';
 import { COLORS } from '../theme/colors';
 import { useApp } from '../context/AppContext';
@@ -28,6 +29,9 @@ const { width } = Dimensions.get('window');
 export const ProductDetailScreen: React.FC = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(insets.top, 14);
+  const bottomPadding = Math.max(insets.bottom, 16);
   const { product } = route.params as { product: Product };
   const { addToCart } = useApp();
 
@@ -55,7 +59,7 @@ export const ProductDetailScreen: React.FC = () => {
   return (
     <View style={styles.container}>
       {/* Top Bar */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { paddingTop: topPadding, height: 52 + topPadding }]}>
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => navigation.goBack()}
@@ -234,7 +238,7 @@ export const ProductDetailScreen: React.FC = () => {
       </ScrollView>
 
       {/* Floating Bottom Bar */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { paddingBottom: bottomPadding }]}>
         <TouchableOpacity
           style={styles.addToCartBtn}
           onPress={handleAddToCart}

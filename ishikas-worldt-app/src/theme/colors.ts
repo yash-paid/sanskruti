@@ -46,7 +46,7 @@ export const COLORS = {
 };
 
 export const BRAND = {
-  name: "ISHIKA'S WORLDT",
+  name: "Ishika's World",
   tagline: "Official Digital Universe of Ishq Army 💚",
   creator: "Ishika (Ishq 31)",
   version: "1.0.0",

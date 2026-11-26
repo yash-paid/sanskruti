@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { ChevronLeft, Share2, Bookmark, Sparkles, Tv } from 'lucide-react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CustomVideoPlayer } from '../components/CustomVideoPlayer';
 import { Video } from '../types';
 import { COLORS } from '../theme/colors';
@@ -19,6 +20,8 @@ import { useApp } from '../context/AppContext';
 export const VideoPlayerScreen: React.FC = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(insets.top, 14);
   const { video, initialTimeSec } = route.params as {
     video: Video;
     initialTimeSec?: number;
@@ -49,7 +52,7 @@ export const VideoPlayerScreen: React.FC = () => {
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Listening to "${video.title}" on ISHIKA'S WORLDT app!`,
+        message: `Listening to "${video.title}" on Ishika's World app!`,
       });
     } catch (e) {}
   };
@@ -57,7 +60,7 @@ export const VideoPlayerScreen: React.FC = () => {
   return (
     <View style={[styles.container, isTheaterMode && styles.theaterBackground]}>
       {/* Top Bar */}
-      <View style={styles.topBar}>
+      <View style={[styles.topBar, { paddingTop: topPadding, height: 52 + topPadding }]}>
         <TouchableOpacity
           style={styles.iconBtn}
           onPress={() => navigation.goBack()}

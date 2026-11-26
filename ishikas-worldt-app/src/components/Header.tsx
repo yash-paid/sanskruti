@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { ShoppingBag, Bell, Crown } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../theme/colors';
 import { useApp } from '../context/AppContext';
 
@@ -18,9 +19,11 @@ export const Header: React.FC<HeaderProps> = ({
   title,
 }) => {
   const { cartCount, user } = useApp();
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(insets.top, 14);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: topPadding, height: 60 + topPadding }]}>
       <View style={styles.leftSection}>
         <Image
           source={require('../../assets/icon.png')}
@@ -28,7 +31,7 @@ export const Header: React.FC<HeaderProps> = ({
           resizeMode="cover"
         />
         <View>
-          <Text style={styles.brandTitle}>ISHIKA'S WORLDT</Text>
+          <Text style={styles.brandTitle}>Ishika's World</Text>
           <Text style={styles.tagline}>Official Universe • Ishq Army 💚</Text>
         </View>
       </View>
