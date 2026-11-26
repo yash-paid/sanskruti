@@ -32,6 +32,7 @@ const nextConfig: NextConfig = {
       { source: '/connect/', destination: '/connect/index.html' },
       { source: '/connect/:path*', destination: '/connect/index.html' },
       { source: '/assets/:path*', destination: '/connect/assets/:path*' },
+      { source: '/default-avatars/:path*', destination: '/connect/default-avatars/:path*' },
     ];
   },
 };

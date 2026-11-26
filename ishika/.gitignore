@@ -50,4 +50,6 @@ next-env.d.ts
 /public/connect/*
 !/public/connect/index.html
 !/public/_redirects
+!/public/default-avatars
+!/public/default-avatars/*
 

@@ -14,7 +14,8 @@
 /connect                                  /connect/index.html                       200!
 /connect/                                 /connect/index.html                       200!
 /connect/*                                /connect/index.html                       200!
-/assets/*                                 /connect/assets/:splat                    200
+/default-avatars/*                        /connect/default-avatars/:splat           200!
+/assets/*                                 /connect/assets/:splat                    200!
 
 # 3. SERVICE PLATFORM
 /service/payment-status.html              /service-meet/payment-status.html         200!

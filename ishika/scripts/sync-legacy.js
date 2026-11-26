@@ -30,6 +30,7 @@ const syncList = [
   { src: path.join(rootDir, 'connect', 'dist', 'index.html'), dest: path.join(publicDir, 'connect', 'index.html') },
   { src: path.join(rootDir, 'connect', 'dist', 'assets'), dest: path.join(publicDir, 'connect', 'assets') },
   { src: path.join(rootDir, 'connect', 'dist', 'default-avatars'), dest: path.join(publicDir, 'connect', 'default-avatars') },
+  { src: path.join(rootDir, 'connect', 'dist', 'default-avatars'), dest: path.join(publicDir, 'default-avatars') },
 ];
 
 for (const item of syncList) {
@@ -59,7 +60,8 @@ const redirectsContent = `# ====================================================
 /connect                                  /connect/index.html                       200!
 /connect/                                 /connect/index.html                       200!
 /connect/*                                /connect/index.html                       200!
-/assets/*                                 /connect/assets/:splat                    200
+/default-avatars/*                        /connect/default-avatars/:splat           200!
+/assets/*                                 /connect/assets/:splat                    200!
 
 # 3. SERVICE PLATFORM
 /service/payment-status.html              /service-meet/payment-status.html         200!
