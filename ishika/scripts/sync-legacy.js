@@ -27,6 +27,7 @@ const syncList = [
   { src: path.join(rootDir, 'wa-vc'), dest: path.join(publicDir, 'wa-vc') },
   { src: path.join(rootDir, 'PS'), dest: path.join(publicDir, 'ps') },
   { src: path.join(rootDir, 'connect', 'dist'), dest: path.join(publicDir, 'connect', 'dist') },
+  { src: path.join(rootDir, 'connect', 'dist', 'index.html'), dest: path.join(publicDir, 'connect', 'index.html') },
   { src: path.join(rootDir, 'connect', 'dist', 'assets'), dest: path.join(publicDir, 'connect', 'assets') },
   { src: path.join(rootDir, 'connect', 'dist', 'default-avatars'), dest: path.join(publicDir, 'connect', 'default-avatars') },
 ];
@@ -58,9 +59,10 @@ const redirectsContent = `# ====================================================
 /connect/dist/index.html                  /connect/                                 301!
 /connect/dist/                            /connect/                                 301!
 /connect/dist                             /connect/                                 301!
-/connect                                  /connect/dist/index.html                  200!
+/connect                                  /connect/                                 301!
 /connect/                                 /connect/dist/index.html                  200!
 /connect/*                                /connect/dist/index.html                  200!
+/assets/*                                 /connect/dist/assets/:splat               200
 
 # 3. SERVICE PLATFORM
 /service/payment-status.html              /service-meet/payment-status.html         200!

@@ -1009,14 +1009,14 @@
       const nameInput = document.getElementById('svcCustName');
       const emailInput = document.getElementById('svcCustEmail');
 
-      if (phoneInput && !phoneInput.value) {
-        phoneInput.value = localStorage.getItem('svc_cust_phone') || '9856325698';
+      if (nameInput) {
+        nameInput.value = (nameInput.value && nameInput.value.trim() !== '') ? nameInput.value : (localStorage.getItem('svc_cust_name') || 'sanskruti');
       }
-      if (nameInput && !nameInput.value) {
-        nameInput.value = localStorage.getItem('svc_cust_name') || 'sanskruti';
+      if (phoneInput) {
+        phoneInput.value = (phoneInput.value && phoneInput.value.trim() !== '') ? phoneInput.value : (localStorage.getItem('svc_cust_phone') || '9856325698');
       }
-      if (emailInput && !emailInput.value) {
-        emailInput.value = localStorage.getItem('svc_cust_email') || 'paid32041@gmail.com';
+      if (emailInput) {
+        emailInput.value = (emailInput.value && emailInput.value.trim() !== '') ? emailInput.value : (localStorage.getItem('svc_cust_email') || 'paid32041@gmail.com');
       }
 
       if (modal && modalTitle && modalAmount) {
@@ -1378,6 +1378,19 @@
           }
         });
       }
+
+      // Ensure customer details are always autofilled
+      function enforceCustAutofill() {
+        var n = document.getElementById('svcCustName');
+        var p = document.getElementById('svcCustPhone');
+        var e = document.getElementById('svcCustEmail');
+        if (n && (!n.value || n.value.trim() === '')) n.value = 'sanskruti';
+        if (p && (!p.value || p.value.trim() === '')) p.value = '9856325698';
+        if (e && (!e.value || e.value.trim() === '')) e.value = 'paid32041@gmail.com';
+      }
+      enforceCustAutofill();
+      setTimeout(enforceCustAutofill, 500);
+      setTimeout(enforceCustAutofill, 1500);
 
       // ===== Floating Cloud Comments System =====
       const floatingComments = [

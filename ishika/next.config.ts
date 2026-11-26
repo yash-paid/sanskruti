@@ -26,6 +26,14 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  async rewrites() {
+    return [
+      { source: '/connect', destination: '/connect/index.html' },
+      { source: '/connect/', destination: '/connect/index.html' },
+      { source: '/connect/:path*', destination: '/connect/index.html' },
+      { source: '/assets/:path*', destination: '/connect/assets/:path*' },
+    ];
+  },
 };
 
 export default nextConfig;

@@ -47,6 +47,7 @@ next-env.d.ts
 /public/meeting
 /public/wa-vc
 /public/ps
-/public/connect
+/public/connect/*
+!/public/connect/index.html
 /public/_redirects
 
