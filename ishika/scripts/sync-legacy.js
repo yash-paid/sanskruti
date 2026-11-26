@@ -52,17 +52,14 @@ const redirectsContent = `# ====================================================
 /backup_*                                 /404                                      404!
 
 # 1. CONNECT PLATFORM (SPA)
-/connect/assets/*                         /connect/dist/assets/:splat               200!
-/connect/default-avatars/*                /connect/dist/default-avatars/:splat      200!
-/connect/dist/assets/*                    /connect/dist/assets/:splat               200!
-/connect/dist/default-avatars/*           /connect/dist/default-avatars/:splat      200!
-/connect/dist/index.html                  /connect/                                 301!
-/connect/dist/                            /connect/                                 301!
-/connect/dist                             /connect/                                 301!
-/connect                                  /connect/                                 301!
-/connect/                                 /connect/dist/index.html                  200!
-/connect/*                                /connect/dist/index.html                  200!
-/assets/*                                 /connect/dist/assets/:splat               200
+/connect/assets/*                         /connect/assets/:splat                    200!
+/connect/default-avatars/*                /connect/default-avatars/:splat           200!
+/connect/dist/assets/*                    /connect/assets/:splat                    200!
+/connect/dist/default-avatars/*           /connect/default-avatars/:splat           200!
+/connect                                  /connect/index.html                       200!
+/connect/                                 /connect/index.html                       200!
+/connect/*                                /connect/index.html                       200!
+/assets/*                                 /connect/assets/:splat                    200
 
 # 3. SERVICE PLATFORM
 /service/payment-status.html              /service-meet/payment-status.html         200!
